@@ -11,9 +11,9 @@ const HomePage = lazy(() => import('../components/pages/HomePage'));
 const LoginPage = lazy(() => import('../components/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../components/pages/RegisterPage'));
 const ProfilePage = lazy(() => import('../components/pages/ProfilePage'));
-
+const AdminPage = lazy(() => import('../components/pages/AdminPage'));
 const NotFoundPage = lazy(() => import('../components/pages/NotFoundPage'));
-
+const AccessDeniedPage = lazy(() => import('../components/pages/AccessDeniedPage'));
 
 const AppRoutes = () => {
   const dispatch = useAppDispatch();
@@ -47,8 +47,13 @@ const AppRoutes = () => {
                 <ProfilePage />
               </AuthGuard>
             } />
-            
-
+            {/* Rutas protegidas solo para administradores */}
+            <Route path="admin" element={
+              <AuthGuard requiredRole="admin">
+                <AdminPage />
+              </AuthGuard>
+            } />            
+            <Route path="access-denied" element={<AccessDeniedPage />} />
             
             {/* Ruta 404 */}
             <Route path="*" element={<NotFoundPage />} />

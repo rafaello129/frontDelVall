@@ -1,46 +1,50 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
+import type { ThunkAction, Action } from '@reduxjs/toolkit';
+
 import { 
   persistStore, 
-  persistReducer, 
-  FLUSH, 
-  REHYDRATE, 
-  PAUSE, 
-  PERSIST, 
-  PURGE, 
-  REGISTER 
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // localStorage por defecto
+import storage from 'redux-persist/lib/storage';
 import authReducer from '../features/auth/authSlice';
+import usersReducer from '../features/users/usersSlice';
 
-// Configuración para persistir el estado de autenticación
-const persistConfig = {
+// Configuración para persistir auth
+const authPersistConfig = {
   key: 'auth',
+  version: 1,
   storage,
-  whitelist: ['auth'], // Solo persistir el slice 'auth'
 };
 
-const rootReducer = combineReducers({
-  auth: authReducer,
-  // Aquí puedes agregar más reducers para otras funcionalidades
-});
-
-// Aplicar la persistencia al rootReducer
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 
 export const store = configureStore({
-  reducer: persistedReducer,
+  reducer: {
+    auth: persistedAuthReducer,
+    users: usersReducer,
+    // Aquí se añaden otros reducers
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignorar acciones de redux-persist que no son serializables
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
 });
 
-// Crear el persistor para PersistGate
 export const persistor = persistStore(store);
 
-// Tipos de inferencia para usar en el resto de la app
-export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
+export type AppThunk<ReturnType = void> = ThunkAction<
+  ReturnType,
+  RootState,
+  unknown,
+  Action<string>
+>;

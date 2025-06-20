@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { CreateUserDto } from '../features/users/types';
 
 // Esquema para validar email
 export const emailSchema = z.string()
@@ -55,8 +56,46 @@ export const changePasswordSchema = z.object({
   path: ['confirmNewPassword'],
 });
 
+// Schema para crear usuario (admin)
+export const createUserSchema= z.object({
+  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  passwordconf: z.string().min(6, 'La confirmación debe tener al menos 6 caracteres'),
+  role: z.enum(['user', 'admin']),
+  image: z.string().optional()
+}).refine(data => data.password === data.passwordconf, {
+  message: 'Las contraseñas no coinciden',
+  path: ['passwordconf']
+});
+
+// Schema para actualizar usuario
+export const updateUserSchema = z.object({
+  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').optional(),
+  email: z.string().email('Email inválido').optional(),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').optional(),
+  passwordconf: z.string().optional(),
+  role: z.enum(['user', 'admin']).optional(),
+  image: z.string().optional()
+}).refine(data => !data.password || !data.passwordconf || data.password === data.passwordconf, {
+  message: 'Las contraseñas no coinciden',
+  path: ['passwordconf']
+});
+export const updateUserSchemaAdmin = z.object({
+  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').optional(),
+  email: z.string().email('Email inválido').optional(),
+  password: z.string().optional(),
+  passwordconf: z.string().optional(),
+  role: z.enum(['user', 'admin']).optional(),
+  image: z.string().optional()
+}).refine(data => !data.password || !data.passwordconf || data.password === data.passwordconf, {
+  message: 'Las contraseñas no coinciden',
+  path: ['passwordconf']
+});
 // Tipos derivados de los esquemas
 export type LoginFormInputs = z.infer<typeof loginSchema>;
 export type RegisterFormInputs = z.infer<typeof registerSchema>;
 export type UpdateProfileInputs = z.infer<typeof updateProfileSchema>;
 export type ChangePasswordInputs = z.infer<typeof changePasswordSchema>;
+export type CreateUserFormInputs = z.infer<typeof createUserSchema>;
+export type UpdateUserFormInputs = z.infer<typeof updateUserSchema>;

@@ -11,6 +11,7 @@ export interface User {
   role: Role;
   image?: string | null;
   createdAt: string;
+  updatedAt?: string;
   emailVerified?: string | null;
 }
 

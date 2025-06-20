@@ -6,6 +6,7 @@ import axios from 'axios';
 
 // Tipos
 export interface User {
+  updatedAt: string;
   id: string;
   name: string;
   email: string;
@@ -80,6 +81,7 @@ export const loginUser = createAsyncThunk<
       `${API_URL}/auth/login`,
       credentials
     );
+
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.message) {
