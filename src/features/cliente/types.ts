@@ -35,6 +35,7 @@ export interface Cliente {
   }
   
   export interface UpdateClienteDto {
+    noCliente?: number;
     razonSocial?: string;
     comercial?: string;
     rfc?: string;
@@ -96,7 +97,7 @@ export interface Cliente {
     noCliente: number;
     emision: Date;
     fechaVencimiento: Date;
-    total: number;
+    saldoCalculado: number;
     saldo: number;
     diasTranscurridos: number;
     diasRestantes: number;
@@ -115,4 +116,8 @@ export interface Cliente {
     };
     isLoading: boolean;
     error: string | null;
+  }
+  export interface PaginatedClientesResponse {
+    data: Cliente[];
+    total: number;
   }

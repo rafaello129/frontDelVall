@@ -55,7 +55,7 @@ export const facturaAPI = {
   },
 
   // Obtener facturas pendientes por cliente
-  getFacturasPendientesPorCliente: async (noCliente: number): Promise<FacturasClienteResponse> => {
+  getFacturasPendientesPorCliente: async (noCliente: number): Promise<any> => {
     const response = await privateApi.get(`${BASE_URL}/cliente/${noCliente}`);
     return response.data;
   },

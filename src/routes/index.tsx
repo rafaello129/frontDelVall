@@ -15,6 +15,13 @@ const AdminPage = lazy(() => import('../components/pages/AdminPage'));
 const NotFoundPage = lazy(() => import('../components/pages/NotFoundPage'));
 const AccessDeniedPage = lazy(() => import('../components/pages/AccessDeniedPage'));
 
+// Client pages
+const ClientesPage = lazy(() => import('../features/cliente/pages/ClientesPage'));
+const ClienteDetailPage = lazy(() => import('../features/cliente/pages/ClienteDetailPage'));
+const ClienteCreatePage = lazy(() => import('../features/cliente/pages/ClienteCreatePage'));
+const ClienteEditPage = lazy(() => import('../features/cliente/pages/ClienteEditPage'));
+const ReportesClientePage = lazy(() => import('../features/cliente/pages/ReportesClientePage'));
+
 const AppRoutes = () => {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -39,7 +46,6 @@ const AppRoutes = () => {
             <Route path="register" element={
               isAuthenticated ? <Navigate to="/profile" replace /> : <RegisterPage />
             } />
-           
             
             {/* Rutas protegidas para usuarios autenticados */}
             <Route path="profile" element={
@@ -47,6 +53,34 @@ const AppRoutes = () => {
                 <ProfilePage />
               </AuthGuard>
             } />
+            
+            {/* Rutas de Clientes */}
+            <Route path="clientes" element={
+              <AuthGuard>
+                <ClientesPage />
+              </AuthGuard>
+            } />
+            <Route path="clientes/:noCliente" element={
+              <AuthGuard>
+                <ClienteDetailPage />
+              </AuthGuard>
+            } />
+            <Route path="clientes/nuevo" element={
+              <AuthGuard>
+                <ClienteCreatePage />
+              </AuthGuard>
+            } />
+            <Route path="clientes/:noCliente/editar" element={
+              <AuthGuard>
+                <ClienteEditPage />
+              </AuthGuard>
+            } />
+            <Route path="reportes/clientes" element={
+              <AuthGuard>
+                <ReportesClientePage />
+              </AuthGuard>
+            } />
+            
             {/* Rutas protegidas solo para administradores */}
             <Route path="admin" element={
               <AuthGuard requiredRole="admin">

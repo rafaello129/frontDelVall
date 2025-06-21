@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
 import AuthStatus from '../../features/auth/components/AuthStatus';
+import { FaUsers, FaChartBar, FaFileInvoiceDollar } from 'react-icons/fa';
 
 const Navbar = () => {
   const location = useLocation();
@@ -11,14 +12,30 @@ const Navbar = () => {
 
   // Función para determinar si un link está activo
   const isActive = (path: string) => {
-    return location.pathname === path ? 'font-medium text-blue-600' : 'text-gray-600 hover:text-blue-600';
+    return location.pathname.startsWith(path) ? 'font-medium text-blue-600' : 'text-gray-600 hover:text-blue-600';
   };
 
   // Links de navegación basados en el estado de autenticación
   const navigationLinks = [
     { name: 'Inicio', path: '/', show: true },
-    // Más links de navegación según necesidades de la app
-    // Ejemplo: { name: 'Productos', path: '/products', show: true },
+    { 
+      name: 'Clientes', 
+      path: '/clientes', 
+      show: isAuthenticated,
+      icon: <FaUsers className="mr-2" />
+    },
+    { 
+      name: 'Reportes', 
+      path: '/reportes/clientes', 
+      show: isAuthenticated,
+      icon: <FaChartBar className="mr-2" /> 
+    },
+    { 
+      name: 'Cobranza', 
+      path: '/cobranza', 
+      show: isAuthenticated,
+      icon: <FaFileInvoiceDollar className="mr-2" /> 
+    },
   ];
 
   return (
@@ -34,7 +51,7 @@ const Navbar = () => {
                   src="/logo.svg" // Ajusta la ruta a tu logo
                   alt="Logo"
                 />
-                <span className="ml-2 text-xl font-bold text-gray-900">MiApp</span>
+                <span className="ml-2 text-xl font-bold text-gray-900">Del Valle</span>
               </Link>
             </div>
             
@@ -52,13 +69,14 @@ const Navbar = () => {
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     } text-sm font-medium`}
                   >
+                    {link.icon && <span className="hidden md:inline-block">{link.icon}</span>}
                     {link.name}
                   </Link>
                 ))}
             </div>
           </div>
           
-          {/* Botones de autenticación y menú para mobile */}
+          {/* Botones de autenticación y menú para desktop */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <AuthStatus />
           </div>
@@ -124,13 +142,14 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                className={`flex items-center pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                   isActive(link.path)
                     ? 'bg-blue-50 border-blue-500 text-blue-700'
                     : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
+                {link.icon && <span>{link.icon}</span>}
                 {link.name}
               </Link>
             ))}
