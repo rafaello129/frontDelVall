@@ -8,8 +8,3 @@ export enum TipoPago {
     TARJETA = 'TARJETA'
   }
   
-  export enum Sucursal {
-    QUINTANA_ROO = 'QUINTANA_ROO',
-    CABOS = 'CABOS',
-    NORTE = 'NORTE'
-  }

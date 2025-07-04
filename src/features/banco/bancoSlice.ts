@@ -15,9 +15,11 @@ const initialState: BancoState = {
 // Thunks
 export const fetchBancos = createAsyncThunk(
   'banco/fetchAll',
-  async (filters: FilterBancoDto, { rejectWithValue }) => {
+  async ( args: FilterBancoDto | undefined,
+    thunkAPI) => {
+      const { rejectWithValue } = thunkAPI;
     try {
-      return await bancoAPI.getAllBancos(filters);
+      return await bancoAPI.getAllBancos(args);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Error al obtener bancos');
     }
@@ -79,7 +81,7 @@ export const deleteBanco = createAsyncThunk(
 
 // Slice
 const bancoSlice = createSlice({
-  name: 'banco',
+  name: 'bancos',
   initialState,
   reducers: {
     clearSelectedBanco: (state) => {
@@ -90,9 +92,89 @@ const bancoSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Implementación de los reducers para los thunks
-    // TODO: Implementar los reducers para manejar las acciones asíncronas
-  }
+    // Fetch all bancos
+    builder
+      .addCase(fetchBancos.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchBancos.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.bancos = action.payload.data;
+      })
+      .addCase(fetchBancos.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch banco by ID
+    builder
+      .addCase(fetchBancoById.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchBancoById.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.selectedBanco = action.payload;
+      })
+      .addCase(fetchBancoById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Create banco
+    builder
+      .addCase(createBanco.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createBanco.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.bancos.push(action.payload);
+      })
+      .addCase(createBanco.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Update banco
+    builder
+      .addCase(updateBanco.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateBanco.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.bancos = state.bancos.map(banco => 
+          banco.id === action.payload.id ? action.payload : banco
+        );
+        if (state.selectedBanco?.id === action.payload.id) {
+          state.selectedBanco = action.payload;
+        }
+      })
+      .addCase(updateBanco.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Delete banco
+    builder
+      .addCase(deleteBanco.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteBanco.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.bancos = state.bancos.filter(banco => banco.id !== action.payload);
+        if (state.selectedBanco?.id === action.payload) {
+          state.selectedBanco = null;
+        }
+      })
+      .addCase(deleteBanco.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+  },
 });
 
 export const { clearSelectedBanco, clearBancosError } = bancoSlice.actions;

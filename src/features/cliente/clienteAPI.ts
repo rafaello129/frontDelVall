@@ -70,5 +70,13 @@ export const clienteAPI = {
   }> => {
     const response = await privateApi.get(`${BASE_URL}/estadisticas/distribucion-saldos`);
     return response.data;
-  }
+  },
+  getClientesOptions: async (): Promise<{
+    noClientes: number[];
+    razonSocial: string[];
+    comercial: string[];
+  }> => {
+    const response = await privateApi.get(`${BASE_URL}/opciones-filtro`);
+    return response.data;
+  },
 };

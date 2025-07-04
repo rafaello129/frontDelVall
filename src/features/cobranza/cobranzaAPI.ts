@@ -5,7 +5,8 @@ import type {
   UpdateCobranzaDto, 
   FilterCobranzaDto, 
   PaginatedCobranzasResponse,
-  ReporteCobranza 
+  ReporteCobranza, 
+  ReporteCobranzaPorRegion
 } from './types';
 
 const BASE_URL = '/cobranza';
@@ -66,6 +67,14 @@ export const cobranzaAPI = {
     const response = await privateApi.get(`${BASE_URL}/reportes/por-periodo`, {
       params: { fechaDesde, fechaHasta }
     });
+    return response.data;
+  },
+  getReportePorRegion: async (fechaDesde?: Date, fechaHasta?: Date): Promise<ReporteCobranzaPorRegion> => {
+    const params: any = {};
+    if (fechaDesde) params.fechaDesde = fechaDesde;
+    if (fechaHasta) params.fechaHasta = fechaHasta;
+    
+    const response = await privateApi.get(`${BASE_URL}/reportes/por-region`, { params });
     return response.data;
   }
 };

@@ -11,15 +11,13 @@ import { privateApi } from '../../../services/api';
 
 // Define enum values for sucursal and clasificacion
 const SUCURSALES = [
-  'QUINTANA_ROO',
-  'PTO_VALLARTA',
-  'HIDALGO',
-  'ACAPULCO',
-  'CABOS',
-  'COACH_LINE',
-  'YUCATAN',
-  'PACIFICO',
-  'NORTE'
+  "ACAPULCO",
+   "BLUELINE",
+  "CABOS",
+  "CANCUN",
+  "TEPAPULCO",
+  "VALLARTA",
+  "YUCATAN",
 ];
 
 const CLASIFICACIONES = ['AAA', 'AA', 'A', 'B', 'C', 'D'];

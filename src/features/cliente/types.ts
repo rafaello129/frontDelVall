@@ -114,6 +114,11 @@ export interface Cliente {
       limit: number;
       skip: number;
     };
+    filteredOptions: {
+      noClientes: [],
+      razonSocial: [],
+      comercial: []
+    },
     isLoading: boolean;
     error: string | null;
   }

@@ -19,7 +19,7 @@ export const facturaAPI = {
   },
 
   // Obtener una factura por número
-  getFacturaById: async (noFactura: number): Promise<Factura> => {
+  getFacturaById: async (noFactura: string): Promise<Factura> => {
     const response = await privateApi.get(`${BASE_URL}/${noFactura}`);
     return response.data;
   },
@@ -31,19 +31,19 @@ export const facturaAPI = {
   },
 
   // Actualizar una factura por número
-  updateFactura: async (noFactura: number, facturaData: UpdateFacturaDto): Promise<Factura> => {
+  updateFactura: async (noFactura: string, facturaData: UpdateFacturaDto): Promise<Factura> => {
     const response = await privateApi.patch(`${BASE_URL}/${noFactura}`, facturaData);
     return response.data;
   },
 
   // Eliminar una factura
-  deleteFactura: async (noFactura: number): Promise<{ message: string }> => {
+  deleteFactura: async (noFactura: string): Promise<{ message: string }> => {
     const response = await privateApi.delete(`${BASE_URL}/${noFactura}`);
     return response.data;
   },
 
   // Cambiar estado de factura
-  cambiarEstado: async (noFactura: number, cambioEstadoDto: CambioEstadoDto): Promise<Factura> => {
+  cambiarEstado: async (noFactura: string, cambioEstadoDto: CambioEstadoDto): Promise<Factura> => {
     const response = await privateApi.patch(`${BASE_URL}/${noFactura}/estado`, cambioEstadoDto);
     return response.data;
   },

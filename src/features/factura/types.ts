@@ -7,11 +7,13 @@ export interface ClienteResumen {
   }
   
   export interface Factura {
-    noFactura: number;
+    diasVencimiento: number | undefined;
+    noFactura: string;
     emision: Date;
     noCliente: number;
     estado: string;
     saldo: number;
+    montoTotal: number;
     concepto: string;
     fechaVencimiento: Date;
     cliente?: ClienteResumen;
@@ -23,7 +25,7 @@ export interface ClienteResumen {
   
   // DTOs para crear/actualizar facturas
   export interface CreateFacturaDto {
-    noFactura: number;
+    noFactura: string;
     emision: Date;
     noCliente: number;
     estado: string;
@@ -49,7 +51,7 @@ export interface ClienteResumen {
   
   // Filtros para consultar facturas
   export interface FilterFacturaDto {
-    noFactura?: number;
+    noFactura?: string;
     noCliente?: number;
     estado?: string;
     emisionDesde?: Date;
@@ -65,13 +67,15 @@ export interface ClienteResumen {
     order?: 'asc' | 'desc';
   }
   
-  // Estado para el slice de Redux
-  export interface FacturaState {
-    facturas: Factura[];
-    selectedFactura: Factura | null;
-    isLoading: boolean;
-    error: string | null;
-  }
+ // Estado para el slice de Redux
+export interface FacturaState {
+  facturas: Factura[];
+  selectedFactura: Factura | null;
+  facturasVencidas: Factura[]; // Para facturas vencidas
+  facturasPendientes: Factura[]; // Para facturas pendientes por cliente
+  isLoading: boolean;
+  error: string | null;
+}
   
   // Respuestas paginadas
   export interface PaginatedFacturasResponse {

@@ -19,9 +19,14 @@ const initialState: ClienteState = {
   selectedCliente: null,
   facturasPendientes: [],
   antiguedadSaldos: [],
+  filteredOptions: {
+    noClientes: [],
+    razonSocial: [],
+    comercial: []
+  },
   pagination: {
     total: 0,
-    limit: 10,
+    limit: 1000,
     skip: 0
   },
   isLoading: false,
@@ -120,6 +125,20 @@ const clienteSlice = createSlice({
   name: 'cliente',
   initialState,
   reducers: {
+    generateFilterOptions: (state) => {
+      if (state.clientes.length > 0) {
+        // Extraer valores únicos para cada campo
+        const noClientes:any = [...new Set(state.clientes.map(c => c.noCliente))].sort((a, b) => a - b);
+        const razonSocial:any = [...new Set(state.clientes.map(c => c.razonSocial))].sort();
+        const comercial: any = [...new Set(state.clientes.map(c => c.comercial))].sort();
+        
+        state.filteredOptions = {
+          noClientes,
+          razonSocial,
+          comercial
+        };
+      }
+    },
     clearSelectedCliente: (state) => {
       state.selectedCliente = null;
     },
@@ -132,6 +151,9 @@ const clienteSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    clearClientesError: (state) => {
+      state.error = null;
+    },
     updatePagination: (state, action: PayloadAction<{ limit?: number, skip?: number }>) => {
       state.pagination = {
         ...state.pagination,
@@ -140,6 +162,30 @@ const clienteSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
+    builder
+    .addCase(fetchClientesForFilters.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    })
+    .addCase(fetchClientesForFilters.fulfilled, (state, action: PayloadAction<Cliente[]>) => {
+      state.isLoading = false;
+      state.clientes = action.payload;
+      
+      // Generar opciones de filtro automáticamente después de cargar clientes
+      const noClientes : any= [...new Set(action.payload.map(c => c.noCliente))].sort((a, b) => a - b);
+      const razonSocial: any = [...new Set(action.payload.map(c => c.razonSocial))].sort();
+      const comercial : any= [...new Set(action.payload.map(c => c.comercial))].sort();
+      
+      state.filteredOptions = {
+        noClientes,
+        razonSocial,
+        comercial
+      };
+    })
+    .addCase(fetchClientesForFilters.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
     // Fetch all clientes
     builder
       .addCase(fetchClientes.pending, (state) => {
@@ -255,14 +301,33 @@ const clienteSlice = createSlice({
       });
   }
 });
+export const fetchClientesForFilters = createAsyncThunk(
+  'cliente/fetchForFilters',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Solicitar un número grande de clientes para tener suficientes opciones
+      // pero con proyección mínima para optimizar
+      const response = await clienteAPI.getAllClientes({
+        limit: 1000, // Asumiendo que no hay más de 1000 clientes activos
+        status: 'Activo', // Solo clientes activos
 
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Error al obtener datos de filtros de clientes');
+    }
+  }
+);
 // Actions
 export const { 
   clearSelectedCliente, 
   clearFacturasPendientes, 
   clearAntiguedadSaldos,
   clearError, 
-  updatePagination 
+  updatePagination,
+  generateFilterOptions, 
+
+  clearClientesError 
 } = clienteSlice.actions;
 
 // Selectors
@@ -273,5 +338,8 @@ export const selectAntiguedadSaldos = (state: RootState) => state.cliente.antigu
 export const selectPagination = (state: RootState) => state.cliente.pagination;
 export const selectClienteIsLoading = (state: RootState) => state.cliente.isLoading;
 export const selectClienteError = (state: RootState) => state.cliente.error;
+export const selectClientesFilterOptions = (state: RootState) => state.cliente.filteredOptions;
+export const selectClientesLoading = (state: RootState) => state.cliente.isLoading;
+export const selectClientesError = (state: RootState) => state.cliente.error;
 
 export default clienteSlice.reducer;

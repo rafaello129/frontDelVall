@@ -5,7 +5,10 @@ import { refreshToken, selectIsAuthenticated } from '../features/auth/authSlice'
 import Layout from '../components/layout/Layout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import AuthGuard from '../features/auth/components/AuthGuard';
-
+import { PagoExternoListPage, PagoExternoDetailPage, PagoExternoCreatePage, PagoExternoEditPage } from '../features/pagoExterno';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { es } from 'date-fns/locale'; // Import the Spanish locale if needed
 // Lazy loading de las páginas para mejorar el rendimiento
 const HomePage = lazy(() => import('../components/pages/HomePage'));
 const LoginPage = lazy(() => import('../components/pages/LoginPage'));
@@ -22,6 +25,17 @@ const ClienteCreatePage = lazy(() => import('../features/cliente/pages/ClienteCr
 const ClienteEditPage = lazy(() => import('../features/cliente/pages/ClienteEditPage'));
 const ReportesClientePage = lazy(() => import('../features/cliente/pages/ReportesClientePage'));
 
+// Banco pages
+const BancosPage = lazy(() => import('../features/banco/pages/BancosPage'));
+
+// Factura pages
+const FacturasPage = lazy(() => import('../features/factura/pages/FacturasPage'));
+const FacturasVencidasPage = lazy(() => import('../features/factura/pages/FacturasVencidasPage'));
+
+// Cobranza pages
+const CobranzasPage = lazy(() => import('../features/cobranza/pages/CobranzasPage'));
+const ReporteCobranzaPage = lazy(() => import('../features/cobranza/pages/ReporteCobranzaPage'));
+const ReporteRegionPage = lazy(() => import('../features/cobranza/pages/ReporteRegionPage'));
 const AppRoutes = () => {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -34,6 +48,7 @@ const AppRoutes = () => {
   }, [dispatch, isAuthenticated]);
 
   return (
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
     <Router>
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
@@ -81,12 +96,54 @@ const AppRoutes = () => {
               </AuthGuard>
             } />
             
+            {/* Rutas de Bancos */}
+            <Route path="bancos" element={
+              <AuthGuard>
+                <BancosPage />
+              </AuthGuard>
+            } />
+            
+            {/* Rutas de Facturas */}
+            <Route path="facturas" element={
+              <AuthGuard>
+                <FacturasPage />
+              </AuthGuard>
+            } />
+            <Route path="facturas/vencidas" element={
+              <AuthGuard>
+                <FacturasVencidasPage />
+              </AuthGuard>
+            } />
+            
+            {/* Rutas de Cobranza */}
+            <Route path="cobranza" element={
+              <AuthGuard>
+                <CobranzasPage />
+              </AuthGuard>
+            } />
+            <Route path="cobranza/reportes" element={
+              <AuthGuard>
+                <ReporteCobranzaPage />
+              </AuthGuard>
+            } />
+            <Route path="cobranza/reportes/region" element={
+              <AuthGuard>
+                <ReporteRegionPage />
+              </AuthGuard>
+            } />
+              <Route path="/pagos-externos" element={<PagoExternoListPage />} />
+              <Route path="/pagos-externos/:id" element={<PagoExternoDetailPage />} />
+              <Route path="/pagos-externos/nuevo" element={<PagoExternoCreatePage />} />
+              <Route path="/pagos-externos/editar/:id" element={<PagoExternoEditPage />} />
+            {/* Redirección a la página de inicio si no está autenticado */}
+            
             {/* Rutas protegidas solo para administradores */}
             <Route path="admin" element={
               <AuthGuard requiredRole="admin">
                 <AdminPage />
               </AuthGuard>
-            } />            
+            } />
+            
             <Route path="access-denied" element={<AccessDeniedPage />} />
             
             {/* Ruta 404 */}
@@ -95,6 +152,7 @@ const AppRoutes = () => {
         </Routes>
       </Suspense>
     </Router>
+    </LocalizationProvider>
   );
 };
 

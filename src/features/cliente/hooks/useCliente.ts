@@ -42,7 +42,6 @@ export const useCliente = () => {
 
   const getAllClientes = useCallback((filters: FilterClienteDto = {}) => {
     // Usar la paginación del estado si no se proporciona
-    console.log("hola")
     const defaultFilters: FilterClienteDto = {
       limit: pagination.limit,
       skip: pagination.skip,

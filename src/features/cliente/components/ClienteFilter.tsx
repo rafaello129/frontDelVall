@@ -4,15 +4,13 @@ import { privateApi } from '../../../services/api';
 
 // Define default enum values in case API fails
 const DEFAULT_SUCURSALES = [
-  'QUINTANA_ROO',
-  'PTO_VALLARTA',
-  'HIDALGO',
-  'ACAPULCO', 
-  'CABOS',
-  'COACH_LINE',
-  'YUCATAN',
-  'PACIFICO',
-  'NORTE'
+ "ACAPULCO", 
+  "BLUELINE",
+  "CABOS",
+  "CANCUN",
+ "TEPAPULCO",
+  "VALLARTA",
+   "YUCATAN",
 ];
 
 const DEFAULT_CLASIFICACIONES = ['AAA', 'AA', 'A', 'B', 'C', 'D'];

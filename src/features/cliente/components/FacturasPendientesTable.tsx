@@ -21,8 +21,9 @@ const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCli
       setError(null);
       try {
         const response = await getFacturasPendientesPorCliente(noCliente);
-        setFacturas(response.data);
-        setTotalSaldo(response.totalSaldo);
+        console.log(response)
+        setFacturas(response.payload.data);
+        setTotalSaldo(response.payload.totalSaldo);
       } catch (err: any) {
         setError(err.message || 'Error al obtener las facturas pendientes');
       } finally {

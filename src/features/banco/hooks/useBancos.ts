@@ -21,7 +21,7 @@ export const useBancos = () => {
   const isLoading = useAppSelector(selectBancosLoading);
   const error = useAppSelector(selectBancosError);
 
-  const getAllBancos = useCallback((filters: FilterBancoDto) => {
+  const getAllBancos = useCallback((filters?: FilterBancoDto) => {
     return dispatch(fetchBancos(filters));
   }, [dispatch]);
 

@@ -1,168 +1,452 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import type { KeyboardEvent } from 'react';
+
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
-import { selectIsAuthenticated } from '../../features/auth/authSlice';
+import { selectIsAuthenticated, selectUser } from '../../features/auth/authSlice';
 import AuthStatus from '../../features/auth/components/AuthStatus';
-import { FaUsers, FaChartBar, FaFileInvoiceDollar } from 'react-icons/fa';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Box,
+  Collapse,
+  useTheme,
+  useMediaQuery,
+  Avatar,
+  Tooltip,
+  Badge,
+  ListItemButton
+} from '@mui/material';
+// Import alpha as a separate function
+import { alpha } from '@mui/material/styles';
+import {
+  Menu as MenuIcon,
+  Close as CloseIcon,
+  ExpandLess,
+  ExpandMore,
+  Home as HomeIcon,
+  People as PeopleIcon,
+  AccountBalanceOutlined as BankIcon,
+  ReceiptOutlined as InvoiceIcon,
+  MonetizationOnOutlined as PaymentIcon,
+  BarChartOutlined as ReportIcon,
+  PaymentOutlined as ExternalPaymentIcon,
+  AccessTimeOutlined as ExpiredIcon,
+  InsertChartOutlinedRounded as StatisticsIcon,
+  LocationOnOutlined as RegionIcon
+} from '@mui/icons-material';
 
-const Navbar = () => {
+interface NavLinkGroup {
+  name: string;
+  path: string;
+  icon: React.ReactNode;
+  show: boolean;
+  children?: NavLink[];
+}
+
+interface NavLink {
+  name: string;
+  path: string;
+  icon?: React.ReactNode;
+  show: boolean;
+}
+
+const Navbar: React.FC = () => {
   const location = useLocation();
+  const theme = useTheme();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const user = useAppSelector(selectUser);
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
 
-  // Función para determinar si un link está activo
+  // Close mobile drawer on location change
+  useEffect(() => {
+    if (mobileOpen) {
+      setMobileOpen(false);
+    }
+  }, [location.pathname]);
+
+  // Function to determine if a path is active
   const isActive = (path: string) => {
-    return location.pathname.startsWith(path) ? 'font-medium text-blue-600' : 'text-gray-600 hover:text-blue-600';
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  // Links de navegación basados en el estado de autenticación
-  const navigationLinks = [
-    { name: 'Inicio', path: '/', show: true },
+  // Toggle submenu
+  const handleToggleSubmenu = (name: string) => {
+    setOpenSubmenus(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
+
+  // Handle keyboard navigation for submenus
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, name: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleToggleSubmenu(name);
+    }
+  };
+
+  // Navigation structure with grouping and submenus
+  const navigationGroups: NavLinkGroup[] = [
+    { 
+      name: 'Inicio', 
+      path: '/', 
+      icon: <HomeIcon />, 
+      show: true 
+    },
     { 
       name: 'Clientes', 
       path: '/clientes', 
+      icon: <PeopleIcon />, 
       show: isAuthenticated,
-      icon: <FaUsers className="mr-2" />
+      children: [
+        { name: 'Lista de Clientes', path: '/clientes', show: isAuthenticated },
+        { name: 'Nuevo Cliente', path: '/clientes/nuevo', show: isAuthenticated },
+        { name: 'Reportes de Clientes', path: '/reportes/clientes', show: isAuthenticated }
+      ]
     },
     { 
-      name: 'Reportes', 
-      path: '/reportes/clientes', 
+      name: 'Bancos', 
+      path: '/bancos', 
+      icon: <BankIcon />, 
+      show: isAuthenticated 
+    },
+    { 
+      name: 'Facturas', 
+      path: '/facturas', 
+      icon: <InvoiceIcon />, 
       show: isAuthenticated,
-      icon: <FaChartBar className="mr-2" /> 
+      children: [
+        { name: 'Lista de Facturas', path: '/facturas', show: isAuthenticated },
+      //  { name: 'Facturas Vencidas', path: '/facturas/vencidas', icon: <ExpiredIcon />, show: isAuthenticated }
+      ]
     },
     { 
       name: 'Cobranza', 
       path: '/cobranza', 
+      icon: <PaymentIcon />, 
       show: isAuthenticated,
-      icon: <FaFileInvoiceDollar className="mr-2" /> 
+      children: [
+        { name: 'Lista de Cobranza', path: '/cobranza', show: isAuthenticated },
+        { name: 'Reporte de Cobranza', path: '/cobranza/reportes', icon: <StatisticsIcon />, show: isAuthenticated },
+        { name: 'Reporte por Región', path: '/cobranza/reportes/region', icon: <RegionIcon />, show: isAuthenticated }
+      ]
+    },
+    {
+      name: 'Pagos Externos',
+      path: '/pagos-externos',
+      icon: <ExternalPaymentIcon />,
+      show: isAuthenticated,
+      children: [
+        { name: 'Lista de Pagos', path: '/pagos-externos', show: isAuthenticated },
+        { name: 'Nuevo Pago', path: '/pagos-externos/nuevo', show: isAuthenticated }
+      ]
+    },
+    { 
+      name: 'Reportes', 
+      path: '/reportes/clientes', 
+      icon: <ReportIcon />, 
+      show: isAuthenticated 
     },
   ];
 
-  return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo y links de navegación para desktop */}
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center">
-                <img
-                  className="h-8 w-auto"
-                  src="/logo.svg" // Ajusta la ruta a tu logo
-                  alt="Logo"
-                />
-                <span className="ml-2 text-xl font-bold text-gray-900">Del Valle</span>
-              </Link>
-            </div>
-            
-            {/* Links de navegación para desktop */}
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {navigationLinks
-                .filter(link => link.show)
-                .map(link => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 ${
-                      isActive(link.path)
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    } text-sm font-medium`}
-                  >
-                    {link.icon && <span className="hidden md:inline-block">{link.icon}</span>}
-                    {link.name}
-                  </Link>
-                ))}
-            </div>
-          </div>
-          
-          {/* Botones de autenticación y menú para desktop */}
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <AuthStatus />
-          </div>
-          
-          {/* Botón de hamburguesa para mobile */}
-          <div className="flex items-center sm:hidden">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <span className="sr-only">Abrir menú principal</span>
-              {/* Icono de menú */}
-              {!mobileMenuOpen ? (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Menú mobile */}
-      <div
-        className={`${mobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}
-        id="mobile-menu"
+  const drawer = (
+    <Box role="navigation" aria-label="Navegación principal">
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          p: 2
+        }}
       >
-        <div className="pt-2 pb-3 space-y-1">
-          {navigationLinks
-            .filter(link => link.show)
-            .map(link => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`flex items-center pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                  isActive(link.path)
-                    ? 'bg-blue-50 border-blue-500 text-blue-700'
-                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-                }`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.icon && <span>{link.icon}</span>}
-                {link.name}
-              </Link>
-            ))}
-        </div>
-        
-        {/* AuthStatus para mobile */}
-        <div className="pt-4 pb-3 border-t border-gray-200">
-          <div className="flex items-center px-4">
-            <AuthStatus className="w-full" />
-          </div>
-        </div>
-      </div>
-    </nav>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <img
+            src="/logo.svg"
+            alt="Logo Del Valle"
+            style={{ height: 32, width: 'auto' }}
+          />
+          <Typography variant="h6" color="primary" sx={{ ml: 1, fontWeight: 'bold' }}>
+            Del Valle
+          </Typography>
+        </Box>
+        {isMobile && (
+          <IconButton 
+            onClick={() => setMobileOpen(false)}
+            aria-label="Cerrar menú"
+            edge="end"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
+      </Box>
+      <Divider />
+      
+      {isAuthenticated && (
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Avatar 
+              alt={user?.name || 'Usuario'} 
+              src={user?.image || ''}
+              sx={{ width: 40, height: 40 }}
+            />
+            <Box sx={{ ml: 2 }}>
+              <Typography variant="subtitle1" noWrap>
+                {user?.name || 'Usuario'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {user?.email || ''}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      )}
+      <Divider />
+      
+      <List component="nav" aria-label="Menú principal">
+        {navigationGroups
+          .filter(group => group.show)
+          .map((group) => (
+            <React.Fragment key={group.path}>
+              {group.children ? (
+                <Box>
+                  <ListItemButton
+                    onClick={() => handleToggleSubmenu(group.name)}
+                    onKeyDown={(e) => handleKeyDown(e, group.name)}
+                    selected={isActive(group.path)}
+                    aria-expanded={openSubmenus[group.name]}
+                    sx={{
+                      borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
+                      backgroundColor: isActive(group.path) ? alpha (theme.palette.primary.main, 0.1) : 'transparent'
+                    }}
+                  >
+                    <ListItemIcon>
+                      {group.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={group.name} />
+                    {openSubmenus[group.name] ? <ExpandLess /> : <ExpandMore />}
+                  </ListItemButton>
+                  <Collapse in={openSubmenus[group.name]} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {group.children.filter(child => child.show).map((child) => (
+                        <ListItemButton
+                          key={child.path}
+                          component={RouterLink}
+                          to={child.path}
+                          selected={isActive(child.path)}
+                          sx={{ 
+                            pl: 4,
+                            borderLeft: isActive(child.path) ? `4px solid ${theme.palette.secondary.main}` : '4px solid transparent',
+                            backgroundColor: isActive(child.path) ? alpha(theme.palette.secondary.main, 0.1) : 'transparent'
+                          }}
+                        >
+                          <ListItemIcon>
+                            {child.icon || group.icon}
+                          </ListItemIcon>
+                          <ListItemText primary={child.name} />
+                        </ListItemButton>
+                      ))}
+                    </List>
+                  </Collapse>
+                </Box>
+              ) : (
+                <ListItemButton
+                  component={RouterLink}
+                  to={group.path}
+                  selected={isActive(group.path)}
+                  sx={{
+                    borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
+                    backgroundColor: isActive(group.path) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
+                  }}
+                >
+                  <ListItemIcon>
+                    {group.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={group.name} />
+                </ListItemButton>
+              )}
+            </React.Fragment>
+          ))}
+      </List>
+      {isMobile && (
+        <Box sx={{ p: 2, mt: 'auto' }}>
+          <AuthStatus />
+        </Box>
+      )}
+    </Box>
+  );
+
+  // Import alpha for transparency effects
+  
+
+  return (
+    <>
+      <AppBar 
+        position="fixed" 
+        color="default" 
+        elevation={1} 
+        sx={{ 
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: 'white'
+        }}
+      >
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="Abrir menú"
+            edge="start"
+            onClick={() => setMobileOpen(true)}
+            sx={{ mr: 2, display: { md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+          
+          <RouterLink to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <img
+              src="/logo.svg"
+              alt="Logo Del Valle"
+              style={{ height: 32, width: 'auto' }}
+            />
+            <Typography variant="h6" color="primary" sx={{ ml: 1, fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
+              Del Valle
+            </Typography>
+          </RouterLink>
+          
+          {/* Desktop navigation */}
+          <Box sx={{ ml: 4, flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            {navigationGroups.filter(group => group.show).map((group) => {
+              const isGroupActive = isActive(group.path);
+              
+              return group.children ? (
+                <Box 
+                  key={group.path} 
+                  sx={{ 
+                    position: 'relative',
+                    display: 'inline-block',
+                    '&:hover .MuiBox-root': { 
+                      display: 'block' 
+                    }
+                  }}
+                >
+                  <Button
+                    component={RouterLink}
+                    to={group.path}
+                    color={isGroupActive ? 'primary' : 'inherit'}
+                    sx={{
+                      my: 2, 
+                      mx: 1,
+                      borderBottom: isGroupActive ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                      borderRadius: 0,
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                      }
+                    }}
+                    startIcon={group.icon}
+                    aria-haspopup="true"
+                  >
+                    {group.name}
+                  </Button>
+                  <Box 
+                    className="MuiBox-root"
+                    sx={{ 
+                      display: 'none',
+                      position: 'absolute', 
+                      zIndex: 1000,
+                      bgcolor: 'background.paper',
+                      boxShadow: 3,
+                      borderRadius: 1,
+                      width: 220,
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {group.children.filter(child => child.show).map(child => (
+                      <Button
+                        key={child.path}
+                        component={RouterLink}
+                        to={child.path}
+                        fullWidth
+                        startIcon={child.icon || group.icon}
+                        sx={{
+                          justifyContent: 'flex-start',
+                          textAlign: 'left',
+                          py: 1.5,
+                          color: isActive(child.path) ? 'primary.main' : 'text.primary',
+                          bgcolor: isActive(child.path) ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.04)
+                          }
+                        }}
+                      >
+                        {child.name}
+                      </Button>
+                    ))}
+                  </Box>
+                </Box>
+              ) : (
+                <Button
+                  key={group.path}
+                  component={RouterLink}
+                  to={group.path}
+                  color={isGroupActive ? 'primary' : 'inherit'}
+                  sx={{
+                    my: 2, 
+                    mx: 1,
+                    borderBottom: isGroupActive ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
+                    borderRadius: 0,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                    }
+                  }}
+                  startIcon={group.icon}
+                >
+                  {group.name}
+                </Button>
+              );
+            })}
+          </Box>
+          
+          {/* Auth status for desktop */}
+          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <AuthStatus />
+          </Box>
+        </Toolbar>
+      </AppBar>
+      
+      {/* Mobile drawer */}
+      {/* <Drawer
+        variant={isMobile ? "temporary" : "permanent"}
+        open={isMobile ? mobileOpen : true}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{
+          keepMounted: true // Better mobile performance
+        }}
+        sx={{
+          display: { xs: 'block', md: isMobile ? 'none' : 'block' },
+          '& .MuiDrawer-paper': { 
+            boxSizing: 'border-box', 
+            width: 280,
+            marginTop: '64px', // Adjust based on AppBar height
+            height: 'calc(100% - 64px)'
+          },
+        }}
+      >
+        {drawer}
+      </Drawer> */}
+      
+      {/* Add margin to content to accommodate fixed AppBar */}
+      <Toolbar />
+    </>
   );
 };
 
