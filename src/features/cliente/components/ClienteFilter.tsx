@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { FilterClienteDto } from '../types';
+import { useClienteFilters } from '../hooks/useClienteFilters';
 import { privateApi } from '../../../services/api';
 
 // Define default enum values in case API fails
@@ -24,11 +25,14 @@ const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters 
   const [filters, setFilters] = useState<FilterClienteDto>(initialFilters);
   const [sucursales, setSucursales] = useState<string[]>(DEFAULT_SUCURSALES);
   const [clasificaciones, setClasificaciones] = useState<string[]>(DEFAULT_CLASIFICACIONES);
-  const [loading, setLoading] = useState(false);
+  
+  // Use the cliente filters hook for filter options
+  const { filterOptions, isLoading: filterOptionsLoading } = useClienteFilters();
+  const [enumLoading, setEnumLoading] = useState(false);
 
   useEffect(() => {
     const fetchEnumValues = async () => {
-      setLoading(true);
+      setEnumLoading(true);
       try {
         // Try to fetch enum values from backend
         const response = await privateApi.get('/cliente/enums');
@@ -39,12 +43,14 @@ const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters 
       } catch (error) {
         console.log('Using default enum values for filters');
       } finally {
-        setLoading(false);
+        setEnumLoading(false);
       }
     };
     
     fetchEnumValues();
   }, []);
+
+  const loading = filterOptionsLoading || enumLoading;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -71,42 +77,60 @@ const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters 
             <label htmlFor="noCliente" className="block text-sm font-medium text-gray-700">
               No. Cliente
             </label>
-            <input
-              type="number"
+            <select
               name="noCliente"
               id="noCliente"
               value={filters.noCliente || ''}
               onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
+            >
+              <option value="">Todos</option>
+              {filterOptions.noClientes.map(noCliente => (
+                <option key={noCliente} value={noCliente}>
+                  {noCliente}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
             <label htmlFor="razonSocial" className="block text-sm font-medium text-gray-700">
               Razón Social
             </label>
-            <input
-              type="text"
+            <select
               name="razonSocial"
               id="razonSocial"
               value={filters.razonSocial || ''}
               onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
+            >
+              <option value="">Todas</option>
+              {filterOptions.razonSocial.map(razonSocial => (
+                <option key={razonSocial} value={razonSocial}>
+                  {razonSocial}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
             <label htmlFor="comercial" className="block text-sm font-medium text-gray-700">
               Nombre Comercial
             </label>
-            <input
-              type="text"
+            <select
               name="comercial"
               id="comercial"
               value={filters.comercial || ''}
               onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
+            >
+              <option value="">Todos</option>
+              {filterOptions.comercial.map(comercial => (
+                <option key={comercial} value={comercial}>
+                  {comercial}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
