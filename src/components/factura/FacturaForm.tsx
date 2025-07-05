@@ -2,13 +2,24 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import  Button from '../common/Button';
-import FormInput  from '../common/FormInput';
+import Button from '../common/Button';
+import FormInput from '../common/FormInput';
 import type { Factura, CreateFacturaDto, UpdateFacturaDto } from '../../features/factura/types';
 import { EstadoFactura } from '../../features/shared/enums';
 import ClienteFilterSelect from '../cliente/ClienteFilterSelect';
 import { addDays, format } from 'date-fns';
 import { useCliente } from '../../features/cliente/hooks/useCliente';
+import {
+  Box,
+  Paper,
+  Typography,
+  InputLabel,
+  FormControl,
+  Select,
+  MenuItem,
+  FormHelperText,
+  useTheme
+} from '@mui/material';
 
 // Schema de validación para el formulario
 const facturaSchema = z.object({
@@ -36,6 +47,7 @@ const FacturaForm: React.FC<FacturaFormProps> = ({
   isLoading = false,
   isEditing = false
 }) => {
+  const theme = useTheme();
   const today = new Date();
   const in30Days = addDays(today, 30);
   const { clientes } = useCliente();
@@ -72,21 +84,18 @@ const FacturaForm: React.FC<FacturaFormProps> = ({
   // Actualizar fecha de vencimiento cuando cambia la fecha de emisión
   useEffect(() => {
     if (emisionDate && !isEditing) {
-      const value= watch('noCliente'); // Asegurarse de que se actualice el valor
+      const value = watch('noCliente'); // Asegurarse de que se actualice el valor
       if(value != undefined) {
         const selectedCliente = clientes.find(cliente => cliente.noCliente === value);
         if (selectedCliente) {
-
           if(emisionDate && !isEditing) {
             const newVencimiento = addDays(new Date(emisionDate), selectedCliente.diasCredito || 30);
             setValue('fechaVencimiento', format(newVencimiento, 'yyyy-MM-dd'));
           }
         }
-      
       }
-
     }
-  }, [emisionDate, setValue, isEditing]);
+  }, [emisionDate, setValue, isEditing, watch, clientes]);
 
   const handleClienteChange = (value: number | undefined) => {
     setValue('noCliente', value);
@@ -102,7 +111,6 @@ const FacturaForm: React.FC<FacturaFormProps> = ({
       } else {
         setValue('concepto', '');
       }
-
     }
     
     console.log('Cliente seleccionado:', value);
@@ -124,83 +132,101 @@ const FacturaForm: React.FC<FacturaFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Número de Factura"
-          type="text"
-          {...register('noFactura')}
-          error={errors.noFactura?.message as string}
-          required
-          disabled={isLoading || isEditing}
-        />
+    <Box component="form" onSubmit={handleSubmit(onFormSubmit)} sx={{ 
+      '& > * + *': { mt: 3 }
+    }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <FormInput
+            label="Número de Factura"
+            type="text"
+            {...register('noFactura')}
+            error={errors.noFactura?.message as string}
+            required
+            disabled={isLoading || isEditing}
+          />
+        </Box>
         
-        <FormInput
-          label="Fecha de Emisión"
-          type="date"
-          {...register('emision')}
-          error={errors.emision?.message as string}
-          required
-          disabled={isLoading || isEditing}
-        />
+        <Box sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <FormInput
+            label="Fecha de Emisión"
+            type="date"
+            {...register('emision')}
+            error={errors.emision?.message as string}
+            required
+            disabled={isLoading || isEditing}
+          />
+        </Box>
         
-         <ClienteFilterSelect
-          label="Cliente"
-          value={watch('noCliente')}
-          onChange={handleClienteChange}
-          type="noCliente"
-          placeholder="Selecciona un cliente"
-          required
-          disabled={isLoading || isEditing}
-        />
+        <Box sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <ClienteFilterSelect
+            label="Cliente"
+            value={watch('noCliente')}
+            onChange={handleClienteChange}
+            type="noCliente"
+            placeholder="Selecciona un cliente"
+            required
+            disabled={isLoading || isEditing}
+          />
+        </Box>
         
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Estado <span className="text-red-600">*</span>
-          </label>
-          <select
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            {...register('estado')}
+        <Box sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <FormControl fullWidth error={!!errors.estado}>
+            <InputLabel id="estado-label">
+              Estado <span style={{ color: theme.palette.error.main }}>*</span>
+            </InputLabel>
+            <Select
+              labelId="estado-label"
+              label="Estado *"
+              {...register('estado')}
+              disabled={isLoading}
+              defaultValue={watch('estado')}
+            >
+              {Object.values(EstadoFactura).map(estado => (
+                <MenuItem key={estado} value={estado}>{estado}</MenuItem>
+              ))}
+            </Select>
+            {errors.estado && (
+              <FormHelperText>{errors.estado.message as string}</FormHelperText>
+            )}
+          </FormControl>
+        </Box>
+        
+        <Box sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <FormInput
+            label="Saldo"
+            type="number"
+            step="0.01"
+            {...register('saldo', { valueAsNumber: true })}
+            error={errors.saldo?.message as string}
+            required
             disabled={isLoading}
-          >
-            {Object.values(EstadoFactura).map(estado => (
-              <option key={estado} value={estado}>{estado}</option>
-            ))}
-          </select>
-          {errors.estado && (
-            <p className="mt-1 text-sm text-red-600">{errors.estado.message as string}</p>
-          )}
-        </div>
+          />
+        </Box>
         
+        <Box sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <FormInput
+            label="Fecha de Vencimiento"
+            type="date"
+            {...register('fechaVencimiento')}
+            error={errors.fechaVencimiento?.message as string}
+            required
+            disabled={isLoading}
+          />
+        </Box>
+      </Box>
+      
+      <Box sx={{ mt: 3 }}>
         <FormInput
-          label="Saldo"
-          type="number"
-          step="0.01"
-          {...register('saldo', { valueAsNumber: true })}
-          error={errors.saldo?.message as string}
+          label="Concepto"
+          {...register('concepto')}
+          error={errors.concepto?.message as string}
           required
           disabled={isLoading}
         />
-        
-        <FormInput
-          label="Fecha de Vencimiento"
-          type="date"
-          {...register('fechaVencimiento')}
-          error={errors.fechaVencimiento?.message as string}
-          required
-          disabled={isLoading}
-        />
-      </div>
+      </Box>
       
-      <FormInput
-        label="Concepto"
-        {...register('concepto')}
-        error={errors.concepto?.message as string}
-        required
-        disabled={isLoading}
-      />
-      
-      <div className="flex justify-end space-x-3 mt-6">
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
         <Button
           type="button"
           variant="outline"
@@ -216,8 +242,8 @@ const FacturaForm: React.FC<FacturaFormProps> = ({
         >
           {isEditing ? 'Actualizar' : 'Crear'} Factura
         </Button>
-      </div>
-    </form>
+      </Box>
+    </Box>
   );
 };
 

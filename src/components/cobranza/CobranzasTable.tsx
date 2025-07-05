@@ -1,8 +1,31 @@
 import React from 'react';
 import type { Cobranza } from '../../features/cobranza/types';
-import  Button  from '../common/Button';
+import Button from '../common/Button';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Chip,
+  IconButton,
+  Box,
+  Tooltip,
+  CircularProgress,
+  useTheme
+} from '@mui/material';
+import {
+  Visibility as VisibilityIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  AttachMoney as MoneyIcon,
+  AccountBalance as BankIcon
+} from '@mui/icons-material';
 
 interface CobranzasTableProps {
   cobranzas: Cobranza[];
@@ -23,19 +46,32 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
   showFactura = true,
   showCliente = true
 }) => {
+  const theme = useTheme();
+  
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        py: 8 
+      }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (cobranzas.length === 0) {
     return (
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6 text-center text-gray-500">
-        No hay pagos registrados
-      </div>
+      <Box sx={{ 
+        p: 6, 
+        textAlign: 'center',
+        color: 'text.secondary'
+      }}>
+        <Typography variant="body1">
+          No hay pagos registrados
+        </Typography>
+      </Box>
     );
   }
 
@@ -47,103 +83,148 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
     }).format(value);
   };
 
+  // Get payment type color
+  const getTipoPagoColor = (tipoPago: string) => {
+    switch (tipoPago) {
+      case 'TRANSFERENCIA':
+        return 'primary';
+      case 'EFECTIVO':
+        return 'success';
+      case 'CHEQUE':
+        return 'warning';
+      case 'TARJETA':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Fecha Pago
-            </th>
+    <TableContainer>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ fontWeight: 'medium' }}>ID</TableCell>
+            <TableCell sx={{ fontWeight: 'medium' }}>Fecha Pago</TableCell>
             {showFactura && (
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Factura
-              </th>
+              <TableCell sx={{ fontWeight: 'medium' }}>Factura</TableCell>
             )}
             {showCliente && (
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cliente
-              </th>
+              <TableCell sx={{ fontWeight: 'medium' }}>Cliente</TableCell>
             )}
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Monto
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Tipo de Pago
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Banco
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+            <TableCell align="right" sx={{ fontWeight: 'medium' }}>Monto</TableCell>
+            <TableCell sx={{ fontWeight: 'medium' }}>Tipo de Pago</TableCell>
+            <TableCell sx={{ fontWeight: 'medium' }}>Banco</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 'medium' }}>Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {cobranzas.map((cobranza) => (
-            <tr key={cobranza.id}>
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                {cobranza.id}
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                {format(new Date(cobranza.fechaPago), 'dd-MM-yyyy HH:mm', { locale: es })}
-              </td>
+            <TableRow 
+              key={cobranza.id}
+              hover
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell>
+                <Typography variant="body2">
+                  {cobranza.id}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2">
+                  {format(new Date(cobranza.fechaPago), 'dd-MM-yyyy HH:mm', { locale: es })}
+                </Typography>
+              </TableCell>
               {showFactura && (
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                  {cobranza.noFactura}
-                </td>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    label={cobranza.noFactura}
+                    color="default"
+                    variant="outlined"
+                  />
+                </TableCell>
               )}
               {showCliente && (
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                  {cobranza.noCliente} - {cobranza.nombreComercial}
-                </td>
+                <TableCell>
+                  <Box>
+                    <Typography variant="body2" fontWeight="medium">
+                      {cobranza.nombreComercial}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      #{cobranza.noCliente}
+                    </Typography>
+                  </Box>
+                </TableCell>
               )}
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
-                {formatCurrency(cobranza.total)}
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                {cobranza.tipoPago}
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                {cobranza.banco?.nombre || `Banco ${cobranza.bancoId}`}
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    size="sm"
-                    variant="info"
-                    onClick={() => onView(cobranza)}
-                  >
-                    Ver
-                  </Button>
+              <TableCell align="right">
+                <Typography variant="body2" fontWeight="medium" color="success.main">
+                  {formatCurrency(cobranza.total)}
+                </Typography>
+                {cobranza.montoDolares && (
+                  <Typography variant="caption" color="text.secondary">
+                    (${cobranza.montoDolares.toFixed(2)} USD)
+                  </Typography>
+                )}
+              </TableCell>
+              <TableCell>
+                <Chip
+                  size="small"
+                  label={cobranza.tipoPago}
+                  color={getTipoPagoColor(cobranza.tipoPago)}
+                  variant="outlined"
+                />
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <BankIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
+                  <Typography variant="body2">
+                    {cobranza.banco?.nombre || `Banco ${cobranza.bancoId}`}
+                  </Typography>
+                </Box>
+              </TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Tooltip title="Ver detalles">
+                    <IconButton
+                      size="small"
+                      color="info"
+                      onClick={() => onView(cobranza)}
+                    >
+                      <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  
                   {onEdit && (
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() => onEdit(cobranza)}
-                    >
-                      Editar
-                    </Button>
+                    <Tooltip title="Editar">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => onEdit(cobranza)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   )}
+                  
                   {onDelete && (
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() => onDelete(cobranza.id)}
-                    >
-                      Eliminar
-                    </Button>
+                    <Tooltip title="Eliminar">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => onDelete(cobranza.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   )}
-                </div>
-              </td>
-            </tr>
+                </Box>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

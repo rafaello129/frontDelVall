@@ -1,12 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import Button from '../../../components/common/Button';
-import FormInput from '../../../components/common/FormInput';
 import { TipoPago, Sucursal } from '../../shared/enums';
 import type { FilterCobranzaDto } from '../types';
 import { useBancos } from '../../banco/hooks/useBancos';
 import ClienteFilterSelect from '../../../components/cliente/ClienteFilterSelect';
 import FacturaFilterSelect from '../../../components/factura/FacturaFilterSelect';
+import {
+  Box,
+  Paper,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Collapse,
+  IconButton,
+  Divider,
+  InputAdornment,
+  useTheme
+} from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  Clear as ClearIcon
+} from '@mui/icons-material';
+import Button from '../../../components/common/Button';
+import FormInput from '../../../components/common/FormInput';
 
 interface CobranzasFilterProps {
   initialFilters: FilterCobranzaDto;
@@ -19,6 +41,7 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
   onFilterChange,
   className = '',
 }) => {
+  const theme = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const { bancos, getAllBancos, isLoading: bancosLoading } = useBancos();
   const { control, register, handleSubmit, reset, setValue, watch } = useForm<FilterCobranzaDto>({
@@ -92,7 +115,7 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
       cleanedData.razonSocial = data.razonSocial.trim();
     }
     
-    if (data.sucursal ) {
+    if (data.sucursal) {
       cleanedData.sucursal = data.sucursal;
     }
     
@@ -150,274 +173,289 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 mb-6 ${className}`}>
-      <div 
-        className="px-4 py-3 border-b border-gray-200 flex justify-between items-center cursor-pointer"
+    <Paper 
+      elevation={1} 
+      sx={{
+        mb: 3,
+        borderRadius: 2,
+        overflow: 'hidden',
+        border: '1px solid',
+        borderColor: 'divider'
+      }}
+      className={className}
+    >
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: 'background.paper',
+          cursor: 'pointer',
+          borderBottom: isExpanded ? `1px solid ${theme.palette.divider}` : 'none'
+        }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h3 className="font-medium text-gray-700">Filtros de Búsqueda</h3>
-        <Button 
-          variant="light"
-          size="sm"
-          rightIcon={
-            <svg 
-              className={`h-5 w-5 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          }
+        <Typography 
+          variant="subtitle1" 
+          fontWeight="medium" 
+          sx={{ display: 'flex', alignItems: 'center' }}
         >
-          {isExpanded ? 'Ocultar' : 'Mostrar'}
-        </Button>
-      </div>
+          <FilterListIcon sx={{ mr: 1 }} />
+          Filtros de Búsqueda
+        </Typography>
+        <IconButton size="small">
+          {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
+      </Box>
 
-      {isExpanded && (
-        <div className="p-4">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Fecha Rango */}
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha de Pago
-                </label>
-                <div className="flex space-x-2">
-                  <Controller
-                    name="fechaDesde"
-                    control={control}
-                    render={({ field }) => (
-                      <FormInput
-                        type="date"
-                        placeholder="Desde"
-                        {...field}
-                        value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                        onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
-                        containerClassName="w-full"
-                        inputClassName="text-sm"
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="fechaHasta"
-                    control={control}
-                    render={({ field }) => (
-                      <FormInput
-                        type="date"
-                        placeholder="Hasta"
-                        {...field}
-                        value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                        onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
-                        containerClassName="w-full"
-                        inputClassName="text-sm"
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-              
-              {/* Cliente Selector */}
-              <div className="col-span-1">
-                <ClienteFilterSelect
-                  label="Cliente"
-                  value={selectedClienteId}
-                  onChange={handleClienteChange}
-                  type="noCliente"
-                  placeholder="Buscar por nombre o número"
+      <Collapse in={isExpanded}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {/* Fecha Rango */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <Typography variant="body2" fontWeight="medium" color="text.secondary" sx={{ mb: 1 }}>
+                Fecha de Pago
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Controller
+                  name="fechaDesde"
+                  control={control}
+                  render={({ field }) => (
+                    <FormInput
+                      type="date"
+                      placeholder="Desde"
+                      {...field}
+                      value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                      onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                      containerClassName="w-full"
+                      inputClassName="text-sm"
+                    />
+                  )}
                 />
-              </div>
-              
-              {/* Factura Selector */}
-              <div className="col-span-1">
-                <FacturaFilterSelect
-                  label="Factura"
-                  value={selectedFacturaId}
-                  onChange={handleFacturaChange}
-                  noCliente={selectedClienteId}
-                  showOnlyPendientes={false}
-                  placeholder="Buscar factura"
+                <Controller
+                  name="fechaHasta"
+                  control={control}
+                  render={({ field }) => (
+                    <FormInput
+                      type="date"
+                      placeholder="Hasta"
+                      {...field}
+                      value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                      onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                      containerClassName="w-full"
+                      inputClassName="text-sm"
+                    />
+                  )}
                 />
-              </div>
-              
-              {/* Tipo de Pago */}
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo de Pago
-                </label>
-                <select 
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              </Box>
+            </Box>
+            
+            {/* Cliente Selector */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <ClienteFilterSelect
+                label="Cliente"
+                value={selectedClienteId}
+                onChange={handleClienteChange}
+                type="noCliente"
+                placeholder="Buscar por nombre o número"
+              />
+            </Box>
+            
+            {/* Factura Selector */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <FacturaFilterSelect
+                label="Factura"
+                value={selectedFacturaId}
+                onChange={handleFacturaChange}
+                noCliente={selectedClienteId}
+                showOnlyPendientes={false}
+                placeholder="Buscar factura"
+              />
+            </Box>
+            
+            {/* Tipo de Pago */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="tipo-pago-label">Tipo de Pago</InputLabel>
+                <Select
+                  labelId="tipo-pago-label"
+                  label="Tipo de Pago"
                   {...register('tipoPago')}
                 >
-                  <option value="">Todos</option>
+                  <MenuItem value="">Todos</MenuItem>
                   {Object.values(TipoPago).map((tipo) => (
-                    <option key={tipo} value={tipo}>{tipo}</option>
+                    <MenuItem key={tipo} value={tipo}>{tipo}</MenuItem>
                   ))}
-                </select>
-              </div>
-              
-              {/* Sucursal */}
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sucursal
-                </label>
-                <select 
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                </Select>
+              </FormControl>
+            </Box>
+            
+            {/* Sucursal */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="sucursal-label">Sucursal</InputLabel>
+                <Select
+                  labelId="sucursal-label"
+                  label="Sucursal"
                   {...register('sucursal')}
                 >
-                  <option value="">Todas</option>
+                  <MenuItem value="">Todas</MenuItem>
                   {Object.values(Sucursal).map((sucursal) => (
-                    <option key={sucursal} value={sucursal}>{sucursal.replace('_', ' ')}</option>
+                    <MenuItem key={sucursal} value={sucursal}>
+                      {sucursal.replace('_', ' ')}
+                    </MenuItem>
                   ))}
-                </select>
-              </div>
-              
-              {/* Banco */}
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Banco
-                </label>
-                <select 
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                </Select>
+              </FormControl>
+            </Box>
+            
+            {/* Banco */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="banco-label">Banco</InputLabel>
+                <Select
+                  labelId="banco-label"
+                  label="Banco"
                   {...register('bancoId')}
                   disabled={bancosLoading}
                 >
-                  <option value="">Todos</option>
+                  <MenuItem value="">Todos</MenuItem>
                   {bancos.map((banco) => (
-                    <option key={banco.id} value={banco.id}>{banco.nombre}</option>
+                    <MenuItem key={banco.id} value={banco.id}>
+                      {banco.nombre}
+                    </MenuItem>
                   ))}
-                </select>
-              </div>
-              
-              {/* Monto Rango */}
-              <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Monto
-                </label>
-                <div className="flex space-x-2">
-                  <Controller
-                    name="montoMinimo"
-                    control={control}
-                    defaultValue={undefined}
-                    render={({ field }) => (
-                      <FormInput
-                        type="number"
-                        step="0.01"
-                        placeholder="Mínimo"
-                        {...field}
-                        value={field.value === undefined ? "" : field.value}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? undefined : parseFloat(value));
-                        }}
-                        containerClassName="w-full"
-                        inputClassName="text-sm"
-                        leftIcon={<span>$</span>}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="montoMaximo"
-                    control={control}
-                    defaultValue={undefined}
-                    render={({ field }) => (
-                      <FormInput
-                        type="number"
-                        step="0.01"
-                        placeholder="Máximo"
-                        {...field}
-                        value={field.value === undefined ? "" : field.value}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value === "" ? undefined : parseFloat(value));
-                        }}
-                        containerClassName="w-full"
-                        inputClassName="text-sm"
-                        leftIcon={<span>$</span>}
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-              
-              {/* Opciones de Ordenamiento */}
-              <div className="col-span-1 flex space-x-2">
-                <div className="w-2/3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ordenar por
-                  </label>
-                  <select 
-                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    {...register('sortBy')}
-                  >
-                    <option value="fechaPago">Fecha de Pago</option>
-                    <option value="id">ID</option>
-                    <option value="noFactura">Núm. Factura</option>
-                    <option value="noCliente">Núm. Cliente</option>
-                    <option value="total">Monto</option>
-                    <option value="tipoPago">Tipo de Pago</option>
-                  </select>
-                </div>
-                <div className="w-1/3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Orden
-                  </label>
-                  <select 
-                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    {...register('order')}
-                  >
-                    <option value="desc">Descendente</option>
-                    <option value="asc">Ascendente</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Registros por página */}
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Registros por página
-                </label>
-                <select 
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                </Select>
+              </FormControl>
+            </Box>
+            
+            {/* Monto Rango */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <Typography variant="body2" fontWeight="medium" color="text.secondary" sx={{ mb: 1 }}>
+                Monto
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Controller
+                  name="montoMinimo"
+                  control={control}
+                  defaultValue={undefined}
+                  render={({ field }) => (
+                    <TextField
+                      placeholder="Mínimo"
+                      type="number"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                      }}
+                      {...field}
+                      value={field.value === undefined ? "" : field.value}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === "" ? undefined : parseFloat(value));
+                      }}
+                    />
+                  )}
+                />
+                <Controller
+                  name="montoMaximo"
+                  control={control}
+                  defaultValue={undefined}
+                  render={({ field }) => (
+                    <TextField
+                      placeholder="Máximo"
+                      type="number"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                      }}
+                      {...field}
+                      value={field.value === undefined ? "" : field.value}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === "" ? undefined : parseFloat(value));
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+            </Box>
+            
+            {/* Opciones de Ordenamiento */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' }, display: 'flex', gap: 1 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="sort-by-label">Ordenar por</InputLabel>
+                <Select
+                  labelId="sort-by-label"
+                  label="Ordenar por"
+                  {...register('sortBy')}
+                >
+                  <MenuItem value="fechaPago">Fecha de Pago</MenuItem>
+                  <MenuItem value="id">ID</MenuItem>
+                  <MenuItem value="noFactura">Núm. Factura</MenuItem>
+                  <MenuItem value="noCliente">Núm. Cliente</MenuItem>
+                  <MenuItem value="total">Monto</MenuItem>
+                  <MenuItem value="tipoPago">Tipo de Pago</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl sx={{ minWidth: 120 }} size="small">
+                <InputLabel id="order-label">Orden</InputLabel>
+                <Select
+                  labelId="order-label"
+                  label="Orden"
+                  {...register('order')}
+                >
+                  <MenuItem value="desc">Descendente</MenuItem>
+                  <MenuItem value="asc">Ascendente</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            
+            {/* Registros por página */}
+            <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="limit-label">Registros por página</InputLabel>
+                <Select
+                  labelId="limit-label"
+                  label="Registros por página"
                   {...register('limit', {
                     valueAsNumber: true
                   })}
                 >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-              </div>
-              
-              {/* Include related data checkboxes */}
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={25}>25</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                  <MenuItem value={100}>100</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
 
-            </div>
+          <Divider sx={{ my: 2 }} />
 
-            <div className="mt-4 flex justify-end space-x-3">
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={handleReset}
-              >
-                Limpiar Filtros
-              </Button>
-              <Button 
-                type="submit"
-                variant="primary"
-                leftIcon={
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                }
-              >
-                Filtrar
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            <Button 
+              type="button"
+              variant="outline"
+              onClick={handleReset}
+              leftIcon={<ClearIcon />}
+            >
+              Limpiar Filtros
+            </Button>
+            <Button 
+              type="submit"
+              variant="primary"
+              leftIcon={<SearchIcon />}
+            >
+              Filtrar
+            </Button>
+          </Box>
+        </Box>
+      </Collapse>
+    </Paper>
   );
 };
 

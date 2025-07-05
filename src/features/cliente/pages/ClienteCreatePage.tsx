@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCliente } from '../hooks/useCliente';
 import { useTelefonoCliente } from '../../telefonoCliente/hooks/useTelefonoCliente';
@@ -7,21 +7,36 @@ import ClienteForm from '../components/ClienteForm';
 import type { CreateClienteDto, UpdateClienteDto } from '../types';
 import type { CreateCorreoDto } from '../../correoCliente/types';
 import type { CreateTelefonoDto } from '../../telefonoCliente/types';
-import { FaArrowLeft } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { 
+  Box, Typography, Breadcrumbs, Link as MuiLink,
+  Button, Alert, Divider, Snackbar, useTheme, CircularProgress
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  Home as HomeIcon,
+  People as PeopleIcon,
+  PersonAdd as PersonAddIcon
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
 
 const ClienteCreatePage: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { addCliente } = useCliente();
   const { addCorreo } = useCorreoCliente();
   const { addTelefono } = useTelefonoCliente();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Updated the parameter type to match what ClienteForm expects
   const handleSubmit = async (
     clienteData: CreateClienteDto | UpdateClienteDto,
     correos: CreateCorreoDto[],
     telefonos: CreateTelefonoDto[]
   ) => {
+    setSaving(true);
+    setError(null);
+    
     try {
       // We know this is a create operation, so we can cast it
       // The form will clean the data before sending it
@@ -54,32 +69,114 @@ const ClienteCreatePage: React.FC = () => {
       if (error.response?.data?.message) {
         // Check if it's an array of validation errors
         if (Array.isArray(error.response.data.message)) {
-          const errorMessages = error.response.data.message;
-          errorMessages.forEach((msg: string) => toast.error(msg));
+          const errorMessages = error.response.data.message.join(', ');
+          setError(errorMessages);
         } else {
-          toast.error(error.response.data.message);
+          setError(error.response.data.message);
         }
       } else {
-        toast.error(`Error al crear cliente: ${error.message || 'Error desconocido'}`);
+        setError(`Error al crear cliente: ${error.message || 'Error desconocido'}`);
       }
       console.error('Error al crear cliente:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-6 flex items-center">
-        <Link
-          to="/clientes"
-          className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-        >
-          <FaArrowLeft className="mr-2" /> Volver
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Crear Nuevo Cliente</h1>
-      </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Box p={3} maxWidth="lg" mx="auto">
+        {/* Breadcrumbs navigation */}
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+          <MuiLink 
+            component={Link} 
+            to="/" 
+            underline="hover" 
+            color="inherit"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            <HomeIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Inicio
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            to="/clientes"
+            underline="hover"
+            color="inherit"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            <PeopleIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Clientes
+          </MuiLink>
+          <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+            <PersonAddIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Crear Nuevo Cliente
+          </Typography>
+        </Breadcrumbs>
 
-      <ClienteForm onSubmit={handleSubmit} />
-    </div>
+        {/* Header with back button */}
+        <Box 
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: 3,
+            flexWrap: 'wrap',
+            gap: 2
+          }}
+        >
+          <Button
+            component={Link}
+            to="/clientes"
+            startIcon={<ArrowBackIcon />}
+            variant="outlined"
+          >
+            Volver
+          </Button>
+          <Typography variant="h5" component="h1" fontWeight="bold">
+            Crear Nuevo Cliente
+          </Typography>
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
+
+        {/* Error message if exists */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Box sx={{ position: 'relative' }}>
+          <ClienteForm onSubmit={handleSubmit} isSaving={saving} />
+          {saving && (
+            <Box 
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 1
+              }}
+            >
+              <CircularProgress size={60} thickness={4} />
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </motion.div>
   );
 };
 

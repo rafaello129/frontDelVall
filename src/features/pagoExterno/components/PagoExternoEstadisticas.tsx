@@ -56,6 +56,7 @@ import type { EstadisticaAgrupada, EstadisticasOptions } from '../types';
 import { formatCurrency } from '../../../utils/format';
 import { format, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PagoExternoExcelExport } from './PagoExternoExcelExport';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -257,18 +258,30 @@ export const PagoExternoEstadisticas: React.FC<PagoExternoEstadisticasProps> = (
       {/* Filtros */}
       <Card sx={{ mb: 3, borderRadius: 2, boxShadow: 3 }}>
         <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FilterAlt color="primary" sx={{ mr: 1.5 }} />
               <Typography variant="h6">Opciones de Análisis</Typography>
             </Box>
-            <Button 
-              size="small" 
-              onClick={() => setFiltersExpanded(!filtersExpanded)}
-              endIcon={filtersExpanded ? <BarChart /> : <FilterAlt />}
-            >
-              {filtersExpanded ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </Button>
+
+            {/* Export Button */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <PagoExternoExcelExport
+                estadisticasPorTipo={estadisticasPorTipo}
+                estadisticasPorSucursal={estadisticasPorSucursal}
+                estadisticasMetadata={estadisticasMetadata}
+                options={options}
+                disabled={isLoading}
+              />
+
+              <Button 
+                size="small" 
+                onClick={() => setFiltersExpanded(!filtersExpanded)}
+                endIcon={filtersExpanded ? <BarChart /> : <FilterAlt />}
+              >
+                {filtersExpanded ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+              </Button>
+            </Box>
           </Box>
 
           <Collapse in={filtersExpanded}>

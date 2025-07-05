@@ -1,19 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCliente } from '../hooks/useCliente';
 import ClienteForm from '../components/ClienteForm';
 import type { UpdateClienteDto } from '../types';
 import type { CreateCorreoDto } from '../../correoCliente/types';
 import type { CreateTelefonoDto } from '../../telefonoCliente/types';
-import { FaArrowLeft } from 'react-icons/fa';
-import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import { useCorreoCliente } from '../../correoCliente/hooks/useCorreoCliente';
 import { useTelefonoCliente } from '../../telefonoCliente/hooks/useTelefonoCliente';
-import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
+import { 
+  Box, Typography, Breadcrumbs, Link as MuiLink,
+  Button, CircularProgress, Alert, Paper, Divider,
+  useTheme
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  Home as HomeIcon,
+  People as PeopleIcon,
+  Edit as EditIcon
+} from '@mui/icons-material';
 
 const ClienteEditPage: React.FC = () => {
   const { noCliente } = useParams<{ noCliente: string }>();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const [saving, setSaving] = useState(false);
+  
   const { 
     selectedCliente,
     isLoading,
@@ -43,9 +55,10 @@ const ClienteEditPage: React.FC = () => {
   ) => {
     if (!noCliente || !selectedCliente) return;
     
+    setSaving(true);
     try {
       // Actualizar datos del cliente
-        delete clienteData.noCliente; // Asegurarse de no enviar el noCliente en la actualización
+      delete clienteData.noCliente; // Asegurarse de no enviar el noCliente en la actualización
       await editCliente(Number(noCliente), clienteData);
       
       // Gestionar correos
@@ -115,62 +128,150 @@ const ClienteEditPage: React.FC = () => {
       
       navigate(`/clientes/${noCliente}`);
     } catch (error: any) {
-      toast.error(`Error al actualizar cliente: ${error.message || 'Error desconocido'}`);
       console.error('Error al actualizar cliente:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+        <CircularProgress size={60} thickness={4} />
+      </Box>
+    );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">Error: {error}</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-center">
-          <Link
+      <Box p={3} maxWidth="lg" mx="auto">
+        <Alert 
+          severity="error" 
+          sx={{ mb: 3 }}
+          variant="filled"
+        >
+          {error}
+        </Alert>
+        
+        <Box display="flex" justifyContent="center">
+          <Button
+            component={Link}
             to="/clientes"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+            startIcon={<ArrowBackIcon />}
+            variant="contained"
+            color="primary"
           >
-            <FaArrowLeft className="mr-2" /> Volver a la lista de clientes
-          </Link>
-        </div>
-      </div>
+            Volver a la lista de clientes
+          </Button>
+        </Box>
+      </Box>
     );
   }
 
   if (!selectedCliente) {
-    return <LoadingSpinner />;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+        <CircularProgress size={60} thickness={4} />
+      </Box>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-6 flex items-center">
-        <Link
-          to={`/clientes/${noCliente}`}
-          className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-        >
-          <FaArrowLeft className="mr-2" /> Volver
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Editar Cliente: {selectedCliente.noCliente} - {selectedCliente.razonSocial}
-        </h1>
-      </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Box p={3} maxWidth="lg" mx="auto">
+        {/* Breadcrumbs navigation */}
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+          <MuiLink 
+            component={Link} 
+            to="/" 
+            underline="hover" 
+            color="inherit"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            <HomeIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Inicio
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            to="/clientes"
+            underline="hover"
+            color="inherit"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            <PeopleIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Clientes
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            to={`/clientes/${noCliente}`}
+            underline="hover"
+            color="inherit"
+          >
+            {selectedCliente.noCliente} - {selectedCliente.razonSocial}
+          </MuiLink>
+          <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+            <EditIcon fontSize="small" sx={{ mr: 0.5 }} />
+            Editar
+          </Typography>
+        </Breadcrumbs>
 
-      <ClienteForm cliente={selectedCliente} onSubmit={handleSubmit} isEdit={true} />
-    </div>
+        {/* Header with back button */}
+        <Box 
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: 3,
+            flexWrap: 'wrap',
+            gap: 2
+          }}
+        >
+          <Button
+            component={Link}
+            to={`/clientes/${noCliente}`}
+            startIcon={<ArrowBackIcon />}
+            variant="outlined"
+          >
+            Volver
+          </Button>
+          <Typography variant="h5" component="h1" fontWeight="bold">
+            Editar Cliente: {selectedCliente.noCliente} - {selectedCliente.razonSocial}
+          </Typography>
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
+
+        <Box sx={{ position: 'relative' }}>
+          <ClienteForm 
+            cliente={selectedCliente} 
+            onSubmit={handleSubmit} 
+            isEdit={true}
+            isSaving={saving}
+          />
+          {saving && (
+            <Box 
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 1
+              }}
+            >
+              <CircularProgress size={60} thickness={4} />
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </motion.div>
   );
 };
 

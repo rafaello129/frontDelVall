@@ -6,8 +6,36 @@ import CobranzaForm from '../../../components/cobranza/CobranzaForm';
 import Button from '../../../components/common/Button';
 import type { Cobranza, CreateCobranzaDto, FilterCobranzaDto, UpdateCobranzaDto } from '../types';
 import { useFacturas } from '../../factura/hooks/useFacturas';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Fade, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent,
+  DialogActions,
+  IconButton, 
+  Chip, 
+  useTheme,
+  Divider,
+  Alert,
+  Pagination,
+  Stack
+} from '@mui/material';
+import {
+  Close as CloseIcon,
+  Edit as EditIcon,
+  Receipt as ReceiptIcon,
+  Person as PersonIcon,
+  Payment as PaymentIcon,
+  EventNote as EventNoteIcon,
+  AccountBalance as AccountBalanceIcon,
+  AttachMoney as AttachMoneyIcon
+} from '@mui/icons-material';
 
 const CobranzasPage: React.FC = () => {
+  const theme = useTheme();
   const { 
     cobranzas,
     isLoading,
@@ -47,7 +75,8 @@ const CobranzasPage: React.FC = () => {
     });
   };
 
-  const handlePageChange = (newSkip: number) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    const newSkip = (page - 1) * filters.limit;
     setFilters(prevFilters => ({
       ...prevFilters,
       skip: newSkip
@@ -119,17 +148,32 @@ const CobranzasPage: React.FC = () => {
     }).format(value);
   };
 
+  // Calculate current page for pagination
+  const currentPage = Math.floor(filters.skip / filters.limit) + 1;
+  const totalPages = Math.ceil((cobranzas.length > 0 ? filters.limit * 2 : 0) / filters.limit); // Estimate for demo
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gestión de Cobranza</h1>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2, py: 4 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 3,
+        flexWrap: 'wrap',
+        gap: 2 
+      }}>
+        <Typography variant="h4" fontWeight="bold" color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+          <PaymentIcon sx={{ mr: 1 }} />
+          Gestión de Cobranza
+        </Typography>
         <Button 
           variant="primary"
           onClick={handleOpenCreateForm}
+          leftIcon={<AttachMoneyIcon />}
         >
           Registrar Nuevo Pago
         </Button>
-      </div>
+      </Box>
 
       {/* Filter Component */}
       <CobranzasFilter
@@ -138,152 +182,237 @@ const CobranzasPage: React.FC = () => {
       />
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
-        </div>
+        </Alert>
       )}
 
-      {/* Modal para formulario */}
-      {isFormOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">
-              {selectedCobranza ? 'Editar' : 'Registrar'} Pago
-            </h2>
-            <CobranzaForm
-              cobranza={selectedCobranza || undefined}
-              onSubmit={handleSubmit}
-              onCancel={handleCloseForm}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-      )}
+      {/* Main Content - Table */}
+      <Paper 
+        elevation={1}
+        sx={{ 
+          borderRadius: 2, 
+          overflow: 'hidden',
+          position: 'relative'
+        }}
+      >
+        <CobranzasTable
+          cobranzas={cobranzas}
+          onView={handleOpenViewDetails}
+          onEdit={handleOpenEditForm}
+          onDelete={handleDelete}
+          isLoading={isLoading}
+        />
 
-      {/* Modal para ver detalles */}
-      {isViewOpen && selectedCobranza && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-8 w-full max-w-2xl">
-            <h2 className="text-xl font-semibold mb-4">
-              Detalles del Pago #{selectedCobranza.id}
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Fecha de Pago</p>
-                <p className="font-medium">{new Date(selectedCobranza.fechaPago).toLocaleString()}</p>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Factura</p>
-                <p className="font-medium">#{selectedCobranza.noFactura}</p>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Cliente</p>
-                <p className="font-medium">#{selectedCobranza.noCliente} - {selectedCobranza.nombreComercial}</p>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Monto</p>
-                <p className="font-medium">{formatCurrency(selectedCobranza.total)}</p>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Tipo de Cambio</p>
-                <p className="font-medium">{selectedCobranza.tipoCambio}</p>
-              </div>
-              
-              {selectedCobranza.montoDolares && (
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Monto en USD</p>
-                  <p className="font-medium">${selectedCobranza.montoDolares.toFixed(2)}</p>
-                </div>
-              )}
-              
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Tipo de Pago</p>
-                <p className="font-medium">{selectedCobranza.tipoPago}</p>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Banco</p>
-                <p className="font-medium">{selectedCobranza.banco?.nombre || `Banco #${selectedCobranza.bancoId}`}</p>
-              </div>
-              
-              {selectedCobranza.referenciaPago && (
-                <div className="space-y-1 col-span-2">
-                  <p className="text-sm text-gray-500">Referencia de Pago</p>
-                  <p className="font-medium">{selectedCobranza.referenciaPago}</p>
-                </div>
-              )}
-              
-              {selectedCobranza.notas && (
-                <div className="space-y-1 col-span-2">
-                  <p className="text-sm text-gray-500">Notas</p>
-                  <p className="font-medium">{selectedCobranza.notas}</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleCloseView}
-              >
-                Cerrar
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  handleCloseView();
-                  handleOpenEditForm(selectedCobranza);
-                }}
-              >
-                Editar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <CobranzasTable
-        cobranzas={cobranzas}
-        onView={handleOpenViewDetails}
-        onEdit={handleOpenEditForm}
-        onDelete={handleDelete}
-        isLoading={isLoading}
-      />
-      
-      {/* Paginación mejorada */}
-      {cobranzas.length > 0 && (
-        <div className="mt-4 flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-600">
+        {/* Pagination */}
+        {cobranzas.length > 0 && (
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            p: 2,
+            borderTop: 1,
+            borderColor: 'divider'
+          }}>
+            <Typography variant="body2" color="text.secondary">
               Mostrando {filters.skip + 1} - {filters.skip + cobranzas.length} resultados
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(Math.max(0, filters.skip - filters.limit))}
-              disabled={filters.skip === 0 || isLoading}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(filters.skip + filters.limit)}
-              disabled={cobranzas.length < filters.limit || isLoading}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+            </Typography>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              size="medium"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        )}
+      </Paper>
+
+      {/* Form Dialog */}
+      <Dialog
+        open={isFormOpen}
+        onClose={handleCloseForm}
+        fullWidth
+        maxWidth="md"
+        scroll="paper"
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+          <Typography variant="h6">
+            {selectedCobranza ? 'Editar' : 'Registrar'} Pago
+          </Typography>
+          <IconButton size="small" onClick={handleCloseForm} aria-label="close">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ pt: 2 }}>
+          <CobranzaForm
+            cobranza={selectedCobranza || undefined}
+            onSubmit={handleSubmit}
+            onCancel={handleCloseForm}
+            isLoading={isLoading}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Dialog */}
+      <Dialog
+        open={isViewOpen}
+        onClose={handleCloseView}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PaymentIcon fontSize="small" />
+            Detalles del Pago #{selectedCobranza?.id}
+          </Typography>
+          <IconButton size="small" onClick={handleCloseView} aria-label="close">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedCobranza && (
+            <Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    <EventNoteIcon fontSize="inherit" sx={{ mr: 0.5, verticalAlign: 'text-bottom' }} />
+                    Fecha de Pago
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {new Date(selectedCobranza.fechaPago).toLocaleString()}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    <ReceiptIcon fontSize="inherit" sx={{ mr: 0.5, verticalAlign: 'text-bottom' }} />
+                    Factura
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    #{selectedCobranza.noFactura}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    <PersonIcon fontSize="inherit" sx={{ mr: 0.5, verticalAlign: 'text-bottom' }} />
+                    Cliente
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    #{selectedCobranza.noCliente} - {selectedCobranza.nombreComercial}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    <AttachMoneyIcon fontSize="inherit" sx={{ mr: 0.5, verticalAlign: 'text-bottom' }} />
+                    Monto
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium" color="success.main">
+                    {formatCurrency(selectedCobranza.total)}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Tipo de Cambio
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {selectedCobranza.tipoCambio}
+                  </Typography>
+                </Box>
+                
+                {selectedCobranza.montoDolares && (
+                  <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Monto en USD
+                    </Typography>
+                    <Typography variant="body1" fontWeight="medium">
+                      ${selectedCobranza.montoDolares.toFixed(2)}
+                    </Typography>
+                  </Box>
+                )}
+                
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Tipo de Pago
+                  </Typography>
+                  <Chip 
+                    label={selectedCobranza.tipoPago} 
+                    size="small" 
+                    color="primary"
+                    variant="outlined"
+                  />
+                </Box>
+                
+                <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    <AccountBalanceIcon fontSize="inherit" sx={{ mr: 0.5, verticalAlign: 'text-bottom' }} />
+                    Banco
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {selectedCobranza.banco?.nombre || `Banco #${selectedCobranza.bancoId}`}
+                  </Typography>
+                </Box>
+                
+                {selectedCobranza.referenciaPago && (
+                  <Box sx={{ width: '100%' }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Referencia de Pago
+                    </Typography>
+                    <Typography variant="body1">
+                      {selectedCobranza.referenciaPago}
+                    </Typography>
+                  </Box>
+                )}
+                
+                {selectedCobranza.notas && (
+                  <Box sx={{ width: '100%' }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Notas
+                    </Typography>
+                    <Paper
+                      variant="outlined"
+                      sx={{ 
+                        p: 2, 
+                        backgroundColor: 'rgba(0,0,0,0.01)',
+                        mt: 0.5
+                      }}
+                    >
+                      <Typography variant="body2">
+                        {selectedCobranza.notas}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            variant="outline"
+            onClick={handleCloseView}
+          >
+            Cerrar
+          </Button>
+          <Button
+            variant="primary"
+            leftIcon={<EditIcon />}
+            onClick={() => {
+              handleCloseView();
+              if (selectedCobranza) handleOpenEditForm(selectedCobranza);
+            }}
+          >
+            Editar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

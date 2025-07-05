@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Paper, Typography, Box, TextField, Autocomplete, MenuItem,
+  FormControl, InputLabel, Select, Button, Chip,
+  InputAdornment, Divider, useTheme, alpha, Stack
+} from '@mui/material';
+import {
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  Close as CloseIcon,
+  BusinessCenter as BusinessIcon,
+  Person as PersonIcon,
+  LocationOn as LocationIcon,
+  VerifiedUser as VerifiedUserIcon
+} from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useClienteFilters } from '../hooks/useClienteFilters';
+import { clienteEnumsService } from '../clienteEnumsService';
 import type { FilterClienteDto } from '../types';
-import { privateApi } from '../../../services/api';
-
-// Define default enum values in case API fails
-const DEFAULT_SUCURSALES = [
- "ACAPULCO", 
-  "BLUELINE",
-  "CABOS",
-  "CANCUN",
- "TEPAPULCO",
-  "VALLARTA",
-   "YUCATAN",
-];
-
-const DEFAULT_CLASIFICACIONES = ['AAA', 'AA', 'A', 'B', 'C', 'D'];
 
 interface ClienteFilterProps {
   onFilter: (filters: FilterClienteDto) => void;
@@ -21,33 +24,51 @@ interface ClienteFilterProps {
 }
 
 const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters = {} }) => {
+  const theme = useTheme();
   const [filters, setFilters] = useState<FilterClienteDto>(initialFilters);
-  const [sucursales, setSucursales] = useState<string[]>(DEFAULT_SUCURSALES);
-  const [clasificaciones, setClasificaciones] = useState<string[]>(DEFAULT_CLASIFICACIONES);
-  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+  const [sucursales, setSucursales] = useState<string[]>([]);
+  const [clasificaciones, setClasificaciones] = useState<string[]>([]);
+  const [enumsLoading, setEnumsLoading] = useState(false);
+  const [activeFilterCount, setActiveFilterCount] = useState(0);
 
+  // Use the hook to get filter options
+  const { filterOptions, isLoading, reloadFilterOptions } = useClienteFilters();
+
+  // Type-safe access to filter options
+  const safeFilterOptions = {
+    noClientes: (filterOptions.noClientes || []) as number[],
+    razonSocial: (filterOptions.razonSocial || []) as string[],
+    comercial: (filterOptions.comercial || []) as string[]
+  };
+
+  // Fetch enum values from the service
   useEffect(() => {
     const fetchEnumValues = async () => {
-      setLoading(true);
+      setEnumsLoading(true);
       try {
-        // Try to fetch enum values from backend
-        const response = await privateApi.get('/cliente/enums');
-        if (response.data) {
-          if (response.data.sucursales) setSucursales(response.data.sucursales);
-          if (response.data.clasificaciones) setClasificaciones(response.data.clasificaciones);
-        }
+        const enums = await clienteEnumsService.getEnums();
+        setSucursales(enums.sucursales);
+        setClasificaciones(enums.clasificaciones);
       } catch (error) {
-        console.log('Using default enum values for filters');
+        console.log('Error fetching enum values:', error);
       } finally {
-        setLoading(false);
+        setEnumsLoading(false);
       }
     };
     
     fetchEnumValues();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  // Count active filters for badge
+  useEffect(() => {
+    const count = Object.values(filters).filter(value => 
+      value !== undefined && value !== null && value !== ''
+    ).length;
+    setActiveFilterCount(count);
+  }, [filters]);
+
+  const handleChange = (name: string, value: any) => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
@@ -62,130 +83,273 @@ const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters 
     onFilter(resetFilters);
   };
 
+  const isFilterActive = (key: string) => {
+    return filters[key as keyof FilterClienteDto] !== undefined && 
+           filters[key as keyof FilterClienteDto] !== null &&
+           filters[key as keyof FilterClienteDto] !== '';
+  };
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow mb-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">Filtros</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="noCliente" className="block text-sm font-medium text-gray-700">
-              No. Cliente
-            </label>
-            <input
-              type="number"
-              name="noCliente"
-              id="noCliente"
-              value={filters.noCliente || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="razonSocial" className="block text-sm font-medium text-gray-700">
-              Razón Social
-            </label>
-            <input
-              type="text"
-              name="razonSocial"
-              id="razonSocial"
-              value={filters.razonSocial || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="comercial" className="block text-sm font-medium text-gray-700">
-              Nombre Comercial
-            </label>
-            <input
-              type="text"
-              name="comercial"
-              id="comercial"
-              value={filters.comercial || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="sucursal" className="block text-sm font-medium text-gray-700">
-              Sucursal
-            </label>
-            <select
-              name="sucursal"
-              id="sucursal"
-              value={filters.sucursal || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="">Todas</option>
-              {sucursales.map(sucursal => (
-                <option key={sucursal} value={sucursal}>
-                  {sucursal.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-              Estado
-            </label>
-            <select
-              name="status"
-              id="status"
-              value={filters.status || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="">Todos</option>
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-              <option value="Suspendido">Suspendido</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="clasificacion" className="block text-sm font-medium text-gray-700">
-              Clasificación
-            </label>
-            <select
-              name="clasificacion"
-              id="clasificacion"
-              value={filters.clasificacion || ''}
-              onChange={handleChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="">Todas</option>
-              {clasificaciones.map(clasificacion => (
-                <option key={clasificacion} value={clasificacion}>
-                  {clasificacion}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="mt-4 flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Paper 
+        elevation={2}
+        sx={{
+          p: 3,
+          mb: 4,
+          borderRadius: 2,
+          background: `linear-gradient(to right bottom, ${alpha(theme.palette.background.paper, 0.9)}, ${theme.palette.background.paper})`,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+          }
+        }}
+      >
+    
+        {/* Filter Form */}
+        {expanded && (
+          <motion.form 
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.2 }}
           >
-            Limpiar
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            {loading ? 'Cargando...' : 'Filtrar'}
-          </button>
-        </div>
-      </form>
-    </div>
+            <Box sx={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: 3
+            }}>
+              {/* No. Cliente */}
+              <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: '45%', md: '30%' } }}>
+                <Autocomplete
+                  id="noCliente"
+                  options={safeFilterOptions.noClientes}
+                  freeSolo
+                  value={filters.noCliente || null}
+                  onChange={(_, newValue) => handleChange('noCliente', newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="No. Cliente"
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PersonIcon color={isFilterActive('noCliente') ? 'primary' : 'action'} />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+
+              {/* Razón Social */}
+              <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: '45%', md: '30%' } }}>
+                <Autocomplete
+                  id="razonSocial"
+                  options={safeFilterOptions.razonSocial}
+                  freeSolo
+                  value={filters.razonSocial || null}
+                  onChange={(_, newValue) => handleChange('razonSocial', newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Razón Social"
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <BusinessIcon color={isFilterActive('razonSocial') ? 'primary' : 'action'} />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+
+              {/* Nombre Comercial */}
+              <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: '45%', md: '30%' } }}>
+                <Autocomplete
+                  id="comercial"
+                  options={safeFilterOptions.comercial}
+                  freeSolo
+                  value={filters.comercial || null}
+                  onChange={(_, newValue) => handleChange('comercial', newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Nombre Comercial"
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <BusinessIcon color={isFilterActive('comercial') ? 'primary' : 'action'} />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+
+              {/* Sucursal */}
+              <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: '45%', md: '30%' } }}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="sucursal-label">Sucursal</InputLabel>
+                  <Select
+                    labelId="sucursal-label"
+                    id="sucursal"
+                    value={filters.sucursal || ''}
+                    onChange={(e) => handleChange('sucursal', e.target.value)}
+                    label="Sucursal"
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <LocationIcon color={isFilterActive('sucursal') ? 'primary' : 'action'} />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>Todas</em>
+                    </MenuItem>
+                    {sucursales.map(sucursal => (
+                      <MenuItem key={sucursal} value={sucursal}>
+                        {sucursal.replace('_', ' ')}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {/* Estado */}
+              <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: '45%', md: '30%' } }}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="status-label">Estado</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    id="status"
+                    value={filters.status || ''}
+                    onChange={(e) => handleChange('status', e.target.value)}
+                    label="Estado"
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <VerifiedUserIcon color={isFilterActive('status') ? 'primary' : 'action'} />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>Todos</em>
+                    </MenuItem>
+                    <MenuItem value="Activo">Activo</MenuItem>
+                    <MenuItem value="Inactivo">Inactivo</MenuItem>
+                    <MenuItem value="Suspendido">Suspendido</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {/* Clasificación */}
+              <Box sx={{ flexGrow: 1, flexBasis: { xs: '100%', sm: '45%', md: '30%' } }}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="clasificacion-label">Clasificación</InputLabel>
+                  <Select
+                    labelId="clasificacion-label"
+                    id="clasificacion"
+                    value={filters.clasificacion || ''}
+                    onChange={(e) => handleChange('clasificacion', e.target.value)}
+                    label="Clasificación"
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <FilterListIcon color={isFilterActive('clasificacion') ? 'primary' : 'action'} />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>Todas</em>
+                    </MenuItem>
+                    {clasificaciones.map(clasificacion => (
+                      <MenuItem key={clasificacion} value={clasificacion}>
+                        {clasificacion}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+
+            {/* Active Filters Display */}
+            {activeFilterCount > 0 && (
+              <Box mt={3} display="flex" flexWrap="wrap" gap={1}>
+                {Object.entries(filters).map(([key, value]) => {
+                  if (value !== undefined && value !== null && value !== '') {
+                    return (
+                      <motion.div
+                        key={key}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Chip
+                          label={`${key}: ${value}`}
+                          onDelete={() => handleChange(key, '')}
+                          color="primary"
+                          variant="outlined"
+                          size="small"
+                          sx={{ m: 0.5 }}
+                        />
+                      </motion.div>
+                    );
+                  }
+                  return null;
+                })}
+              </Box>
+            )}
+
+            {/* Action Buttons */}
+            <Stack 
+              direction="row" 
+              spacing={2} 
+              justifyContent="flex-end" 
+              mt={3}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleReset}
+                startIcon={<CloseIcon />}
+                disabled={isLoading || enumsLoading}
+              >
+                Limpiar
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                startIcon={<SearchIcon />}
+                disabled={isLoading || enumsLoading}
+              >
+                {isLoading || enumsLoading ? 'Cargando...' : 'Buscar'}
+              </Button>
+            </Stack>
+          </motion.form>
+        )}
+      </Paper>
+    </motion.div>
   );
 };
 

@@ -2,8 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCliente } from '../hooks/useCliente';
 import type { Cliente, FilterClienteDto } from '../types';
-import LoadingSpinner from '../../../components/common/LoadingSpinner';
-import { FaEdit, FaEye, FaTrashAlt } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Box, Paper, Typography, Table, TableBody, TableCell, 
+  TableContainer, TableHead, TableRow, IconButton, 
+  Chip, Tooltip, Dialog, DialogActions, DialogContent, 
+  DialogContentText, DialogTitle, Button, Pagination,
+  useTheme, CircularProgress, Alert, TableFooter,
+  Fade, alpha
+} from '@mui/material';
+import { 
+  Edit as EditIcon, 
+  Visibility as VisibilityIcon, 
+  Delete as DeleteIcon,
+  ArrowDropDown as ArrowDropDownIcon
+} from '@mui/icons-material';
+
+// Create a motion-enhanced version of TableRow
+const MotionTableRow = motion(TableRow);
 
 interface ClienteListProps {
   filters?: FilterClienteDto;
@@ -16,6 +32,7 @@ const ClienteList: React.FC<ClienteListProps> = ({
   onDelete, 
   showActions = true 
 }) => {
+  const theme = useTheme();
   const { 
     clientes, 
     pagination, 
@@ -27,203 +44,384 @@ const ClienteList: React.FC<ClienteListProps> = ({
   } = useCliente();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clienteToDelete, setClienteToDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string>('razonSocial');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     loadClientes();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, sortColumn, sortOrder]);
 
   const loadClientes = () => {
     const skip = (currentPage - 1) * pagination.limit;
-    getAllClientes({ ...filters, skip, limit: pagination.limit });
+    getAllClientes({ 
+      ...filters, 
+      skip, 
+      limit: pagination.limit,
+      sortBy: sortColumn,
+      order: sortOrder
+    });
   };
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
   };
 
-  const handleDelete = async (noCliente: number) => {
-    try {
-      await removeCliente(noCliente);
-      if (onDelete) onDelete(noCliente);
-      loadClientes();
-    } catch (error) {
-      console.error('Error al eliminar cliente:', error);
-    } finally {
-      setConfirmDelete(null);
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortOrder('asc');
     }
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  const openDeleteDialog = (noCliente: number) => {
+    setClienteToDelete(noCliente);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!clienteToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await removeCliente(clienteToDelete);
+      if (onDelete) onDelete(clienteToDelete);
+      // Check if we should go to a previous page
+      if (clientes.length === 1 && currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        loadClientes();
+      }
+    } catch (error) {
+      console.error('Error al eliminar cliente:', error);
+    } finally {
+      setDeleteDialogOpen(false);
+      setClienteToDelete(null);
+      setIsDeleting(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Activo':
+        return {
+          color: 'success',
+          bgcolor: alpha(theme.palette.success.main, 0.8)
+        };
+      case 'Suspendido':
+        return {
+          color: 'warning',
+          bgcolor: alpha(theme.palette.warning.main, 0.8)
+        };
+      default:
+        return {
+          color: 'error',
+          bgcolor: alpha(theme.palette.error.main, 0.8)
+        };
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
   
-  if (error) return <div className="text-red-500">Error: {error}</div>;
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mb: 3 }}>
+        {error}
+      </Alert>
+    );
+  }
 
   if (clientes.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md text-center">
-        <p className="text-gray-600">No se encontraron clientes con los filtros aplicados.</p>
-      </div>
+      <Fade in timeout={500}>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary">
+            No se encontraron clientes con los filtros aplicados.
+          </Typography>
+        </Paper>
+      </Fade>
     );
   }
 
   const totalPages = Math.ceil(pagination.total / pagination.limit);
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                No. Cliente
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Razón Social
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre Comercial
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Sucursal
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              {showActions && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {clientes.map((cliente) => (
-              <tr key={cliente.noCliente} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {cliente.noCliente}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {cliente.razonSocial}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {cliente.comercial || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {cliente.sucursal || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${cliente.status === 'Activo' ? 'bg-green-100 text-green-800' : 
-                      cliente.status === 'Suspendido' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-red-100 text-red-800'}`}
+    <Fade in timeout={300}>
+      <Box sx={{ mb: 4 }}>
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            borderRadius: 2,
+            overflow: 'hidden',
+            '& .MuiTableRow-root:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.04)
+            }
+          }}
+        >
+          <TableContainer>
+            <Table size="medium">
+              <TableHead>
+                <TableRow sx={{ bgcolor: theme.palette.background.default }}>
+                  <TableCell 
+                    onClick={() => handleSort('noCliente')}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
                   >
-                    {cliente.status}
-                  </span>
-                </td>
-                {showActions && (
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {confirmDelete === cliente.noCliente ? (
-                      <div className="flex justify-end items-center space-x-2">
-                        <span className="text-gray-500 text-xs">¿Confirmar?</span>
-                        <button
-                          onClick={() => handleDelete(cliente.noCliente)}
-                          className="text-red-600 hover:text-red-900 text-xs"
-                        >
-                          Sí
-                        </button>
-                        <button
-                          onClick={() => setConfirmDelete(null)}
-                          className="text-gray-600 hover:text-gray-900 text-xs"
-                        >
-                          No
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex justify-end space-x-2">
-                        <Link
-                          to={`/clientes/${cliente.noCliente}`}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Ver detalles"
-                        >
-                          <FaEye />
-                        </Link>
-                        <Link
-                          to={`/clientes/${cliente.noCliente}/editar`}
-                          className="text-green-600 hover:text-green-900"
-                          title="Editar"
-                        >
-                          <FaEdit />
-                        </Link>
-                        <button
-                          onClick={() => setConfirmDelete(cliente.noCliente)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar"
-                        >
-                          <FaTrashAlt />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      No. Cliente
+                      {sortColumn === 'noCliente' && (
+                        <ArrowDropDownIcon 
+                          sx={{ 
+                            transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s'
+                          }} 
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell 
+                    onClick={() => handleSort('razonSocial')}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      Razón Social
+                      {sortColumn === 'razonSocial' && (
+                        <ArrowDropDownIcon 
+                          sx={{ 
+                            transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s'
+                          }} 
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell 
+                    onClick={() => handleSort('comercial')}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      Nombre Comercial
+                      {sortColumn === 'comercial' && (
+                        <ArrowDropDownIcon 
+                          sx={{ 
+                            transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s'
+                          }} 
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell 
+                    onClick={() => handleSort('sucursal')}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      Sucursal
+                      {sortColumn === 'sucursal' && (
+                        <ArrowDropDownIcon 
+                          sx={{ 
+                            transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s'
+                          }} 
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell 
+                    onClick={() => handleSort('status')}
+                    sx={{ 
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      Estado
+                      {sortColumn === 'status' && (
+                        <ArrowDropDownIcon 
+                          sx={{ 
+                            transform: sortOrder === 'desc' ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s'
+                          }} 
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                  {showActions && (
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                      Acciones
+                    </TableCell>
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <AnimatePresence>
+                  {clientes.map((cliente, index) => (
+                    <MotionTableRow
+                      key={cliente.noCliente}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ 
+                        duration: 0.3,
+                        delay: index * 0.05 // Stagger animation
+                      }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {cliente.noCliente}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {cliente.razonSocial}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {cliente.comercial || '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {cliente.sucursal || '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={cliente.status}
+                          size="small"
+                          color={getStatusColor(cliente.status).color as any}
+                          sx={{
+                            fontWeight: 500,
+                            bgcolor: getStatusColor(cliente.status).bgcolor
+                          }}
+                        />
+                      </TableCell>
+                      {showActions && (
+                        <TableCell align="right">
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <Tooltip title="Ver detalles">
+                              <IconButton
+                                component={Link}
+                                to={`/clientes/${cliente.noCliente}`}
+                                color="info"
+                                size="small"
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Editar">
+                              <IconButton
+                                component={Link}
+                                to={`/clientes/${cliente.noCliente}/editar`}
+                                color="primary"
+                                size="small"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Eliminar">
+                              <IconButton
+                                color="error"
+                                size="small"
+                                onClick={() => openDeleteDialog(cliente.noCliente)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      )}
+                    </MotionTableRow>
+                  ))}
+                </AnimatePresence>
+              </TableBody>
+              {totalPages > 1 && (
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={showActions ? 6 : 5} sx={{ py: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Mostrando {(currentPage - 1) * pagination.limit + 1} a{' '}
+                          {Math.min(currentPage * pagination.limit, pagination.total)}{' '}
+                          de {pagination.total} resultados
+                        </Typography>
+                        <Pagination 
+                          count={totalPages} 
+                          page={currentPage}
+                          onChange={handlePageChange}
+                          color="primary"
+                          showFirstButton
+                          showLastButton
+                          size="small"
+                        />
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              )}
+            </Table>
+          </TableContainer>
+        </Paper>
 
-      {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Mostrando <span className="font-medium">{(currentPage - 1) * pagination.limit + 1}</span> a{' '}
-              <span className="font-medium">
-                {Math.min(currentPage * pagination.limit, pagination.total)}
-              </span>{' '}
-              de <span className="font-medium">{pagination.total}</span> resultados
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 border rounded ${
-                  currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-blue-600 hover:bg-blue-50'
-                }`}
-              >
-                Anterior
-              </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 border rounded ${
-                    currentPage === i + 1
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-blue-600 hover:bg-blue-50'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 border rounded ${
-                  currentPage === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-blue-600 hover:bg-blue-50'
-                }`}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        {/* Delete confirmation dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Confirmar eliminación
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              ¿Está seguro de que desea eliminar este cliente? Esta acción no se puede deshacer.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleDelete} 
+              color="error" 
+              variant="contained"
+              disabled={isDeleting}
+              startIcon={isDeleting && <CircularProgress size={16} />}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </Fade>
   );
 };
 

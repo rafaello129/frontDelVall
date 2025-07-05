@@ -1,14 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useFacturas } from '../../factura/hooks/useFacturas';
 import type { FacturaPendiente } from '../types';
-import { Link } from 'react-router-dom';
-import LoadingSpinner from '../../../components/common/LoadingSpinner';
+import { 
+  Box, Paper, TableContainer, Table, TableHead, TableRow, 
+  TableCell, TableBody, TableFooter, CircularProgress,
+  Alert, Button, Chip, IconButton, Tooltip, useTheme,
+  Typography
+} from '@mui/material';
+import { 
+  Visibility as VisibilityIcon,
+  Payment as PaymentIcon,
+  Warning as WarningIcon
+} from '@mui/icons-material';
 
 interface FacturasPendientesTableProps {
   noCliente: number;
 }
 
 const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCliente }) => {
+  const theme = useTheme();
   const { getFacturasPendientesPorCliente } = useFacturas();
   const [facturas, setFacturas] = useState<FacturaPendiente[]>([]);
   const [totalSaldo, setTotalSaldo] = useState(0);
@@ -21,9 +32,12 @@ const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCli
       setError(null);
       try {
         const response = await getFacturasPendientesPorCliente(noCliente);
-        console.log(response)
-        setFacturas(response.payload.data);
-        setTotalSaldo(response.payload.totalSaldo);
+        // Fix for the data structure - adjust according to actual API response
+        if (response.payload) {
+          setFacturas(response.payload.data || []);
+          setTotalSaldo(response.payload.totalSaldo || 0);
+        } 
+        console.log(response.payload)
       } catch (err: any) {
         setError(err.message || 'Error al obtener las facturas pendientes');
       } finally {
@@ -45,114 +59,147 @@ const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCli
     }).format(amount);
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={4}>
+        <CircularProgress size={40} thickness={4} />
+      </Box>
+    );
+  }
   
-  if (error) return <div className="text-red-500">Error: {error}</div>;
+  if (error) {
+    return (
+      <Alert 
+        severity="error" 
+        sx={{ mt: 2 }}
+      >
+        {error}
+      </Alert>
+    );
+  }
 
   if (facturas.length === 0) {
     return (
-      <div className="bg-white p-4 rounded-md shadow text-center">
-        <p className="text-gray-500">No hay facturas pendientes</p>
-      </div>
+      <Box textAlign="center" p={4} bgcolor={theme.palette.background.default} borderRadius={1}>
+        <Typography variant="body1" color="text.secondary">
+          No hay facturas pendientes para este cliente
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="mt-4">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                No. Factura
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Emisión
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Vencimiento
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Saldo
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Días Transcurridos
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {facturas.map((factura) => (
-              <tr key={factura.noFactura} className={factura.isVencida ? 'bg-red-50' : ''}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+    <TableContainer component={Paper} elevation={0} variant="outlined">
+      <Table size="small" aria-label="facturas pendientes">
+        <TableHead>
+          <TableRow sx={{ backgroundColor: theme.palette.action.hover }}>
+            <TableCell>No. Factura</TableCell>
+            <TableCell>Emisión</TableCell>
+            <TableCell>Vencimiento</TableCell>
+            <TableCell align="right">Total</TableCell>
+            <TableCell align="right">Saldo</TableCell>
+            <TableCell>Días</TableCell>
+            <TableCell>Estado</TableCell>
+            <TableCell align="center">Acciones</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {facturas.map((factura) => (
+            <TableRow 
+              key={factura.noFactura}
+              sx={factura.isVencida ? {
+                backgroundColor: theme.palette.mode === 'light' 
+                  ? alpha(theme.palette.error.light, 0.1)
+                  : alpha(theme.palette.error.dark, 0.2)
+              } : {}}
+            >
+              <TableCell component="th" scope="row">
+                <Typography variant="body2" fontWeight="medium">
                   {factura.noFactura}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(factura.emision)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(factura.fechaVencimiento)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatCurrency(factura.saldoCalculado)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatCurrency(factura.saldo)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                </Typography>
+              </TableCell>
+              <TableCell>{formatDate(factura.emision)}</TableCell>
+              <TableCell>{formatDate(factura.fechaVencimiento)}</TableCell>
+              <TableCell align="right">{formatCurrency(factura.montoTotal)}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                {formatCurrency(factura.saldo)}
+              </TableCell>
+              <TableCell>
+                <Box display="flex" alignItems="center" gap={1}>
                   {factura.diasTranscurridos}
                   {factura.isVencida && (
-                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Vencida
-                    </span>
+                    <Tooltip title="Factura vencida">
+                      <WarningIcon color="error" fontSize="small" />
+                    </Tooltip>
                   )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                    ${factura.isVencida ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                    {factura.isVencida ? 'Vencida' : 'Al día'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Link 
-                    to={`/facturas/${factura.noFactura}`} 
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    Ver
-                  </Link>
-                  <Link 
-                    to={`/cobranzas/nueva?factura=${factura.noFactura}`} 
-                    className="text-green-600 hover:text-green-900"
-                  >
-                    Registrar pago
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="bg-gray-50">
-              <td colSpan={4} className="px-6 py-4 text-sm font-medium text-gray-900 text-right">
-                Total Saldo:
-              </td>
-              <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Chip 
+                  label={factura.isVencida ? 'Vencida' : 'Al día'}
+                  size="small"
+                  color={factura.isVencida ? 'error' : 'success'}
+                />
+              </TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Tooltip title="Ver factura">
+                    <IconButton 
+                      component={Link} 
+                      to={`/facturas/${factura.noFactura}`}
+                      size="small"
+                      color="info"
+                    >
+                      <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Registrar pago">
+                    <IconButton 
+                      component={Link} 
+                      to={`/cobranzas/nueva?factura=${factura.noFactura}`}
+                      size="small"
+                      color="success"
+                    >
+                      <PaymentIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow sx={{ 
+            backgroundColor: theme.palette.action.hover,
+            '& .MuiTableCell-root': { 
+              fontWeight: 'bold',
+              py: 1.5
+            }
+          }}>
+            <TableCell colSpan={3} align="right">
+              Total Saldo:
+            </TableCell>
+            <TableCell align="right" colSpan={2}>
+              <Typography variant="subtitle2" color="primary.main">
                 {formatCurrency(totalSaldo)}
-              </td>
-              <td colSpan={3}></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
+              </Typography>
+            </TableCell>
+            <TableCell colSpan={3}></TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    </TableContainer>
   );
+};
+
+// Add the missing alpha function
+const alpha = (color: string, opacity: number): string => {
+  // Simple implementation that assumes color is in hex format
+  // For a real app, you might want to use a proper color library
+  if (color.startsWith('#')) {
+    return color + Math.round(opacity * 255).toString(16).padStart(2, '0');
+  }
+  return color;
 };
 
 export default FacturasPendientesTable;

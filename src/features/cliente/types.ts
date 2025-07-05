@@ -97,7 +97,7 @@ export interface Cliente {
     noCliente: number;
     emision: Date;
     fechaVencimiento: Date;
-    saldoCalculado: number;
+    montoTotal: number;
     saldo: number;
     diasTranscurridos: number;
     diasRestantes: number;
