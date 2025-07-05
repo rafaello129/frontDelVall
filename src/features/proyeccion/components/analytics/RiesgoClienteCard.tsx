@@ -6,7 +6,7 @@ import {
   Typography, 
   Box, 
   Divider, 
-  Grid,
+  Stack,
   LinearProgress,
   Paper,
   List,
@@ -113,21 +113,24 @@ export const RiesgoClienteCard: React.FC<RiesgoClienteCardProps> = ({
             <LinearProgress sx={{ width: '50%' }} />
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            {/* Nivel de Riesgo - Feature Box */}
-            <Grid item xs={12} md={4}>
-              <Paper 
-                elevation={3} 
-                sx={{ 
-                  p: 2, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: '100%',
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${getNivelRiesgoColor(evaluacionRiesgo.evaluacionRiesgo.nivelRiesgo)}22 100%)`
-                }}
-              >
+          <Stack spacing={3}>
+            {/* Risk level and radar chart */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              {/* Nivel de Riesgo - Feature Box */}
+              <Box flex={{ xs: 1, md: 0.4 }}>
+                <Paper 
+                  elevation={3} 
+                  sx={{ 
+                    p: 3, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '100%',
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${getNivelRiesgoColor(evaluacionRiesgo.evaluacionRiesgo.nivelRiesgo)}22 100%)`
+                  }}
+                >
                 {getNivelRiesgoIcon(evaluacionRiesgo.evaluacionRiesgo.nivelRiesgo)}
                 <Typography variant="h6" align="center" gutterBottom mt={1}>
                   Nivel de Riesgo: 
@@ -164,16 +167,16 @@ export const RiesgoClienteCard: React.FC<RiesgoClienteCardProps> = ({
                     }}
                   />
                 </Box>
-              </Paper>
-            </Grid>
-            
-            {/* Radar Chart */}
-            <Grid item xs={12} md={8}>
-              <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Análisis de Riesgo
-                </Typography>
-                <Box height={220}>
+                </Paper>
+              </Box>
+              
+              {/* Radar Chart */}
+              <Box flex={{ xs: 1, md: 0.6 }}>
+                <Paper elevation={3} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+                    Análisis de Riesgo
+                  </Typography>
+                  <Box height={220}>
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart outerRadius="70%" data={radarData}>
                       <PolarGrid />
@@ -190,121 +193,124 @@ export const RiesgoClienteCard: React.FC<RiesgoClienteCardProps> = ({
                   </ResponsiveContainer>
                 </Box>
               </Paper>
-            </Grid>
+            </Box>
+            </Stack>
 
-            {/* Probabilidades */}
-            <Grid item xs={12} md={6}>
-              <Paper elevation={2} sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <Insights color="primary" />
-                  <Typography variant="subtitle1">Probabilidades de Riesgo</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <Box mb={2}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2">Probabilidad de Retraso</Typography>
-                    <Typography variant="body2" fontWeight="bold">
-                      {evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso.toFixed(1)}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso}
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: theme.palette.grey[200],
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: 
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 66 ? theme.palette.error.main :
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 33 ? theme.palette.warning.main :
-                          theme.palette.success.main
-                      }
-                    }}
-                  />
-                </Box>
-                
-                <Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2">Probabilidad de Incumplimiento</Typography>
-                    <Typography variant="body2" fontWeight="bold">
-                      {evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento.toFixed(1)}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento}
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: theme.palette.grey[200],
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: 
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 66 ? theme.palette.error.main :
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 33 ? theme.palette.warning.main :
-                          theme.palette.success.main
-                      }
-                    }}
-                  />
-                </Box>
-              </Paper>
-            </Grid>
-            
-            {/* Factores de riesgo */}
-            <Grid item xs={12} md={6}>
-              <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <MoneyOff color="error" />
-                  <Typography variant="subtitle1">Factores de Riesgo</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <Box display="flex" flexWrap="wrap" gap={1}>
-                  {evaluacionRiesgo.evaluacionRiesgo.factoresRiesgo.map((factor, index) => (
-                    <Chip 
-                      key={index} 
-                      label={factor} 
-                      color="error" 
-                      variant="outlined" 
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              </Paper>
-            </Grid>
-
-            {/* Recomendaciones */}
-            <Grid item xs={12}>
-              <Paper elevation={2} sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <Lightbulb color="warning" />
-                  <Typography variant="subtitle1">Recomendaciones de Acción</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <List dense>
-                  {evaluacionRiesgo.recomendacionesAccion.map((recomendacion, index) => (
-                    <ListItem key={index}>
-                      <ListItemIcon>
-                        {recomendacion.includes('INMEDIATA') ? (
-                          <Error color="error" fontSize="small" />
-                        ) : (
-                          <Insights color="primary" fontSize="small" />
-                        )}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={recomendacion} 
-                        primaryTypographyProps={{ 
-                          fontWeight: recomendacion.includes('INMEDIATA') ? 'bold' : 'normal'
-                        }} 
+            {/* Risk probabilities and factors */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              {/* Probabilidades */}
+              <Box flex={1}>
+                <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <Insights color="primary" />
+                    <Typography variant="subtitle1" fontWeight="medium">Probabilidades de Riesgo</Typography>
+                  </Stack>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Stack spacing={2}>
+                    <Box>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+                        <Typography variant="body2">Probabilidad de Retraso</Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          {evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso.toFixed(1)}%
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso}
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          bgcolor: theme.palette.grey[200],
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: 
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 66 ? theme.palette.error.main :
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 33 ? theme.palette.warning.main :
+                              theme.palette.success.main
+                          }
+                        }}
                       />
+                    </Box>
+                    
+                    <Box>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+                        <Typography variant="body2">Probabilidad de Incumplimiento</Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          {evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento.toFixed(1)}%
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento}
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          bgcolor: theme.palette.grey[200],
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: 
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 66 ? theme.palette.error.main :
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 33 ? theme.palette.warning.main :
+                              theme.palette.success.main
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Box>
+            
+              {/* Factores de riesgo */}
+              <Box flex={1}>
+                <Paper elevation={2} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <MoneyOff color="error" />
+                    <Typography variant="subtitle1" fontWeight="medium">Factores de Riesgo</Typography>
+                  </Stack>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {evaluacionRiesgo.evaluacionRiesgo.factoresRiesgo.map((factor, index) => (
+                      <Chip 
+                        key={index} 
+                        label={factor} 
+                        color="error" 
+                        variant="outlined" 
+                        size="small"
+                      />
+                    ))}
+                  </Box>
+                </Paper>
+              </Box>
+            </Stack>
+            {/* Recomendaciones */}
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <Lightbulb color="warning" />
+                <Typography variant="subtitle1" fontWeight="medium">Recomendaciones de Acción</Typography>
+              </Stack>
+              <Divider sx={{ mb: 2 }} />
+              
+              <List dense>
+                {evaluacionRiesgo.recomendacionesAccion.map((recomendacion, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      {recomendacion.includes('INMEDIATA') ? (
+                        <Error color="error" fontSize="small" />
+                      ) : (
+                        <Insights color="primary" fontSize="small" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={recomendacion} 
+                      primaryTypographyProps={{ 
+                        fontWeight: recomendacion.includes('INMEDIATA') ? 'bold' : 'normal'
+                      }} 
+                    />
                     </ListItem>
                   ))}
                 </List>
               </Paper>
-            </Grid>
-          </Grid>
+            </Stack>
         )}
       </CardContent>
     </Card>

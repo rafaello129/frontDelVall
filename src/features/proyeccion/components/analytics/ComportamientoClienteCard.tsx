@@ -7,7 +7,7 @@ import {
   Box, 
   Divider, 
   Chip,
-  Grid,
+  Stack,
   LinearProgress,
   Paper,
   List,
@@ -109,91 +109,94 @@ export const ComportamientoClienteCard: React.FC<ComportamientoClienteCardProps>
             <LinearProgress sx={{ width: '50%' }} />
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            {/* Main metrics */}
-            <Grid item xs={12} md={4}>
-              <Paper 
-                elevation={3}
-                sx={{ 
-                  p: 2, 
-                  height: '100%',
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${getRiesgoColor(comportamiento.riesgo)}22 100%)`
-                }}
-              >
-                <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
-                  {getRiesgoIcon(comportamiento.riesgo)}
-                  <Typography variant="h6" gutterBottom>
-                    Nivel de Riesgo: <strong style={{ color: getRiesgoColor(comportamiento.riesgo) }}>
-                      {comportamiento.riesgo.toUpperCase()}
-                    </strong>
-                  </Typography>
-                  
-                  <Box width="100%" mt={2}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Tasa de Puntualidad
+          <Stack spacing={3}>
+            {/* Main metrics and chart */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              {/* Risk metrics */}
+              <Box flex={{ xs: 1, md: 0.4 }}>
+                <Paper 
+                  elevation={3}
+                  sx={{ 
+                    p: 3, 
+                    height: '100%',
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${getRiesgoColor(comportamiento.riesgo)}22 100%)`
+                  }}
+                >
+                  <Stack spacing={2} alignItems="center">
+                    {getRiesgoIcon(comportamiento.riesgo)}
+                    <Typography variant="h6" textAlign="center">
+                      Nivel de Riesgo: <strong style={{ color: getRiesgoColor(comportamiento.riesgo) }}>
+                        {comportamiento.riesgo.toUpperCase()}
+                      </strong>
                     </Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={comportamiento.historialPagos.tasaPuntualidad} 
-                        sx={{ 
-                          height: 10, 
-                          borderRadius: 5, 
-                          flexGrow: 1,
-                          bgcolor: theme.palette.grey[300],
-                          '& .MuiLinearProgress-bar': {
-                            bgcolor: comportamiento.historialPagos.tasaPuntualidad > 75 
-                              ? theme.palette.success.main 
-                              : comportamiento.historialPagos.tasaPuntualidad > 50 
-                                ? theme.palette.warning.main 
-                                : theme.palette.error.main
-                          }
-                        }}
-                      />
-                      <Typography variant="body2" fontWeight="bold">
-                        {comportamiento.historialPagos.tasaPuntualidad.toFixed(1)}%
+                    
+                    <Box width="100%">
+                      <Typography variant="subtitle2" gutterBottom>
+                        Tasa de Puntualidad
                       </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={comportamiento.historialPagos.tasaPuntualidad} 
+                          sx={{ 
+                            height: 10, 
+                            borderRadius: 5, 
+                            flexGrow: 1,
+                            bgcolor: theme.palette.grey[300],
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: comportamiento.historialPagos.tasaPuntualidad > 75 
+                                ? theme.palette.success.main 
+                                : comportamiento.historialPagos.tasaPuntualidad > 50 
+                                  ? theme.palette.warning.main 
+                                  : theme.palette.error.main
+                            }
+                          }}
+                        />
+                        <Typography variant="body2" fontWeight="bold">
+                          {comportamiento.historialPagos.tasaPuntualidad.toFixed(1)}%
+                        </Typography>
+                      </Stack>
                     </Box>
-                  </Box>
-                  
-                  <Box width="100%" mt={2}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Éxito de Proyecciones
-                    </Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={comportamiento.tasaExitoProyecciones} 
-                        sx={{ 
-                          height: 10, 
-                          borderRadius: 5, 
-                          flexGrow: 1,
-                          bgcolor: theme.palette.grey[300],
-                          '& .MuiLinearProgress-bar': {
-                            bgcolor: comportamiento.tasaExitoProyecciones > 75 
-                              ? theme.palette.success.main 
-                              : comportamiento.tasaExitoProyecciones > 50 
-                                ? theme.palette.warning.main 
-                                : theme.palette.error.main
-                          }
-                        }}
-                      />
-                      <Typography variant="body2" fontWeight="bold">
-                        {comportamiento.tasaExitoProyecciones.toFixed(1)}%
+                    
+                    <Box width="100%">
+                      <Typography variant="subtitle2" gutterBottom>
+                        Éxito de Proyecciones
                       </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={comportamiento.tasaExitoProyecciones} 
+                          sx={{ 
+                            height: 10, 
+                            borderRadius: 5, 
+                            flexGrow: 1,
+                            bgcolor: theme.palette.grey[300],
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: comportamiento.tasaExitoProyecciones > 75 
+                                ? theme.palette.success.main 
+                                : comportamiento.tasaExitoProyecciones > 50 
+                                  ? theme.palette.warning.main 
+                                  : theme.palette.error.main
+                            }
+                          }}
+                        />
+                        <Typography variant="body2" fontWeight="bold">
+                          {comportamiento.tasaExitoProyecciones.toFixed(1)}%
+                        </Typography>
+                      </Stack>
                     </Box>
-                  </Box>
-                </Box>
-              </Paper>
-            </Grid>
+                  </Stack>
+                </Paper>
+              </Box>
 
-            {/* Chart */}
-            <Grid item xs={12} md={8}>
-              <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Comportamiento de Pagos y Proyecciones
-                </Typography>
-                <Box height={220}>
+              {/* Chart */}
+              <Box flex={{ xs: 1, md: 0.6 }}>
+                <Paper elevation={3} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+                    Comportamiento de Pagos y Proyecciones
+                  </Typography>
+                  <Box height={220}>
                   <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart 
                       cx="50%" 
@@ -220,147 +223,161 @@ export const ComportamientoClienteCard: React.FC<ComportamientoClienteCardProps>
                   </ResponsiveContainer>
                 </Box>
               </Paper>
-            </Grid>
+            </Box>
+            </Stack>
 
-            {/* Historical metrics */}
-            <Grid item xs={12} md={6}>
-              <Paper elevation={2} sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <BarChart color="primary" />
-                  <Typography variant="subtitle1">Historial de Pagos</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Total de pagos
-                    </Typography>
-                    <Typography variant="h6">
-                      {comportamiento.historialPagos.totalPagos}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Monto total
-                    </Typography>
-                    <Typography variant="h6">
-                      ${comportamiento.historialPagos.montoTotal.toLocaleString('es-MX')}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Monto promedio
-                    </Typography>
-                    <Typography variant="h6">
-                      ${comportamiento.historialPagos.montoPromedio.toLocaleString('es-MX')}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Días retraso promedio
-                    </Typography>
-                    <Typography variant="h6">
-                      {comportamiento.historialPagos.diasRetrasoPromedio.toFixed(1)} días
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-
-            {/* Proyecciones metrics */}
-            <Grid item xs={12} md={6}>
-              <Paper elevation={2} sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <PieChart color="primary" />
-                  <Typography variant="subtitle1">Proyecciones</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Proyecciones creadas
-                    </Typography>
-                    <Typography variant="h6">
-                      {comportamiento.proyeccionesCreadas}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Proyecciones cumplidas
-                    </Typography>
-                    <Box display="flex" alignItems="center" gap={0.5}>
-                      <Typography variant="h6">
-                        {comportamiento.proyeccionesCumplidas}
+            {/* Historical and projection metrics */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              {/* Historical metrics */}
+              <Box flex={1}>
+                <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <BarChart color="primary" />
+                    <Typography variant="subtitle1" fontWeight="medium">Historial de Pagos</Typography>
+                  </Stack>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: 2
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Total de pagos
                       </Typography>
-                      <Chip 
-                        label={`${comportamiento.tasaExitoProyecciones.toFixed(0)}%`}
-                        size="small"
-                        color={
-                          comportamiento.tasaExitoProyecciones > 75 
-                            ? 'success' 
-                            : comportamiento.tasaExitoProyecciones > 50 
-                              ? 'warning' 
-                              : 'error'
-                        }
-                      />
+                      <Typography variant="h6" fontWeight="bold">
+                        {comportamiento.historialPagos.totalPagos}
+                      </Typography>
                     </Box>
-                  </Grid>
-                  <Grid item xs={12}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Monto total
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        ${comportamiento.historialPagos.montoTotal.toLocaleString('es-MX')}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Monto promedio
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        ${comportamiento.historialPagos.montoPromedio.toLocaleString('es-MX')}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Días retraso promedio
+                      </Typography>
+                      <Typography variant="h6" fontWeight="bold">
+                        {comportamiento.historialPagos.diasRetrasoPromedio.toFixed(1)} días
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Paper>
+              </Box>
+
+              {/* Proyecciones metrics */}
+              <Box flex={1}>
+                <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <PieChart color="primary" />
+                    <Typography variant="subtitle1" fontWeight="medium">Proyecciones</Typography>
+                  </Stack>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <Stack spacing={2}>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 2
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          Proyecciones creadas
+                        </Typography>
+                        <Typography variant="h6" fontWeight="bold">
+                          {comportamiento.proyeccionesCreadas}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          Proyecciones cumplidas
+                        </Typography>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography variant="h6" fontWeight="bold">
+                            {comportamiento.proyeccionesCumplidas}
+                          </Typography>
+                          <Chip 
+                            label={`${comportamiento.tasaExitoProyecciones.toFixed(0)}%`}
+                            size="small"
+                            color={
+                              comportamiento.tasaExitoProyecciones > 75 
+                                ? 'success' 
+                                : comportamiento.tasaExitoProyecciones > 50 
+                                  ? 'warning' 
+                                  : 'error'
+                            }
+                          />
+                        </Stack>
+                      </Box>
+                    </Box>
+                    
                     <Box 
-                      display="flex" 
-                      alignItems="center" 
-                      gap={1}
                       sx={{
                         bgcolor: theme.palette.background.default,
-                        p: 1,
+                        p: 2,
                         borderRadius: 1
                       }}
                     >
-                      {comportamiento.tasaExitoProyecciones > comportamiento.historialPagos.tasaPuntualidad ? (
-                        <>
-                          <ArrowUpward color="success" />
-                          <Typography variant="body2">
-                            Tendencia de mejora en cumplimiento de proyecciones
-                          </Typography>
-                        </>
-                      ) : (
-                        <>
-                          <ArrowDownward color="error" />
-                          <Typography variant="body2">
-                            Tendencia de deterioro en cumplimiento de proyecciones
-                          </Typography>
-                        </>
-                      )}
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        {comportamiento.tasaExitoProyecciones > comportamiento.historialPagos.tasaPuntualidad ? (
+                          <>
+                            <ArrowUpward color="success" />
+                            <Typography variant="body2">
+                              Tendencia de mejora en cumplimiento de proyecciones
+                            </Typography>
+                          </>
+                        ) : (
+                          <>
+                            <ArrowDownward color="error" />
+                            <Typography variant="body2">
+                              Tendencia de deterioro en cumplimiento de proyecciones
+                            </Typography>
+                          </>
+                        )}
+                      </Stack>
                     </Box>
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
+                  </Stack>
+                </Paper>
+              </Box>
+            </Stack>
 
             {/* Recommendations */}
-            <Grid item xs={12}>
-              <Paper elevation={2} sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <Lightbulb color="warning" />
-                  <Typography variant="subtitle1">Recomendaciones</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <List dense>
-                  {comportamiento.recomendaciones.map((recomendacion, index) => (
-                    <ListItem key={index}>
-                      <ListItemIcon>
-                        <TrendingUp color="primary" fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText primary={recomendacion} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          </Grid>
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <Lightbulb color="warning" />
+                <Typography variant="subtitle1" fontWeight="medium">Recomendaciones</Typography>
+              </Stack>
+              <Divider sx={{ mb: 2 }} />
+              
+              <List dense>
+                {comportamiento.recomendaciones.map((recomendacion, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      <TrendingUp color="primary" fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary={recomendacion} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Stack>
         )}
       </CardContent>
     </Card>
