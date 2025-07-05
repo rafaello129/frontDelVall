@@ -5,7 +5,7 @@ import {
   CardContent,
   Typography, 
   Box, 
-  Grid, 
+  Stack, 
   Divider, 
   Chip,
   LinearProgress,
@@ -68,19 +68,30 @@ export const PatronPagoCard: React.FC<PatronPagoCardProps> = ({ patronPago, load
             <LinearProgress sx={{ width: '50%' }} />
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            {/* Confiabilidad - Feature Box */}
-            <Grid item xs={12} md={4}>
+          <Stack spacing={3}>
+            {/* Top metrics */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: 'repeat(3, 1fr)'
+                },
+                gap: 3
+              }}
+            >
+              {/* Confiabilidad - Feature Box */}
               <Paper 
                 elevation={3} 
                 sx={{ 
-                  p: 2, 
+                  p: 3, 
                   display: 'flex', 
                   flexDirection: 'column', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   height: '100%',
                   position: 'relative',
+                  borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${getConfiabilidadColor(patronPago.confiabilidad)}22 100%)`
                 }}
               >
@@ -92,19 +103,18 @@ export const PatronPagoCard: React.FC<PatronPagoCardProps> = ({ patronPago, load
                   Tasa de puntualidad: {patronPago.tasaPuntualidad.toFixed(1)}%
                 </Typography>
               </Paper>
-            </Grid>
 
-            {/* Próximo pago estimado */}
-            <Grid item xs={12} md={4}>
+              {/* Próximo pago estimado */}
               <Paper 
                 elevation={3} 
                 sx={{ 
-                  p: 2, 
+                  p: 3, 
                   display: 'flex', 
                   flexDirection: 'column', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   height: '100%',
+                  borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.light}22 100%)`
                 }}
               >
@@ -119,19 +129,18 @@ export const PatronPagoCard: React.FC<PatronPagoCardProps> = ({ patronPago, load
                   ${patronPago.montoEstimado.toLocaleString('es-MX')}
                 </Typography>
               </Paper>
-            </Grid>
 
-            {/* Tendencia de montos */}
-            <Grid item xs={12} md={4}>
+              {/* Tendencia de montos */}
               <Paper 
                 elevation={3} 
                 sx={{ 
-                  p: 2, 
+                  p: 3, 
                   display: 'flex', 
                   flexDirection: 'column', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   height: '100%',
+                  borderRadius: 2,
                   background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.info.light}22 100%)`
                 }}
               >
@@ -143,81 +152,90 @@ export const PatronPagoCard: React.FC<PatronPagoCardProps> = ({ patronPago, load
                   Monto promedio: ${patronPago.montoPromedio.toLocaleString('es-MX')}
                 </Typography>
               </Paper>
-            </Grid>
+            </Box>
 
             {/* Detalles del patrón */}
-            <Grid item xs={12}>
-              <Divider textAlign="left">Detalles del patrón de pago</Divider>
-              <Box sx={{ mt: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={6} md={3}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <DateRange color="primary" />
-                      <Typography variant="body2">Frecuencia:</Typography>
-                    </Box>
-                    <Typography variant="body1" fontWeight="medium" pl={4}>
-                      {patronPago.frecuenciaDias} días
-                    </Typography>
-                  </Grid>
+            <Box>
+              <Divider textAlign="left" sx={{ mb: 3 }}>
+                <Typography variant="h6" color="text.secondary">
+                  Detalles del patrón de pago
+                </Typography>
+              </Divider>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: 'repeat(2, 1fr)',
+                    md: 'repeat(4, 1fr)'
+                  },
+                  gap: 3
+                }}
+              >
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                    <DateRange color="primary" />
+                    <Typography variant="body2" color="text.secondary">Frecuencia:</Typography>
+                  </Stack>
+                  <Typography variant="body1" fontWeight="medium">
+                    {patronPago.frecuenciaDias} días
+                  </Typography>
+                </Box>
 
-                  <Grid item xs={6} md={3}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AttachMoney color="primary" />
-                      <Typography variant="body2">Monto Promedio:</Typography>
-                    </Box>
-                    <Typography variant="body1" fontWeight="medium" pl={4}>
-                      ${patronPago.montoPromedio.toLocaleString('es-MX')}
-                    </Typography>
-                  </Grid>
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                    <AttachMoney color="primary" />
+                    <Typography variant="body2" color="text.secondary">Monto Promedio:</Typography>
+                  </Stack>
+                  <Typography variant="body1" fontWeight="medium">
+                    ${patronPago.montoPromedio.toLocaleString('es-MX')}
+                  </Typography>
+                </Box>
 
-                  <Grid item xs={6} md={3}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AccountBalance color="primary" />
-                      <Typography variant="body2">Banco Preferido:</Typography>
-                    </Box>
-                    <Typography variant="body1" fontWeight="medium" pl={4}>
-                      {patronPago.bancoPreferido || 'No especificado'}
-                    </Typography>
-                  </Grid>
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                    <AccountBalance color="primary" />
+                    <Typography variant="body2" color="text.secondary">Banco Preferido:</Typography>
+                  </Stack>
+                  <Typography variant="body1" fontWeight="medium">
+                    {patronPago.bancoPreferido || 'No especificado'}
+                  </Typography>
+                </Box>
 
-                  <Grid item xs={6} md={3}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Payment color="primary" />
-                      <Typography variant="body2">Tipo de Pago:</Typography>
-                    </Box>
-                    <Typography variant="body1" fontWeight="medium" pl={4}>
-                      {patronPago.tipoPagoPreferido || 'No especificado'}
-                    </Typography>
-                  </Grid>
-                </Grid>
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                    <Payment color="primary" />
+                    <Typography variant="body2" color="text.secondary">Tipo de Pago:</Typography>
+                  </Stack>
+                  <Typography variant="body1" fontWeight="medium">
+                    {patronPago.tipoPagoPreferido || 'No especificado'}
+                  </Typography>
+                </Box>
               </Box>
-            </Grid>
+            </Box>
             
             {/* Predicción de pago */}
-            <Grid item xs={12}>
-              <Paper elevation={2} sx={{ p: 2, bgcolor: theme.palette.background.default }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <VerifiedUser color="primary" />
-                    <Typography variant="subtitle1">Predicción de Pago</Typography>
-                  </Box>
-                  <Chip 
-                    label={`Confiabilidad: ${Math.round((patronPago.tasaPuntualidad + (patronPago.confiabilidad === 'alta' ? 30 : patronPago.confiabilidad === 'media' ? 15 : 0)) / 1.3)}%`}
-                    color={patronPago.confiabilidad === 'alta' ? 'success' : patronPago.confiabilidad === 'media' ? 'warning' : 'error'}
-                  />
-                </Box>
-                <Divider sx={{ my: 1 }} />
-                <Box display="flex" justifyContent="space-between" flexWrap="wrap">
-                  <Typography variant="body1">
-                    Fecha estimada: <strong>{format(new Date(patronPago.proximoPagoEstimado), 'PPP', { locale: es })}</strong>
-                  </Typography>
-                  <Typography variant="body1">
-                    Monto estimado: <strong>${patronPago.montoEstimado.toLocaleString('es-MX')}</strong>
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-          </Grid>
+            <Paper elevation={2} sx={{ p: 3, bgcolor: theme.palette.background.default, borderRadius: 2 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <VerifiedUser color="primary" />
+                  <Typography variant="subtitle1" fontWeight="medium">Predicción de Pago</Typography>
+                </Stack>
+                <Chip 
+                  label={`Confiabilidad: ${Math.round((patronPago.tasaPuntualidad + (patronPago.confiabilidad === 'alta' ? 30 : patronPago.confiabilidad === 'media' ? 15 : 0)) / 1.3)}%`}
+                  color={patronPago.confiabilidad === 'alta' ? 'success' : patronPago.confiabilidad === 'media' ? 'warning' : 'error'}
+                />
+              </Stack>
+              <Divider sx={{ mb: 2 }} />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between">
+                <Typography variant="body1">
+                  Fecha estimada: <strong>{format(new Date(patronPago.proximoPagoEstimado), 'PPP', { locale: es })}</strong>
+                </Typography>
+                <Typography variant="body1">
+                  Monto estimado: <strong>${patronPago.montoEstimado.toLocaleString('es-MX')}</strong>
+                </Typography>
+              </Stack>
+            </Paper>
+          </Stack>
         )}
       </CardContent>
     </Card>

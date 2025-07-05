@@ -14,7 +14,6 @@ import {
   Button,
   Slider,
   Divider,
-  FormControlLabel,
   Switch,
   Stack,
   LinearProgress,

@@ -212,48 +212,48 @@ export const RiesgoClienteCard: React.FC<RiesgoClienteCardProps> = ({
                       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
                         <Typography variant="body2">Probabilidad de Retraso</Typography>
                         <Typography variant="body2" fontWeight="bold">
-                      {evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso.toFixed(1)}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso}
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: theme.palette.grey[200],
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: 
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 66 ? theme.palette.error.main :
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 33 ? theme.palette.warning.main :
-                          theme.palette.success.main
-                      }
-                    }}
-                  />
-                </Box>
-                
-                <Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                    <Typography variant="body2">Probabilidad de Incumplimiento</Typography>
-                    <Typography variant="body2" fontWeight="bold">
-                      {evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento.toFixed(1)}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento}
-                    sx={{ 
-                      height: 8, 
-                      borderRadius: 4,
-                      bgcolor: theme.palette.grey[200],
-                      '& .MuiLinearProgress-bar': {
-                        bgcolor: 
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 66 ? theme.palette.error.main :
-                          evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 33 ? theme.palette.warning.main :
-                          theme.palette.success.main
-                      }
-                    }}
-                  />
+                          {evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso.toFixed(1)}%
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso}
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          bgcolor: theme.palette.grey[200],
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: 
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 66 ? theme.palette.error.main :
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadRetraso > 33 ? theme.palette.warning.main :
+                              theme.palette.success.main
+                          }
+                        }}
+                      />
+                    </Box>
+                    
+                    <Box>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+                        <Typography variant="body2">Probabilidad de Incumplimiento</Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          {evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento.toFixed(1)}%
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento}
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          bgcolor: theme.palette.grey[200],
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: 
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 66 ? theme.palette.error.main :
+                              evaluacionRiesgo.evaluacionRiesgo.probabilidadIncumplimiento > 33 ? theme.palette.warning.main :
+                              theme.palette.success.main
+                          }
+                        }}
+                      />
                     </Box>
                   </Stack>
                 </Paper>

@@ -6,7 +6,7 @@ import {
   Typography, 
   Box, 
   Divider, 
-  Grid,
+  Stack,
   LinearProgress,
   Paper,
   List,
@@ -27,7 +27,6 @@ import { useTheme } from '@mui/material/styles';
 import { 
   BarChart, 
   Bar, 
-  LineChart,
   Line,
   XAxis, 
   YAxis, 
@@ -87,22 +86,25 @@ export const EstacionalidadChart: React.FC<EstacionalidadChartProps> = ({
             <LinearProgress sx={{ width: '50%' }} />
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            {/* Tendencia Anual - Feature Box */}
-            <Grid item xs={12} md={4}>
-              <Paper 
-                elevation={3} 
-                sx={{ 
-                  p: 2, 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: '100%',
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${
-                    analisisEstacionalidad.analisisEstacional.tendenciaAnual === 'creciente' ? theme.palette.success.light : 
-                    analisisEstacionalidad.analisisEstacional.tendenciaAnual === 'decreciente' ? theme.palette.error.light : 
-                    theme.palette.primary.light
+          <Stack spacing={3}>
+            {/* Top section: Annual trend and chart */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              {/* Tendencia Anual - Feature Box */}
+              <Box flex={{ xs: 1, md: 0.4 }}>
+                <Paper 
+                  elevation={3} 
+                  sx={{ 
+                    p: 3, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '100%',
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${
+                      analisisEstacionalidad.analisisEstacional.tendenciaAnual === 'creciente' ? theme.palette.success.light : 
+                      analisisEstacionalidad.analisisEstacional.tendenciaAnual === 'decreciente' ? theme.palette.error.light : 
+                      theme.palette.primary.light
                   }22 100%)`
                 }}
               >
@@ -157,16 +159,16 @@ export const EstacionalidadChart: React.FC<EstacionalidadChartProps> = ({
                       'Baja variabilidad entre meses'}
                   </Typography>
                 </Box>
-              </Paper>
-            </Grid>
+                </Paper>
+              </Box>
 
-            {/* Chart */}
-            <Grid item xs={12} md={8}>
-              <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Estacionalidad Mensual
-                </Typography>
-                <Box height={250}>
+              {/* Chart */}
+              <Box flex={{ xs: 1, md: 0.6 }}>
+                <Paper elevation={3} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+                    Estacionalidad Mensual
+                  </Typography>
+                  <Box height={250}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={barChartData}
@@ -187,83 +189,89 @@ export const EstacionalidadChart: React.FC<EstacionalidadChartProps> = ({
                   </ResponsiveContainer>
                 </Box>
               </Paper>
-            </Grid>
+            </Box>
+            </Stack>
 
-            {/* Key Insights */}
-            <Grid item xs={12} md={6}>
-              <Paper elevation={2} sx={{ p: 2 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <InsightsOutlined color="primary" />
-                  <Typography variant="subtitle1">Insights Clave</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <List dense>
-                  {analisisEstacionalidad.insights.map((insight, index) => (
-                    <ListItem key={index} sx={{ py: 0.5 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <InsightsOutlined fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary={insight} />
-                    </ListItem>
-                  ))}
-                </List>
+            {/* Bottom section: Insights and recommendations */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              {/* Key Insights */}
+              <Box flex={1}>
+                <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <InsightsOutlined color="primary" />
+                    <Typography variant="subtitle1" fontWeight="medium">Insights Clave</Typography>
+                  </Stack>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <List dense>
+                    {analisisEstacionalidad.insights.map((insight, index) => (
+                      <ListItem key={index} sx={{ py: 0.5 }}>
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          <InsightsOutlined fontSize="small" color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={insight} />
+                      </ListItem>
+                    ))}
+                  </List>
 
-                <Box mt={2} p={1} bgcolor={theme.palette.background.default} borderRadius={1}>
-                  <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Box display="flex" alignItems="center" gap={0.5}>
-                      <ArrowUpward fontSize="small" color="success" />
-                      <Typography variant="body2">
-                        Mejor mes: {maxMes.nombre}
-                      </Typography>
-                    </Box>
-                    <Chip 
-                      label={`Factor: ${maxMes.factorEstacional.toFixed(2)}`} 
-                      size="small" 
-                      color="success" 
-                      variant="outlined"
-                    />
-                  </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap={0.5}>
-                      <ArrowDownward fontSize="small" color="error" />
-                      <Typography variant="body2">
-                        Peor mes: {minMes.nombre}
-                      </Typography>
-                    </Box>
-                    <Chip 
-                      label={`Factor: ${minMes.factorEstacional.toFixed(2)}`} 
-                      size="small" 
-                      color="error" 
-                      variant="outlined"
-                    />
-                  </Box>
+                <Box mt={2} p={2} bgcolor={theme.palette.background.default} borderRadius={1}>
+                  <Stack spacing={1}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <ArrowUpward fontSize="small" color="success" />
+                        <Typography variant="body2">
+                          Mejor mes: {maxMes.nombre}
+                        </Typography>
+                      </Stack>
+                      <Chip 
+                        label={`Factor: ${maxMes.factorEstacional.toFixed(2)}`} 
+                        size="small" 
+                        color="success" 
+                        variant="outlined"
+                      />
+                    </Stack>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <ArrowDownward fontSize="small" color="error" />
+                        <Typography variant="body2">
+                          Peor mes: {minMes.nombre}
+                        </Typography>
+                      </Stack>
+                      <Chip 
+                        label={`Factor: ${minMes.factorEstacional.toFixed(2)}`} 
+                        size="small" 
+                        color="error" 
+                        variant="outlined"
+                      />
+                    </Stack>
+                  </Stack>
                 </Box>
               </Paper>
-            </Grid>
+            </Box>
 
-            {/* Recommendations */}
-            <Grid item xs={12} md={6}>
-              <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <LightbulbOutlined color="warning" />
-                  <Typography variant="subtitle1">Recomendaciones</Typography>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                
-                <List dense>
-                  {analisisEstacionalidad.recomendaciones.map((recomendacion, index) => (
-                    <ListItem key={index} sx={{ py: 0.5 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <LightbulbOutlined fontSize="small" color="warning" />
-                      </ListItemIcon>
-                      <ListItemText primary={recomendacion} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          </Grid>
+              {/* Recommendations */}
+              <Box flex={1}>
+                <Paper elevation={2} sx={{ p: 3, height: '100%', borderRadius: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <LightbulbOutlined color="warning" />
+                    <Typography variant="subtitle1" fontWeight="medium">Recomendaciones</Typography>
+                  </Stack>
+                  <Divider sx={{ mb: 2 }} />
+                  
+                  <List dense>
+                    {analisisEstacionalidad.recomendaciones.map((recomendacion, index) => (
+                      <ListItem key={index} sx={{ py: 0.5 }}>
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          <LightbulbOutlined fontSize="small" color="warning" />
+                        </ListItemIcon>
+                        <ListItemText primary={recomendacion} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              </Box>
+            </Stack>
+          </Stack>
         )}
       </CardContent>
     </Card>
