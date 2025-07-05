@@ -21,6 +21,8 @@ import bancoReducer from '../features/banco/bancoSlice';
 import cobranzaReducer from '../features/cobranza/cobranzaSlice';
 import facturaReducer from '../features/factura/facturaSlice';
 import pagoExternoSlice from '../features/pagoExterno/pagoExternoSlice';
+import proyeccionReducer from '../features/proyeccion/proyeccionSlice';
+import bitacoraReducer from '../features/bitacora/bitacoraSlice';
 // Configuración para persistir auth
 const authPersistConfig = {
   key: 'auth',
@@ -40,7 +42,9 @@ export const store = configureStore({
     bancos: bancoReducer,
     cobranzas: cobranzaReducer,
     facturas: facturaReducer,
-    pagosExternos: pagoExternoSlice
+    pagosExternos: pagoExternoSlice,
+    proyeccion: proyeccionReducer,
+    bitacora: bitacoraReducer,
     // Aquí se añaden otros reducers
   },
   middleware: (getDefaultMiddleware) =>

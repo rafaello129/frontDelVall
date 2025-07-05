@@ -9,6 +9,7 @@ import { PagoExternoListPage, PagoExternoDetailPage, PagoExternoCreatePage, Pago
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { es } from 'date-fns/locale'; // Import the Spanish locale if needed
+import ProyeccionDetailPage from '../features/proyeccion/pages/ProyeccionDetailPage';
 // Lazy loading de las páginas para mejorar el rendimiento
 const HomePage = lazy(() => import('../components/pages/HomePage'));
 const LoginPage = lazy(() => import('../components/pages/LoginPage'));
@@ -36,6 +37,16 @@ const FacturasVencidasPage = lazy(() => import('../features/factura/pages/Factur
 const CobranzasPage = lazy(() => import('../features/cobranza/pages/CobranzasPage'));
 const ReporteCobranzaPage = lazy(() => import('../features/cobranza/pages/ReporteCobranzaPage'));
 const ReporteRegionPage = lazy(() => import('../features/cobranza/pages/ReporteRegionPage'));
+
+const ProyeccionesPage = lazy(() => import('../features/proyeccion/pages/ProyeccionesPage'));
+const ProyeccionCreatePage = lazy(() => import('../features/proyeccion/pages/ProyeccionCreatePage'));
+const ProyeccionEditPage = lazy(() => import('../features/proyeccion/pages/ProyeccionEditPage'));
+
+const BitacoraPage = lazy(() => import('../features/bitacora/pages/BitacoraPage'));
+const BitacoraCreatePage = lazy(() => import('../features/bitacora/pages/BitacoraCreatePage'));
+const BitacoraEditPage = lazy(() => import('../features/bitacora/pages/BitacoraEditPage'));
+const BitacoraDetailPage = lazy(() => import('../features/bitacora/pages/BitacoraDetailPage'));
+
 const AppRoutes = () => {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -143,7 +154,49 @@ const AppRoutes = () => {
                 <AdminPage />
               </AuthGuard>
             } />
-            
+            {/* Rutas de Proyecciones */}
+<Route path="proyecciones" element={
+  <AuthGuard>
+    <ProyeccionesPage />
+  </AuthGuard>
+} />
+<Route path="proyecciones/nueva" element={
+  <AuthGuard>
+    <ProyeccionCreatePage />
+  </AuthGuard>
+} />
+<Route path="proyecciones/:id" element={
+  <AuthGuard>
+    <ProyeccionDetailPage />
+  </AuthGuard>
+} />
+<Route path="proyecciones/:id/editar" element={
+  <AuthGuard>
+    <ProyeccionEditPage />
+  </AuthGuard>
+} />
+
+{/* Rutas de Bitácora */}
+<Route path="bitacora" element={
+  <AuthGuard>
+    <BitacoraPage />
+  </AuthGuard>
+} />
+<Route path="bitacora/nuevo" element={
+  <AuthGuard>
+    <BitacoraCreatePage />
+  </AuthGuard>
+} />
+<Route path="bitacora/:id" element={
+  <AuthGuard>
+    <BitacoraDetailPage />
+  </AuthGuard>
+} />
+<Route path="bitacora/:id/editar" element={
+  <AuthGuard>
+    <BitacoraEditPage />
+  </AuthGuard>
+} />
             <Route path="access-denied" element={<AccessDeniedPage />} />
             
             {/* Ruta 404 */}

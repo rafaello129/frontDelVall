@@ -42,7 +42,10 @@ import {
   PaymentOutlined as ExternalPaymentIcon,
   AccessTimeOutlined as ExpiredIcon,
   InsertChartOutlinedRounded as StatisticsIcon,
-  LocationOnOutlined as RegionIcon
+  LocationOnOutlined as RegionIcon,
+  EventNoteOutlined as ProyeccionIcon,
+  CommentOutlined as BitacoraIcon,
+  AddCircleOutline as AddIcon
 } from '@mui/icons-material';
 
 interface NavLinkGroup {
@@ -141,6 +144,26 @@ const Navbar: React.FC = () => {
         { name: 'Lista de Cobranza', path: '/cobranza', show: isAuthenticated },
         { name: 'Reporte de Cobranza', path: '/cobranza/reportes', icon: <StatisticsIcon />, show: isAuthenticated },
         { name: 'Reporte por Región', path: '/cobranza/reportes/region', icon: <RegionIcon />, show: isAuthenticated }
+      ]
+    },
+    { 
+      name: 'Proyecciones', 
+      path: '/proyecciones', 
+      icon: <ProyeccionIcon />, 
+      show: isAuthenticated,
+      children: [
+        { name: 'Lista de Proyecciones', path: '/proyecciones', show: isAuthenticated },
+        { name: 'Nueva Proyección', path: '/proyecciones/nueva', icon: <AddIcon />, show: isAuthenticated }
+      ]
+    },
+    { 
+      name: 'Bitácora', 
+      path: '/bitacora', 
+      icon: <BitacoraIcon />, 
+      show: isAuthenticated,
+      children: [
+        { name: 'Lista de Bitácora', path: '/bitacora', show: isAuthenticated },
+        { name: 'Nueva Entrada', path: '/bitacora/nuevo', icon: <AddIcon />, show: isAuthenticated }
       ]
     },
     {
