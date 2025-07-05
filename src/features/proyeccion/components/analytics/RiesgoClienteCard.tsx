@@ -47,7 +47,6 @@ export const RiesgoClienteCard: React.FC<RiesgoClienteCardProps> = ({
   loading = false 
 }) => {
   const theme = useTheme();
-
   const getNivelRiesgoColor = (nivel: string) => {
     switch (nivel) {
       case 'bajo': return theme.palette.success.main;

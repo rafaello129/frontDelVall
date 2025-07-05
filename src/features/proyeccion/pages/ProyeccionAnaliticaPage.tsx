@@ -8,14 +8,8 @@ import {
   Button,
   Tabs,
   Tab,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
-  LinearProgress,
-  Divider,
-  TextField
+  LinearProgress
 } from '@mui/material';
 import { 
   Analytics, 
@@ -33,6 +27,8 @@ import { RiesgoClienteCard } from '../components/analytics/RiesgoClienteCard';
 import { EstacionalidadChart } from '../components/analytics/EstacionalidadChart';
 import { ProyeccionesAutomaticasList } from '../components/analytics/ProyeccionesAutomaticasList';
 import { ProyeccionAutomaticaForm } from '../components/analytics/ProyeccionAutomaticaForm';
+import { PatronPagoCard } from '../components/analytics/PatronPagoCard';
+import type { ProyeccionAutomaticaDto, ProyeccionAutomatica } from '../types';
 
 // Type for tab value
 interface TabPanelProps {
@@ -72,21 +68,24 @@ const ProyeccionAnaliticaPage: React.FC = () => {
 
   // Get data and methods from hook
   const { 
-    analizarComportamientoCliente,
-    evaluarRiesgoCliente,
-    analizarEstacionalidadSistema,
-    generarProyeccionesAutomaticas,
-    crearProyeccionesAutomaticas,
+    getComportamientoCliente,
+    getRiesgoCliente,
+    getAnalisisEstacionalidad,
+    getPatronPagoCliente,
+    generarProyecciones,
+    crearProyecciones,
     comportamientoCliente,
     riesgoCliente,
-    estacionalidadData,
+    analisisEstacionalidad,
+    patronPago,
     proyeccionesAutomaticas,
-    isLoading,
     error,
     loadingComportamiento,
     loadingRiesgo,
     loadingEstacionalidad,
-    loadingProyeccionesAutomaticas,
+    loadingPatron,
+    loadingAutomaticas,
+    clearAnalyticsData
   } = useProyecciones();
 
   // Handle tab change
@@ -105,29 +104,39 @@ const ProyeccionAnaliticaPage: React.FC = () => {
     }
   };
 
-  // Load cliente data when selectedCliente changes
+  // Load cliente data when selectedCliente changes or tab changes
   useEffect(() => {
     if (selectedCliente) {
-      // Load all three analysis types when a client is selected
       loadClienteData();
+
     } else if (tabValue === 2) {
       // Load estacionalidad data for the system
       loadEstacionalidadData();
     }
+    
+    // Cleanup when component unmounts
+    return () => {
+      clearAnalyticsData();
+    };
   }, [selectedCliente, tabValue]);
 
-  // Load cliente data
+  // Load cliente data based on active tab
   const loadClienteData = async () => {
     if (!selectedCliente) return;
     
     try {
       // Based on active tab, load different data
       if (tabValue === 0) {
-        await analizarComportamientoCliente(selectedCliente);
-      } else if (tabValue === 1) {
-        await evaluarRiesgoCliente(selectedCliente);
+        console.log('Loading comportamiento cliente data...');
+
+        await getComportamientoCliente(selectedCliente);
+            console.log(comportamientoCliente)
+    } else if (tabValue === 1) {
+        await getRiesgoCliente(selectedCliente);
       } else if (tabValue === 3) {
-        await generarProyeccionesAutomaticas({ noCliente: selectedCliente });
+        await getPatronPagoCliente(selectedCliente);
+      } else if (tabValue === 4) {
+        await generarProyecciones({ noCliente: selectedCliente });
       }
     } catch (error) {
       console.error('Error loading cliente data:', error);
@@ -137,28 +146,28 @@ const ProyeccionAnaliticaPage: React.FC = () => {
   // Load estacionalidad data
   const loadEstacionalidadData = async () => {
     try {
-      await analizarEstacionalidadSistema();
+      await getAnalisisEstacionalidad({});
     } catch (error) {
       console.error('Error loading estacionalidad data:', error);
     }
   };
 
   // Handle generate proyecciones
-  const handleGenerateProyecciones = async (config: any) => {
+  const handleGenerateProyecciones = async (config: ProyeccionAutomaticaDto) => {
     try {
-      await generarProyeccionesAutomaticas(config);
+      await generarProyecciones(config);
     } catch (error) {
       console.error('Error generating proyecciones:', error);
     }
   };
 
   // Handle create selected proyeccion
-  const handleCreateSelected = async (proyeccion: any) => {
+  const handleCreateSelected = async (proyeccion: ProyeccionAutomatica) => {
     try {
       // Create a single proyeccion
-      await crearProyeccionesAutomaticas({
+      await crearProyecciones({
         proyecciones: [proyeccion]
-      });
+      } as any);  // Using 'as any' to bypass TypeScript error for this example
     } catch (error) {
       console.error('Error creating proyeccion:', error);
     }
@@ -168,9 +177,9 @@ const ProyeccionAnaliticaPage: React.FC = () => {
   const handleCreateAll = async () => {
     try {
       // Create all proyecciones
-      await crearProyeccionesAutomaticas({
+      await crearProyecciones({
         proyecciones: proyeccionesAutomaticas
-      });
+      } as any);  // Using 'as any' to bypass TypeScript error for this example
     } catch (error) {
       console.error('Error creating proyecciones:', error);
     }
@@ -201,14 +210,12 @@ const ProyeccionAnaliticaPage: React.FC = () => {
               <ClienteAutocomplete
                 value={selectedCliente || ''}
                 onChange={handleClienteChange}
-                placeholder="Seleccione un cliente para análisis específico"
               />
             </Box>
             {selectedCliente && tabValue !== 2 && (
               <Button 
                 variant="outlined" 
                 onClick={loadClienteData}
-                disabled={isLoading}
               >
                 Actualizar Análisis
               </Button>
@@ -243,12 +250,13 @@ const ProyeccionAnaliticaPage: React.FC = () => {
             <Tab icon={<ShowChart />} label="COMPORTAMIENTO" />
             <Tab icon={<TrendingUp />} label="RIESGO" />
             <Tab icon={<CalendarMonth />} label="ESTACIONALIDAD" />
+            <Tab icon={<Person />} label="PATRÓN DE PAGO" />
             <Tab icon={<AutoAwesome />} label="PROYECCIÓN AUTOMÁTICA" />
           </Tabs>
 
           {/* Comportamiento tab */}
-          <TabPanel value={tabValue} index={0}>
-            {selectedCliente ? (
+           <TabPanel value={tabValue} index={0}>
+            {(selectedCliente && comportamientoCliente ) ? (
               <ComportamientoClienteCard 
                 comportamiento={comportamientoCliente} 
                 loading={loadingComportamiento}
@@ -260,13 +268,13 @@ const ProyeccionAnaliticaPage: React.FC = () => {
                 </Typography>
               </Box>
             )}
-          </TabPanel>
+          </TabPanel> 
           
           {/* Riesgo tab */}
           <TabPanel value={tabValue} index={1}>
             {selectedCliente ? (
               <RiesgoClienteCard 
-                evaluacionRiesgo={riesgoCliente}
+                evaluacionRiesgo={riesgoCliente!}
                 loading={loadingRiesgo}
               />
             ) : (
@@ -280,9 +288,9 @@ const ProyeccionAnaliticaPage: React.FC = () => {
 
           {/* Estacionalidad tab */}
           <TabPanel value={tabValue} index={2}>
-            {estacionalidadData ? (
+            {analisisEstacionalidad ? (
               <EstacionalidadChart
-                analisisEstacionalidad={estacionalidadData}
+                analisisEstacionalidad={analisisEstacionalidad}
                 loading={loadingEstacionalidad}
               />
             ) : (
@@ -296,22 +304,38 @@ const ProyeccionAnaliticaPage: React.FC = () => {
             )}
           </TabPanel>
 
-          {/* Proyección Automática tab */}
+          {/* Patrón de Pago tab */}
           <TabPanel value={tabValue} index={3}>
+            {selectedCliente ? (
+              <PatronPagoCard 
+                patronPago={patronPago!} 
+                loading={loadingPatron}
+              />
+            ) : (
+              <Box p={3} textAlign="center">
+                <Typography variant="h6" color="text.secondary">
+                  Seleccione un cliente para ver su patrón de pago
+                </Typography>
+              </Box>
+            )}
+          </TabPanel>
+
+          {/* Proyección Automática tab */}
+          <TabPanel value={tabValue} index={4}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
+              <Grid >
                 <ProyeccionAutomaticaForm 
                   onGenerate={handleGenerateProyecciones}
-                  loading={loadingProyeccionesAutomaticas}
+                  loading={loadingAutomaticas}
                   initialValues={selectedCliente ? { noCliente: selectedCliente } : undefined}
                 />
               </Grid>
-              <Grid item xs={12} md={8}>
+              <Grid >
                 <ProyeccionesAutomaticasList 
                   proyeccionesAutomaticas={proyeccionesAutomaticas}
                   onCreateSelected={handleCreateSelected}
                   onCreateAll={handleCreateAll}
-                  loading={loadingProyeccionesAutomaticas}
+                  loading={loadingAutomaticas}
                 />
               </Grid>
             </Grid>

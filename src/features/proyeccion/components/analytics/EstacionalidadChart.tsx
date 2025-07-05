@@ -179,7 +179,7 @@ export const EstacionalidadChart: React.FC<EstacionalidadChartProps> = ({
                       <YAxis yAxisId="left" orientation="left" stroke={theme.palette.primary.main} />
                       <YAxis yAxisId="right" orientation="right" stroke={theme.palette.secondary.main} />
                       <RechartsTooltip formatter={(value, name) => [
-                        name === 'promedioMonto' ? `$${value.toLocaleString('es-MX')}` : value.toFixed(2), 
+                        name === 'promedioMonto' ? `$${value.toLocaleString('es-MX')}` : value, 
                         name === 'promedioMonto' ? 'Monto Promedio' : 'Factor Estacional'
                       ]} />
                       <Legend />

@@ -47,6 +47,10 @@ const BitacoraCreatePage = lazy(() => import('../features/bitacora/pages/Bitacor
 const BitacoraEditPage = lazy(() => import('../features/bitacora/pages/BitacoraEditPage'));
 const BitacoraDetailPage = lazy(() => import('../features/bitacora/pages/BitacoraDetailPage'));
 
+
+const ProyeccionEstadisticasPage = lazy(() => import('../features/proyeccion/pages/ProyeccionEstadisticasPage'));
+const ProyeccionAnaliticaPage = lazy(() => import('../features/proyeccion/pages/ProyeccionAnaliticaPage'));
+
 const AppRoutes = () => {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -63,6 +67,7 @@ const AppRoutes = () => {
     <Router>
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
+       
           {/* Rutas públicas con layout */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -175,7 +180,23 @@ const AppRoutes = () => {
     <ProyeccionEditPage />
   </AuthGuard>
 } />
+ <Route path="proyecciones/estadisticas" element={
+  <AuthGuard>
+    <ProyeccionEstadisticasPage />
+  </AuthGuard>
+} />
 
+<Route path="proyecciones/analitica" element={
+  <AuthGuard>
+    <ProyeccionAnaliticaPage />
+  </AuthGuard>
+} />
+
+<Route path="proyecciones/analitica/:clienteId" element={
+  <AuthGuard>
+    <ProyeccionAnaliticaPage />
+  </AuthGuard>
+} />
 {/* Rutas de Bitácora */}
 <Route path="bitacora" element={
   <AuthGuard>

@@ -14,7 +14,6 @@ import {
   Button,
   Slider,
   Divider,
-  Switch,
   Stack,
   LinearProgress,
   Tooltip
@@ -27,6 +26,15 @@ import {
 } from '@mui/icons-material';
 import { ClienteAutocomplete } from '../../../shared/components/ClienteAutocomplete';
 import type { ProyeccionAutomaticaDto } from '../../types';
+import type { SelectChangeEvent } from '@mui/material/Select';
+
+// Usa el tipo correcto del DTO:
+type Algoritmo =
+  | 'patron_historico'
+  | 'regresion_lineal'
+  | 'promedio_movil'
+  | 'suavizado_exponencial'
+  | 'ml_basico';
 
 interface ProyeccionAutomaticaFormProps {
   onGenerate: (config: ProyeccionAutomaticaDto) => void;
@@ -50,15 +58,24 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
     setFormData(prev => ({ ...prev, noCliente: clienteId || undefined }));
   };
 
-  const handleAlgoritmoChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
-    setFormData(prev => ({ ...prev, algoritmo: event.target.value as string }));
+  // CORRECCIÓN: Usa el tipo específico de SelectChangeEvent
+  const handleAlgoritmoChange = (event: SelectChangeEvent<Algoritmo>) => {
+    setFormData(prev => ({
+      ...prev,
+      algoritmo: event.target.value as Algoritmo
+    }));
   };
 
-  const handleSliderChange = (name: string) => (event: Event, newValue: number | number[]) => {
+  const handleSliderChange = (name: keyof ProyeccionAutomaticaDto) => (
+    event: Event,
+    newValue: number | number[]
+  ) => {
     setFormData(prev => ({ ...prev, [name]: newValue as number }));
   };
 
-  const handleInputChange = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (name: keyof ProyeccionAutomaticaDto) => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = parseInt(event.target.value);
     if (!isNaN(value)) {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -103,7 +120,6 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
             <ClienteAutocomplete
               value={formData.noCliente || ''}
               onChange={handleClienteChange}
-              placeholder="Seleccionar cliente (opcional)"
               helperText="Deja vacío para generar proyecciones para todos los clientes activos"
             />
           </Box>
@@ -116,8 +132,8 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
             <Box flex={1}>
               <FormControl fullWidth>
                 <InputLabel>Algoritmo de Predicción</InputLabel>
-                <Select
-                  value={formData.algoritmo}
+                <Select<Algoritmo>
+                  value={formData.algoritmo || ''}
                   onChange={handleAlgoritmoChange}
                   label="Algoritmo de Predicción"
                 >

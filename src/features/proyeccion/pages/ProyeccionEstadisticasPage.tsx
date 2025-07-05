@@ -3,22 +3,20 @@ import {
   Container,
   Typography,
   Box,
-  Grid,
   Tabs,
   Tab,
   Paper,
   Button,
   Chip,
   IconButton,
-  TextField,
-  InputAdornment,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   LinearProgress,
   Alert,
-  Divider
+  Divider,
+  Stack
 } from '@mui/material';
 import {
   InsertChartOutlined,
@@ -27,7 +25,6 @@ import {
   Timeline,
   FilterList,
   Clear,
-  Search,
   FileDownload,
   Refresh
 } from '@mui/icons-material';
@@ -35,7 +32,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useProyecciones } from '../hooks/useProyecciones';
 import { ProyeccionEstadisticasCard } from '../components/analytics/ProyeccionEstadisticasCard';
 import { EstadoProyeccion } from '../types';
-import { format } from 'date-fns';
+import type { EstadisticasProyeccionFilterDto } from '../types';
 
 // Type for tab value
 interface TabPanelProps {
@@ -71,14 +68,13 @@ const ProyeccionEstadisticasPage: React.FC = () => {
 
   // State for filters
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    fechaDesde: null as Date | null,
-    fechaHasta: null as Date | null,
-    estado: '' as EstadoProyeccion | '',
-    searchTerm: '',
+  const [filters, setFilters] = useState<EstadisticasProyeccionFilterDto>({
+    fechaDesde: undefined,
+    fechaHasta: undefined,
+    estado: undefined,
     incluirDetalle: true,
-    agruparPor: 'mes' as 'dia' | 'semana' | 'mes' | 'trimestre' | 'año',
-    moneda: 'MXN' as 'MXN' | 'USD'
+    agruparPor: 'mes',
+    moneda: 'MXN'
   });
 
   // Get data from hook
@@ -86,7 +82,6 @@ const ProyeccionEstadisticasPage: React.FC = () => {
     estadisticasGenerales, 
     getEstadisticasGenerales, 
     clearAnalyticsData, 
-    isLoading, 
     error,
     loadingEstadisticas
   } = useProyecciones();
@@ -94,6 +89,11 @@ const ProyeccionEstadisticasPage: React.FC = () => {
   // Load initial data
   useEffect(() => {
     loadEstadisticas();
+    
+    // Cleanup when component unmounts
+    return () => {
+      clearAnalyticsData();
+    };
   }, []);
 
   // Function to load estadisticas
@@ -126,10 +126,9 @@ const ProyeccionEstadisticasPage: React.FC = () => {
   // Clear filters
   const handleClearFilters = () => {
     setFilters({
-      fechaDesde: null,
-      fechaHasta: null,
-      estado: '',
-      searchTerm: '',
+      fechaDesde: undefined,
+      fechaHasta: undefined,
+      estado: undefined,
       incluirDetalle: true,
       agruparPor: 'mes',
       moneda: 'MXN'
@@ -173,6 +172,7 @@ const ProyeccionEstadisticasPage: React.FC = () => {
               startIcon={<Refresh />}
               onClick={loadEstadisticas}
               disabled={loadingEstadisticas}
+              sx={{ mx: 1 }}
             >
               Actualizar
             </Button>
@@ -190,68 +190,58 @@ const ProyeccionEstadisticasPage: React.FC = () => {
         {showFilters && (
           <Paper sx={{ p: 2, mb: 3 }}>
             <Typography variant="subtitle1" gutterBottom>Filtros</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={3}>
-                <DatePicker 
-                  label="Fecha desde"
-                  value={filters.fechaDesde}
-                  onChange={(date) => handleFilterChange('fechaDesde', date)}
-                  slotProps={{ textField: { fullWidth: true, size: 'small' } }}
-                />
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <DatePicker 
-                  label="Fecha hasta"
-                  value={filters.fechaHasta}
-                  onChange={(date) => handleFilterChange('fechaHasta', date)}
-                  slotProps={{ textField: { fullWidth: true, size: 'small' } }}
-                />
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Estado</InputLabel>
-                  <Select
-                    value={filters.estado}
-                    onChange={(e) => handleFilterChange('estado', e.target.value)}
-                    label="Estado"
-                  >
-                    <MenuItem value="">Todos</MenuItem>
-                    {Object.values(EstadoProyeccion).map((estado) => (
-                      <MenuItem key={estado} value={estado}>{estado}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Agrupar por</InputLabel>
-                  <Select
-                    value={filters.agruparPor}
-                    onChange={(e) => handleFilterChange('agruparPor', e.target.value)}
-                    label="Agrupar por"
-                  >
-                    <MenuItem value="dia">Día</MenuItem>
-                    <MenuItem value="semana">Semana</MenuItem>
-                    <MenuItem value="mes">Mes</MenuItem>
-                    <MenuItem value="trimestre">Trimestre</MenuItem>
-                    <MenuItem value="año">Año</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Moneda</InputLabel>
-                  <Select
-                    value={filters.moneda}
-                    onChange={(e) => handleFilterChange('moneda', e.target.value)}
-                    label="Moneda"
-                  >
-                    <MenuItem value="MXN">MXN</MenuItem>
-                    <MenuItem value="USD">USD</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <DatePicker 
+                label="Fecha desde"
+                value={filters.fechaDesde}
+                onChange={(date) => handleFilterChange('fechaDesde', date)}
+                slotProps={{ textField: { fullWidth: true, size: 'small' } }}
+              />
+              <DatePicker 
+                label="Fecha hasta"
+                value={filters.fechaHasta}
+                onChange={(date) => handleFilterChange('fechaHasta', date)}
+                slotProps={{ textField: { fullWidth: true, size: 'small' } }}
+              />
+              <FormControl fullWidth size="small">
+                <InputLabel>Estado</InputLabel>
+                <Select
+                  value={filters.estado}
+                  onChange={(e) => handleFilterChange('estado', e.target.value)}
+                  label="Estado"
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  {Object.values(EstadoProyeccion).map((estado) => (
+                    <MenuItem key={estado} value={estado}>{estado}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth size="small">
+                <InputLabel>Agrupar por</InputLabel>
+                <Select
+                  value={filters.agruparPor}
+                  onChange={(e) => handleFilterChange('agruparPor', e.target.value)}
+                  label="Agrupar por"
+                >
+                  <MenuItem value="dia">Día</MenuItem>
+                  <MenuItem value="semana">Semana</MenuItem>
+                  <MenuItem value="mes">Mes</MenuItem>
+                  <MenuItem value="trimestre">Trimestre</MenuItem>
+                  <MenuItem value="año">Año</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl fullWidth size="small">
+                <InputLabel>Moneda</InputLabel>
+                <Select
+                  value={filters.moneda}
+                  onChange={(e) => handleFilterChange('moneda', e.target.value)}
+                  label="Moneda"
+                >
+                  <MenuItem value="MXN">MXN</MenuItem>
+                  <MenuItem value="USD">USD</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
             <Box display="flex" justifyContent="flex-end" mt={2}>
               <Button 
                 startIcon={<Clear />}
@@ -283,61 +273,55 @@ const ProyeccionEstadisticasPage: React.FC = () => {
 
         {/* Summary cards */}
         {estadisticasGenerales && (
-          <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle2" color="text.secondary">Total de Proyecciones</Typography>
-                <Typography variant="h4" sx={{ my: 2 }}>{getTotalProyecciones().toLocaleString()}</Typography>
-                <Box display="flex" justifyContent="space-between">
-                  <Chip 
-                    label={`Pendientes: ${estadisticasGenerales.resumen.porEstado.pendientes}`} 
-                    size="small" 
-                    color="primary"
-                  />
-                  <Chip 
-                    label={`Cumplidas: ${estadisticasGenerales.resumen.porEstado.pagadas}`} 
-                    size="small" 
-                    color="success"
-                  />
-                  <Chip 
-                    label={`Vencidas: ${estadisticasGenerales.resumen.porEstado.vencidas}`} 
-                    size="small" 
-                    color="error"
-                  />
-                </Box>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle2" color="text.secondary">Monto Total Proyectado</Typography>
-                <Typography variant="h4" sx={{ my: 2 }}>
-                  ${getMontoTotal().toLocaleString('es-MX')}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Promedio por proyección: ${estadisticasGenerales.resumen.montoPromedio.toLocaleString('es-MX')}
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="subtitle2" color="text.secondary">Tasa de Éxito</Typography>
-                <Typography variant="h4" sx={{ my: 2 }}>{getTasaExito().toFixed(1)}%</Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={getTasaExito()} 
-                  sx={{ 
-                    height: 10,
-                    borderRadius: 5,
-                    bgcolor: 'background.default',
-                    '& .MuiLinearProgress-bar': {
-                      bgcolor: getTasaExito() > 75 ? 'success.main' : 
-                              getTasaExito() > 50 ? 'warning.main' : 'error.main'
-                    }
-                  }}
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} mb={4}>
+            <Paper sx={{ p: 2, height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" color="text.secondary">Total de Proyecciones</Typography>
+              <Typography variant="h4" sx={{ my: 2 }}>{getTotalProyecciones().toLocaleString()}</Typography>
+              <Box display="flex" justifyContent="space-between" flexWrap="wrap" gap={1}>
+                <Chip 
+                  label={`Pendientes: ${estadisticasGenerales.resumen.porEstado.pendientes}`} 
+                  size="small" 
+                  color="primary"
                 />
-              </Paper>
-            </Grid>
-          </Grid>
+                <Chip 
+                  label={`Cumplidas: ${estadisticasGenerales.resumen.porEstado.pagadas}`} 
+                  size="small" 
+                  color="success"
+                />
+                <Chip 
+                  label={`Vencidas: ${estadisticasGenerales.resumen.porEstado.vencidas}`} 
+                  size="small" 
+                  color="error"
+                />
+              </Box>
+            </Paper>
+            <Paper sx={{ p: 2, height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" color="text.secondary">Monto Total Proyectado</Typography>
+              <Typography variant="h4" sx={{ my: 2 }}>
+                ${getMontoTotal().toLocaleString('es-MX')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Promedio por proyección: ${estadisticasGenerales.resumen.montoPromedio.toLocaleString('es-MX')}
+              </Typography>
+            </Paper>
+            <Paper sx={{ p: 2, height: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="subtitle2" color="text.secondary">Tasa de Éxito</Typography>
+              <Typography variant="h4" sx={{ my: 2 }}>{getTasaExito().toFixed(1)}%</Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={getTasaExito()} 
+                sx={{ 
+                  height: 10,
+                  borderRadius: 5,
+                  bgcolor: 'background.default',
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: getTasaExito() > 75 ? 'success.main' : 
+                            getTasaExito() > 50 ? 'warning.main' : 'error.main'
+                  }
+                }}
+              />
+            </Paper>
+          </Stack>
         )}
 
         {/* Tabs for different charts */}
@@ -386,6 +370,7 @@ const ProyeccionEstadisticasPage: React.FC = () => {
                   loading={loadingEstadisticas}
                   title="Top 10 Clientes"
                   groupByField="cliente"
+                  chartType="pie"
                 />
               )}
             </Box>

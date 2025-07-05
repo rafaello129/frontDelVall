@@ -45,7 +45,8 @@ import {
   LocationOnOutlined as RegionIcon,
   EventNoteOutlined as ProyeccionIcon,
   CommentOutlined as BitacoraIcon,
-  AddCircleOutline as AddIcon
+  AddCircleOutline as AddIcon,
+  InsertChartOutlinedRounded
 } from '@mui/icons-material';
 
 interface NavLinkGroup {
@@ -153,7 +154,10 @@ const Navbar: React.FC = () => {
       show: isAuthenticated,
       children: [
         { name: 'Lista de Proyecciones', path: '/proyecciones', show: isAuthenticated },
-        { name: 'Nueva Proyección', path: '/proyecciones/nueva', icon: <AddIcon />, show: isAuthenticated }
+        { name: 'Nueva Proyección', path: '/proyecciones/nueva', icon: <AddIcon />, show: isAuthenticated },
+        { name: 'Estadísticas', path: '/proyecciones/estadisticas', icon: <StatisticsIcon />, show: isAuthenticated },
+        { name: 'Analítica', path: '/proyecciones/analitica', icon: <InsertChartOutlinedRounded />, show: isAuthenticated }
+     
       ]
     },
     { 
@@ -444,30 +448,8 @@ const Navbar: React.FC = () => {
             <AuthStatus />
           </Box>
         </Toolbar>
-      </AppBar>
+      </AppBar> 
       
-      {/* Mobile drawer */}
-      {/* <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={isMobile ? mobileOpen : true}
-        onClose={() => setMobileOpen(false)}
-        ModalProps={{
-          keepMounted: true // Better mobile performance
-        }}
-        sx={{
-          display: { xs: 'block', md: isMobile ? 'none' : 'block' },
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: 280,
-            marginTop: '64px', // Adjust based on AppBar height
-            height: 'calc(100% - 64px)'
-          },
-        }}
-      >
-        {drawer}
-      </Drawer> */}
-      
-      {/* Add margin to content to accommodate fixed AppBar */}
       <Toolbar />
     </>
   );

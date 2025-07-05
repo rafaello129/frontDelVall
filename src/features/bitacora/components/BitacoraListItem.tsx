@@ -93,7 +93,7 @@ export const BitacoraListItem: React.FC<BitacoraListItemProps> = ({
           <ListItemText
             primary={
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="subtitle1">
+                <Typography variant="subtitle1" component="span">
                   {format(new Date(bitacora.fecha), 'dd MMM yyyy, HH:mm', { locale: es })}
                 </Typography>
                 <TipoBitacoraChip tipo={bitacora.tipo} />
@@ -101,27 +101,33 @@ export const BitacoraListItem: React.FC<BitacoraListItemProps> = ({
               </Box>
             }
             secondary={
-              <Box>
+              // Cambiar el root secundario a "span" para evitar p > div o p > p
+              <Box component="span">
                 <Typography variant="body2" component="span" color="text.primary">
                   Cliente: 
                 </Typography>
                 <Typography variant="body2" component="span">
                   {' '}{bitacora.comercial || bitacora.razonSocial} (#{bitacora.noCliente})
                 </Typography>
-                <Box mt={0.5}>
+                <Box component="span" mt={0.5} display="block">
                   {bitacora.comentario && (
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Comentario:</strong> {formatComment(bitacora.comentario)}
+                    <Typography variant="body2" component="span" color="text.secondary" display="block">
+                      Comentario: {formatComment(bitacora.comentario)}
                     </Typography>
                   )}
                   {bitacora.contestacion && (
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Respuesta:</strong> {formatComment(bitacora.contestacion)}
+                    <Typography variant="body2" component="span" color="text.secondary" display="block">
+                      Respuesta: {formatComment(bitacora.contestacion)}
                     </Typography>
                   )}
                 </Box>
-                <Box mt={0.5} display="flex" justifyContent="space-between">
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                <Box component="span" mt={0.5} display="block">
+                  <Typography
+                    variant="body2"
+                    component="span"
+                    color="text.secondary"
+                    sx={{ fontSize: '0.75rem' }}
+                  >
                     {bitacora.creadoPor && (
                       <>Por: {bitacora.creadoPor} | </>
                     )}

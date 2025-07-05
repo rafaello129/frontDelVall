@@ -78,6 +78,8 @@ const ProyeccionesPage: React.FC = () => {
     };
     
     getAllProyecciones(appliedFilters);
+    console.log('Cargando proyecciones con filtros:', appliedFilters);
+    console.log(proyecciones)
   };
 
   // Handle filter changes

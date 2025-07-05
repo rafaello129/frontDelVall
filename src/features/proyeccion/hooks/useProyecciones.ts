@@ -67,7 +67,7 @@ export const useProyecciones = () => {
   const error = useAppSelector(selectProyeccionError);
 
   // Existing methods
-  const getAllProyecciones = useCallback((filters?: FilterProyeccionPagoDto) => {
+  const getAllProyecciones = useCallback((filters: FilterProyeccionPagoDto) => {
     return dispatch(fetchProyecciones({
       ...filters,
       page: filters?.page || pagination.page,

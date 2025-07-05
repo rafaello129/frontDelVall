@@ -152,7 +152,8 @@ export interface EstadisticasGenerales {
   porCliente: EstadisticaProyeccionAgrupada[];
   porBanco: EstadisticaProyeccionAgrupada[];
   porTipoPago: EstadisticaProyeccionAgrupada[];
-  tendenciaTemporal?: {
+  tendenciaTemporal: {
+    categoria: string;
     periodo: string;
     total: number;
     cantidad: number;
