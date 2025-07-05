@@ -13,7 +13,7 @@ import {
   IconButton,
   Chip,
   Button,
-  Grid,
+  Stack,
   Avatar,
   Tooltip,
   LinearProgress,
@@ -89,22 +89,39 @@ export const ProyeccionesAutomaticasList: React.FC<ProyeccionesAutomaticasListPr
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={2} sx={{ p: 2 }}>
+          <Box 
+            sx={{ 
+              p: 2,
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: 'repeat(2, 1fr)',
+                lg: 'repeat(3, 1fr)'
+              },
+              gap: 2
+            }}
+          >
             {proyeccionesAutomaticas.map((proyeccion, index) => (
-              <Grid item xs={12} md={6} lg={4} key={index}>
-                <Paper 
-                  elevation={3} 
-                  sx={{ 
-                    p: 2, 
-                    height: '100%', 
-                    display: 'flex',
-                    flexDirection: 'column',
-                    position: 'relative',
-                    background: proyeccion.alerta 
-                      ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.warning.light}22 100%)`
-                      : undefined
-                  }}
-                >
+              <Paper 
+                key={index}
+                elevation={3} 
+                sx={{ 
+                  p: 3, 
+                  height: 'fit-content',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  position: 'relative',
+                  borderRadius: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    elevation: 6,
+                    transform: 'translateY(-2px)'
+                  },
+                  background: proyeccion.alerta 
+                    ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.warning.light}22 100%)`
+                    : undefined
+                }}
+              >
                   {/* Confianza Indicator */}
                   <Box position="absolute" top={16} right={16}>
                     <Tooltip title="Nivel de confianza">
@@ -121,91 +138,99 @@ export const ProyeccionesAutomaticasList: React.FC<ProyeccionesAutomaticasListPr
                   </Box>
                   
                   {/* Cliente Info */}
-                  <Box display="flex" alignItems="center" mb={2} gap={1}>
+                  <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
                     <Avatar 
                       sx={{ 
                         bgcolor: theme.palette.primary.main,
-                        width: 32,
-                        height: 32,
-                        fontSize: 14
+                        width: 40,
+                        height: 40,
+                        fontSize: 16,
+                        fontWeight: 'bold'
                       }}
                     >
                       {proyeccion.noCliente.toString().substring(0, 2)}
                     </Avatar>
-                    <Box>
-                      <Typography variant="subtitle1" noWrap>
+                    <Box flex={1}>
+                      <Typography variant="subtitle1" fontWeight="medium" noWrap>
                         Cliente #{proyeccion.noCliente}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {proyeccion.metodologia}
                       </Typography>
                     </Box>
-                  </Box>
+                  </Stack>
                   
                   <Divider sx={{ mb: 2 }} />
                   
                   {/* Main Data */}
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Box display="flex" alignItems="center" gap={0.5}>
-                        <CalendarMonth fontSize="small" color="primary" />
-                        <Typography variant="body2" color="text.secondary">
-                          Fecha:
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={2}>
+                      <Box flex={1}>
+                        <Stack direction="row" spacing={0.5} alignItems="center" mb={0.5}>
+                          <CalendarMonth fontSize="small" color="primary" />
+                          <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                            Fecha:
+                          </Typography>
+                        </Stack>
+                        <Typography variant="body1" fontWeight="medium">
+                          {format(new Date(proyeccion.fechaProyectada), 'dd MMM yyyy', { locale: es })}
                         </Typography>
                       </Box>
-                      <Typography variant="body1" pl={3}>
-                        {format(new Date(proyeccion.fechaProyectada), 'dd MMM yyyy', { locale: es })}
-                      </Typography>
-                    </Grid>
-                    
-                    <Grid item xs={6}>
-                      <Box display="flex" alignItems="center" gap={0.5}>
-                        <AttachMoney fontSize="small" color="primary" />
-                        <Typography variant="body2" color="text.secondary">
-                          Monto:
+                      
+                      <Box flex={1}>
+                        <Stack direction="row" spacing={0.5} alignItems="center" mb={0.5}>
+                          <AttachMoney fontSize="small" color="primary" />
+                          <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                            Monto:
+                          </Typography>
+                        </Stack>
+                        <Typography variant="body1" fontWeight="bold" color="primary.main">
+                          ${proyeccion.monto.toLocaleString('es-MX')}
                         </Typography>
                       </Box>
-                      <Typography variant="body1" fontWeight="medium" pl={3}>
-                        ${proyeccion.monto.toLocaleString('es-MX')}
-                      </Typography>
-                    </Grid>
+                    </Stack>
                     
-                    {proyeccion.bancoSugerido && (
-                      <Grid item xs={6}>
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <AccountBalance fontSize="small" color="primary" />
-                          <Typography variant="body2" color="text.secondary">
-                            Banco:
-                          </Typography>
-                        </Box>
-                        <Typography variant="body1" pl={3}>
-                          {proyeccion.bancoSugerido}
-                        </Typography>
-                      </Grid>
+                    {(proyeccion.bancoSugerido || proyeccion.tipoPagoSugerido) && (
+                      <Stack direction="row" spacing={2}>
+                        {proyeccion.bancoSugerido && (
+                          <Box flex={1}>
+                            <Stack direction="row" spacing={0.5} alignItems="center" mb={0.5}>
+                              <AccountBalance fontSize="small" color="primary" />
+                              <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                                Banco:
+                              </Typography>
+                            </Stack>
+                            <Typography variant="body2">
+                              {proyeccion.bancoSugerido}
+                            </Typography>
+                          </Box>
+                        )}
+                        
+                        {proyeccion.tipoPagoSugerido && (
+                          <Box flex={1}>
+                            <Stack direction="row" spacing={0.5} alignItems="center" mb={0.5}>
+                              <Payment fontSize="small" color="primary" />
+                              <Typography variant="body2" color="text.secondary" fontWeight="medium">
+                                Tipo:
+                              </Typography>
+                            </Stack>
+                            <Typography variant="body2">
+                              {proyeccion.tipoPagoSugerido}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Stack>
                     )}
-                    
-                    {proyeccion.tipoPagoSugerido && (
-                      <Grid item xs={6}>
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <Payment fontSize="small" color="primary" />
-                          <Typography variant="body2" color="text.secondary">
-                            Tipo:
-                          </Typography>
-                        </Box>
-                        <Typography variant="body1" pl={3}>
-                          {proyeccion.tipoPagoSugerido}
-                        </Typography>
-                      </Grid>
-                    )}
-                  </Grid>
+                  </Stack>
                   
                   {/* Alert if exists */}
                   {proyeccion.alerta && (
                     <Box 
                       mt={2} 
-                      p={1} 
+                      p={1.5} 
                       borderRadius={1} 
                       bgcolor={theme.palette.warning.light + '22'}
+                      border={`1px solid ${theme.palette.warning.light}`}
                       display="flex"
                       alignItems="center"
                       gap={1}
@@ -219,18 +244,23 @@ export const ProyeccionesAutomaticasList: React.FC<ProyeccionesAutomaticasListPr
                   
                   {/* Factores considerados */}
                   <Box mt={2}>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Lightbulb fontSize="small" />
-                      Factores considerados:
-                    </Typography>
-                    <Box display="flex" flexWrap="wrap" gap={0.5} mt={0.5}>
+                    <Stack direction="row" spacing={0.5} alignItems="center" mb={1}>
+                      <Lightbulb fontSize="small" color="action" />
+                      <Typography variant="caption" color="text.secondary" fontWeight="medium">
+                        Factores considerados:
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" flexWrap="wrap" gap={0.5}>
                       {proyeccion.factoresConsiderados.slice(0, 3).map((factor, i) => (
                         <Chip 
                           key={i} 
                           label={factor} 
                           size="small" 
                           variant="outlined"
-                          sx={{ fontSize: '0.7rem' }}
+                          sx={{ 
+                            fontSize: '0.7rem',
+                            height: 24
+                          }}
                         />
                       ))}
                       {proyeccion.factoresConsiderados.length > 3 && (
@@ -239,30 +269,37 @@ export const ProyeccionesAutomaticasList: React.FC<ProyeccionesAutomaticasListPr
                             label={`+${proyeccion.factoresConsiderados.length - 3}`} 
                             size="small" 
                             variant="outlined"
-                            sx={{ fontSize: '0.7rem' }}
+                            sx={{ 
+                              fontSize: '0.7rem',
+                              height: 24
+                            }}
                           />
                         </Tooltip>
                       )}
-                    </Box>
+                    </Stack>
                   </Box>
                   
                   {/* Create button */}
-                  <Box mt="auto" pt={2} display="flex" justifyContent="flex-end">
+                  <Box mt={3} display="flex" justifyContent="flex-end">
                     <Button
                       startIcon={<AddTask />}
                       variant="contained"
-                      size="small"
+                      size="medium"
                       color="primary"
                       disabled={!onCreateSelected}
                       onClick={() => onCreateSelected && onCreateSelected(proyeccion)}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 'medium'
+                      }}
                     >
                       Crear Proyección
                     </Button>
                   </Box>
                 </Paper>
-              </Grid>
-            ))}
-          </Grid>
+              ))}
+          </Box>
         )}
       </CardContent>
       {proyeccionesAutomaticas.length > 0 && onCreateAll && (

@@ -16,7 +16,7 @@ import {
   Divider,
   FormControlLabel,
   Switch,
-  Grid,
+  Stack,
   LinearProgress,
   Tooltip
 } from '@mui/material';
@@ -92,81 +92,86 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
       />
       <Divider />
       <CardContent>
-        <Grid container spacing={3}>
+        <Stack spacing={3}>
           {/* Cliente */}
-          <Grid item xs={12}>
-            <Box display="flex" alignItems="center" gap={1} mb={1}>
-              <Typography variant="subtitle1">Selección de Cliente</Typography>
+          <Box>
+            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+              <Typography variant="subtitle1" fontWeight="medium">Selección de Cliente</Typography>
               <Tooltip title="Deja vacío para generar proyecciones para todos los clientes activos">
                 <HelpOutline fontSize="small" color="action" />
               </Tooltip>
-            </Box>
+            </Stack>
             <ClienteAutocomplete
               value={formData.noCliente || ''}
               onChange={handleClienteChange}
               placeholder="Seleccionar cliente (opcional)"
               helperText="Deja vacío para generar proyecciones para todos los clientes activos"
             />
-          </Grid>
+          </Box>
 
-          {/* Algoritmo */}
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth>
-              <InputLabel>Algoritmo de Predicción</InputLabel>
-              <Select
-                value={formData.algoritmo}
-                onChange={handleAlgoritmoChange}
-                label="Algoritmo de Predicción"
-              >
-                <MenuItem value="patron_historico">Patrón Histórico (Básico)</MenuItem>
-                <MenuItem value="regresion_lineal">Regresión Lineal (Avanzado)</MenuItem>
-                <MenuItem value="promedio_movil">Promedio Móvil</MenuItem>
-                <MenuItem value="suavizado_exponencial">Suavizado Exponencial (Holt-Winters)</MenuItem>
-                <MenuItem value="ml_basico">ML Básico</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* Días Futuro */}
-          <Grid item xs={12} md={6}>
-            <Typography gutterBottom>
-              Días hacia el futuro: {formData.diasFuturo}
-            </Typography>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Slider
-                value={formData.diasFuturo}
-                min={1}
-                max={90}
-                step={1}
-                onChange={handleSliderChange('diasFuturo')}
-                valueLabelDisplay="auto"
-                marks={[
-                  { value: 1, label: '1d' },
-                  { value: 30, label: '30d' },
-                  { value: 60, label: '60d' },
-                  { value: 90, label: '90d' },
-                ]}
-              />
-              <TextField
-                value={formData.diasFuturo}
-                onChange={handleInputChange('diasFuturo')}
-                inputProps={{
-                  step: 1,
-                  min: 1,
-                  max: 90,
-                  type: 'number',
-                }}
-                sx={{ width: '80px' }}
-              />
+          {/* Algoritmo y Días Futuro */}
+          <Stack 
+            direction={{ xs: 'column', md: 'row' }} 
+            spacing={3}
+          >
+            <Box flex={1}>
+              <FormControl fullWidth>
+                <InputLabel>Algoritmo de Predicción</InputLabel>
+                <Select
+                  value={formData.algoritmo}
+                  onChange={handleAlgoritmoChange}
+                  label="Algoritmo de Predicción"
+                >
+                  <MenuItem value="patron_historico">Patrón Histórico (Básico)</MenuItem>
+                  <MenuItem value="regresion_lineal">Regresión Lineal (Avanzado)</MenuItem>
+                  <MenuItem value="promedio_movil">Promedio Móvil</MenuItem>
+                  <MenuItem value="suavizado_exponencial">Suavizado Exponencial (Holt-Winters)</MenuItem>
+                  <MenuItem value="ml_basico">ML Básico</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
-          </Grid>
+
+            <Box flex={1}>
+              <Typography gutterBottom fontWeight="medium">
+                Días hacia el futuro: {formData.diasFuturo}
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Slider
+                  value={formData.diasFuturo}
+                  min={1}
+                  max={90}
+                  step={1}
+                  onChange={handleSliderChange('diasFuturo')}
+                  valueLabelDisplay="auto"
+                  marks={[
+                    { value: 1, label: '1d' },
+                    { value: 30, label: '30d' },
+                    { value: 60, label: '60d' },
+                    { value: 90, label: '90d' },
+                  ]}
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  value={formData.diasFuturo}
+                  onChange={handleInputChange('diasFuturo')}
+                  inputProps={{
+                    step: 1,
+                    min: 1,
+                    max: 90,
+                    type: 'number',
+                  }}
+                  sx={{ width: '80px' }}
+                />
+              </Stack>
+            </Box>
+          </Stack>
 
           {/* Confianza Mínima */}
-          <Grid item xs={12}>
-            <Typography gutterBottom>
+          <Box>
+            <Typography gutterBottom fontWeight="medium">
               Confianza mínima requerida: {formData.confianzaMinima}%
             </Typography>
-            <Box display="flex" alignItems="center" gap={2}>
+            <Stack direction="row" spacing={2} alignItems="center">
               <Slider
                 value={formData.confianzaMinima}
                 min={0}
@@ -180,6 +185,7 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
                   { value: 70, label: '70%' },
                   { value: 100, label: '100%' },
                 ]}
+                sx={{ flex: 1 }}
               />
               <TextField
                 value={formData.confianzaMinima}
@@ -195,15 +201,16 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
                 }}
                 sx={{ width: '80px' }}
               />
-            </Box>
-          </Grid>
-        </Grid>
+            </Stack>
+          </Box>
+        </Stack>
       </CardContent>
-      <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
+      <CardActions sx={{ justifyContent: 'space-between', p: 3, pt: 2 }}>
         <Button
           startIcon={<Refresh />}
           onClick={handleReset}
           disabled={loading}
+          sx={{ textTransform: 'none' }}
         >
           Restablecer
         </Button>
@@ -213,6 +220,11 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
           color="primary"
           onClick={handleGenerate}
           disabled={loading}
+          sx={{ 
+            textTransform: 'none',
+            borderRadius: 2,
+            px: 3
+          }}
         >
           Generar Proyecciones
         </Button>
