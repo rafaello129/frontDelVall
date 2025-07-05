@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { 
   fetchProyecciones,
@@ -9,32 +9,64 @@ import {
   updateProyeccion,
   marcarNotificacionEnviada,
   deleteProyeccion,
+  fetchEstadisticasGenerales,
+  fetchPatronPago,
+  fetchComportamientoCliente,
+  fetchRiesgoCliente,
+  fetchAnalisisEstacionalidad,
+  generarProyeccionesAutomaticas,
+  crearProyeccionesDesdeAnalisis,
   clearSelectedProyeccion,
   clearProyeccionError,
   updatePaginationParams,
+  clearAnalytics,
   selectProyecciones,
   selectSelectedProyeccion,
   selectProyeccionesVencidas,
   selectPaginationParams,
+  selectEstadisticasGenerales,
+  selectPatronPago,
+  selectComportamientoCliente,
+  selectRiesgoCliente,
+  selectAnalisisEstacionalidad,
+  selectProyeccionesAutomaticas,
   selectProyeccionIsLoading,
   selectProyeccionError
 } from '../proyeccionSlice';
 import type { 
   CreateProyeccionPagoDto, 
   UpdateProyeccionPagoDto, 
-  FilterProyeccionPagoDto 
+  FilterProyeccionPagoDto,
+  EstadisticasProyeccionFilterDto,
+  ProyeccionAutomaticaDto
 } from '../types';
 
 export const useProyecciones = () => {
   const dispatch = useAppDispatch();
   
+  // Local loading states for specific operations
+  const [loadingEstadisticas, setLoadingEstadisticas] = useState(false);
+  const [loadingPatron, setLoadingPatron] = useState(false);
+  const [loadingComportamiento, setLoadingComportamiento] = useState(false);
+  const [loadingRiesgo, setLoadingRiesgo] = useState(false);
+  const [loadingEstacionalidad, setLoadingEstacionalidad] = useState(false);
+  const [loadingAutomaticas, setLoadingAutomaticas] = useState(false);
+  
+  // Select state from Redux
   const proyecciones = useAppSelector(selectProyecciones);
   const selectedProyeccion = useAppSelector(selectSelectedProyeccion);
   const proyeccionesVencidas = useAppSelector(selectProyeccionesVencidas);
   const pagination = useAppSelector(selectPaginationParams);
+  const estadisticasGenerales = useAppSelector(selectEstadisticasGenerales);
+  const patronPago = useAppSelector(selectPatronPago);
+  const comportamientoCliente = useAppSelector(selectComportamientoCliente);
+  const riesgoCliente = useAppSelector(selectRiesgoCliente);
+  const analisisEstacionalidad = useAppSelector(selectAnalisisEstacionalidad);
+  const proyeccionesAutomaticas = useAppSelector(selectProyeccionesAutomaticas);
   const isLoading = useAppSelector(selectProyeccionIsLoading);
   const error = useAppSelector(selectProyeccionError);
 
+  // Existing methods
   const getAllProyecciones = useCallback((filters?: FilterProyeccionPagoDto) => {
     return dispatch(fetchProyecciones({
       ...filters,
@@ -71,8 +103,78 @@ export const useProyecciones = () => {
     return dispatch(deleteProyeccion(id)).unwrap();
   }, [dispatch]);
 
+  // NEW METHODS FOR ANALYTICS AND AI FEATURES
+
+  const getEstadisticasGenerales = useCallback(async (filters: EstadisticasProyeccionFilterDto) => {
+    try {
+      setLoadingEstadisticas(true);
+      return await dispatch(fetchEstadisticasGenerales(filters)).unwrap();
+    } finally {
+      setLoadingEstadisticas(false);
+    }
+  }, [dispatch]);
+
+  const getPatronPagoCliente = useCallback(async (noCliente: number) => {
+    try {
+      setLoadingPatron(true);
+      return await dispatch(fetchPatronPago(noCliente)).unwrap();
+    } finally {
+      setLoadingPatron(false);
+    }
+  }, [dispatch]);
+
+  const getComportamientoCliente = useCallback(async (noCliente: number) => {
+    try {
+      setLoadingComportamiento(true);
+      return await dispatch(fetchComportamientoCliente(noCliente)).unwrap();
+    } finally {
+      setLoadingComportamiento(false);
+    }
+  }, [dispatch]);
+
+  const getRiesgoCliente = useCallback(async (noCliente: number) => {
+    try {
+      setLoadingRiesgo(true);
+      return await dispatch(fetchRiesgoCliente(noCliente)).unwrap();
+    } finally {
+      setLoadingRiesgo(false);
+    }
+  }, [dispatch]);
+
+  const getAnalisisEstacionalidad = useCallback(async (params: { fechaDesde?: string, fechaHasta?: string, sucursal?: string }) => {
+    try {
+      setLoadingEstacionalidad(true);
+      return await dispatch(fetchAnalisisEstacionalidad(params)).unwrap();
+    } finally {
+      setLoadingEstacionalidad(false);
+    }
+  }, [dispatch]);
+
+  const generarProyecciones = useCallback(async (config: ProyeccionAutomaticaDto) => {
+    try {
+      setLoadingAutomaticas(true);
+      return await dispatch(generarProyeccionesAutomaticas(config)).unwrap();
+    } finally {
+      setLoadingAutomaticas(false);
+    }
+  }, [dispatch]);
+
+  const crearProyecciones = useCallback(async (config: ProyeccionAutomaticaDto) => {
+    try {
+      setLoadingAutomaticas(true);
+      return await dispatch(crearProyeccionesDesdeAnalisis(config)).unwrap();
+    } finally {
+      setLoadingAutomaticas(false);
+    }
+  }, [dispatch]);
+
+  // Utility methods
   const clearProyeccion = useCallback(() => {
     dispatch(clearSelectedProyeccion());
+  }, [dispatch]);
+
+  const clearAnalyticsData = useCallback(() => {
+    dispatch(clearAnalytics());
   }, [dispatch]);
 
   const setPaginationParams = useCallback((page?: number, limit?: number) => {
@@ -89,10 +191,24 @@ export const useProyecciones = () => {
     selectedProyeccion,
     proyeccionesVencidas,
     pagination,
+    estadisticasGenerales,
+    patronPago,
+    comportamientoCliente,
+    riesgoCliente,
+    analisisEstacionalidad,
+    proyeccionesAutomaticas,
     isLoading,
     error,
     
-    // Acciones
+    // Estados de carga específicos
+    loadingEstadisticas,
+    loadingPatron,
+    loadingComportamiento,
+    loadingRiesgo,
+    loadingEstacionalidad,
+    loadingAutomaticas,
+    
+    // Acciones básicas
     getAllProyecciones,
     getProyeccionById,
     getProyeccionesByCliente,
@@ -101,7 +217,19 @@ export const useProyecciones = () => {
     editProyeccion,
     markNotificacionEnviada,
     removeProyeccion,
+    
+    // Nuevas acciones para analytics e IA
+    getEstadisticasGenerales,
+    getPatronPagoCliente,
+    getComportamientoCliente,
+    getRiesgoCliente,
+    getAnalisisEstacionalidad,
+    generarProyecciones,
+    crearProyecciones,
+    
+    // Utilidades
     clearProyeccion,
+    clearAnalyticsData,
     setPaginationParams,
     resetError
   };
