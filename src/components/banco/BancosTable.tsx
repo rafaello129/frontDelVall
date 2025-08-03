@@ -71,14 +71,14 @@ const BancosTable: React.FC<BancosTableProps> = ({
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end space-x-2">
                   <Button
-                    size="sm"
+                    size="small"
                     variant="info"
                     onClick={() => onEdit(banco)}
                   >
                     Editar
                   </Button>
                   <Button
-                    size="sm"
+                    size="small"
                     variant="danger"
                     onClick={() => onDelete(banco.id)}
                   >

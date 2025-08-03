@@ -1,106 +1,243 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Button as MuiButton, type ButtonProps as MuiButtonProps, CircularProgress } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark' | 'outline';
-type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
+type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'outline' | 'ghost';
+type ButtonSize = 'small' | 'medium' | 'large';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<MuiButtonProps, 'variant' | 'size'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  as?: 'button' | 'a' | 'link'; // 'link' para React Router Link
-  to?: string; // Para React Router Link
+  as?: 'button' | 'a' | 'link';
+  to?: string;
+  gradient?: boolean;
 }
+
+// Styled button with modern design
+const StyledButton = styled(MuiButton)<{
+  buttonVariant?: ButtonVariant;
+  buttonSize?: ButtonSize;
+  gradient?: boolean;
+}>(({ theme, buttonVariant = 'primary', buttonSize = 'medium', gradient = false }) => {
+  const variants = {
+    primary: {
+      backgroundColor: gradient 
+        ? 'transparent'
+        : theme.palette.primary.main,
+      background: gradient 
+        ? 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)'
+        : theme.palette.primary.main,
+      color: theme.palette.primary.contrastText,
+      border: `2px solid ${theme.palette.primary.main}`,
+      '&:hover': {
+        backgroundColor: gradient 
+          ? 'transparent'
+          : theme.palette.primary.dark,
+        background: gradient
+          ? 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)'
+          : theme.palette.primary.dark,
+        border: `2px solid ${theme.palette.primary.dark}`,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)',
+      },
+    },
+    secondary: {
+      backgroundColor: theme.palette.secondary.main,
+      color: theme.palette.secondary.contrastText,
+      border: `2px solid ${theme.palette.secondary.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.secondary.dark,
+        border: `2px solid ${theme.palette.secondary.dark}`,
+        transform: 'translateY(-1px)',
+      },
+    },
+    success: {
+      backgroundColor: theme.palette.success.main,
+      color: theme.palette.success.contrastText,
+      border: `2px solid ${theme.palette.success.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.success.dark,
+        border: `2px solid ${theme.palette.success.dark}`,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
+      },
+    },
+    danger: {
+      backgroundColor: theme.palette.error.main,
+      color: theme.palette.error.contrastText,
+      border: `2px solid ${theme.palette.error.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.error.dark,
+        border: `2px solid ${theme.palette.error.dark}`,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3)',
+      },
+    },
+    warning: {
+      backgroundColor: theme.palette.warning.main,
+      color: theme.palette.warning.contrastText,
+      border: `2px solid ${theme.palette.warning.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.warning.dark,
+        border: `2px solid ${theme.palette.warning.dark}`,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 10px 15px -3px rgba(245, 158, 11, 0.3)',
+      },
+    },
+    info: {
+      backgroundColor: theme.palette.info.main,
+      color: theme.palette.info.contrastText,
+      border: `2px solid ${theme.palette.info.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.info.dark,
+        border: `2px solid ${theme.palette.info.dark}`,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 10px 15px -3px rgba(6, 182, 212, 0.3)',
+      },
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      color: theme.palette.primary.main,
+      border: `2px solid ${theme.palette.primary.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.primary.contrastText,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)',
+      },
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+      color: theme.palette.text.primary,
+      border: '2px solid transparent',
+      '&:hover': {
+        backgroundColor: theme.palette.action.hover,
+        transform: 'translateY(-1px)',
+      },
+    },
+  };
+
+  const sizes = {
+    small: {
+      padding: '0.5rem 1rem',
+      fontSize: '0.8125rem',
+      minHeight: '32px',
+    },
+    medium: {
+      padding: '0.75rem 1.5rem',
+      fontSize: '0.875rem',
+      minHeight: '40px',
+    },
+    large: {
+      padding: '1rem 2rem',
+      fontSize: '1rem',
+      minHeight: '48px',
+    },
+  };
+
+  return {
+    ...variants[buttonVariant],
+    ...sizes[buttonSize],
+    borderRadius: '0.75rem',
+    fontWeight: 600,
+    textTransform: 'none',
+    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: 'none',
+    position: 'relative',
+    overflow: 'hidden',
+    '&:disabled': {
+      opacity: 0.6,
+      cursor: 'not-allowed',
+      transform: 'none',
+      '&:hover': {
+        transform: 'none',
+        boxShadow: 'none',
+      },
+    },
+    '&:active': {
+      transform: 'translateY(0)',
+    },
+  };
+});
 
 const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
-  size = 'md',
+  size = 'medium',
   isLoading = false,
   fullWidth = false,
   leftIcon,
   rightIcon,
-  className = '',
   disabled = false,
   as = 'button',
   to,
+  gradient = false,
   ...rest
 }) => {
-  // Estilos base
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none transition-all duration-200 ease-in-out';
-  
-  // Variantes de color
-  const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
-    secondary: 'bg-gray-600 hover:bg-gray-700 text-white focus:ring-2 focus:ring-offset-2 focus:ring-gray-500',
-    success: 'bg-green-600 hover:bg-green-700 text-white focus:ring-2 focus:ring-offset-2 focus:ring-green-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-2 focus:ring-offset-2 focus:ring-red-500',
-    warning: 'bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400',
-    info: 'bg-blue-400 hover:bg-blue-500 text-white focus:ring-2 focus:ring-offset-2 focus:ring-blue-300',
-    light: 'bg-gray-100 hover:bg-gray-200 text-gray-800 focus:ring-2 focus:ring-offset-2 focus:ring-gray-200',
-    dark: 'bg-gray-800 hover:bg-gray-900 text-white focus:ring-2 focus:ring-offset-2 focus:ring-gray-700',
-    outline: 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
-  };
-  
-  // Tamaños
-  const sizeClasses = {
-    sm: 'py-1 px-3 text-xs',
-    md: 'py-2 px-4 text-sm',
-    lg: 'py-2 px-5 text-base',
-    xl: 'py-3 px-6 text-lg',
-  };
-  
-  // Clases adicionales
-  const widthClass = fullWidth ? 'w-full' : '';
-  const disabledClass = (disabled || isLoading) ? 'opacity-50 cursor-not-allowed' : '';
-  
-  // Combinar todas las clases
-  const buttonClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${disabledClass} ${className}`;
+  const isDisabled = disabled || isLoading;
 
-  // Spinner para estado de carga
-  const LoadingSpinner = () => (
-    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-  );
-
-  // Contenido del botón
   const content = (
     <>
-      {isLoading && <LoadingSpinner />}
-      {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
+      {isLoading && (
+        <CircularProgress 
+          size={16} 
+          color="inherit" 
+          sx={{ mr: 1 }}
+        />
+      )}
+      {!isLoading && leftIcon && (
+        <span style={{ marginRight: '0.5rem', display: 'flex', alignItems: 'center' }}>
+          {leftIcon}
+        </span>
+      )}
       <span>{children}</span>
-      {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
+      {!isLoading && rightIcon && (
+        <span style={{ marginLeft: '0.5rem', display: 'flex', alignItems: 'center' }}>
+          {rightIcon}
+        </span>
+      )}
     </>
   );
 
-  // Renderizar según el tipo
+  const buttonProps = {
+    buttonVariant: variant,
+    buttonSize: size,
+    gradient,
+    disabled: isDisabled,
+    fullWidth,
+    ...rest,
+  };
+
   if (as === 'link' && to) {
     return (
-      <Link to={to} className={buttonClasses} {...(rest as any)}>
-        {content}
+      <Link to={to} style={{ textDecoration: 'none' }}>
+        <StyledButton
+          {...buttonProps}
+        >
+          {content}
+        </StyledButton>
       </Link>
     );
   } else if (as === 'a') {
     return (
-      <a className={buttonClasses} {...(rest as any)}>
+      <StyledButton
+        component="a"
+        {...buttonProps}
+      >
         {content}
-      </a> 
+      </StyledButton>
     );
   }
 
   return (
-    <button
-      className={buttonClasses}
-      disabled={disabled || isLoading}
-      {...rest}
-    >
+    <StyledButton {...buttonProps}>
       {content}
-    </button>
+    </StyledButton>
   );
 };
 

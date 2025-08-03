@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
-
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import { selectIsAuthenticated, selectUser } from '../../features/auth/authSlice';
@@ -13,7 +12,6 @@ import {
   IconButton,
   Drawer,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   Divider,
@@ -22,11 +20,11 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
-  Tooltip,
-  Badge,
-  ListItemButton
+  ListItemButton,
+  Stack,
+  Chip,
+  Badge
 } from '@mui/material';
-// Import alpha as a separate function
 import { alpha } from '@mui/material/styles';
 import {
   Menu as MenuIcon,
@@ -38,15 +36,13 @@ import {
   AccountBalanceOutlined as BankIcon,
   ReceiptOutlined as InvoiceIcon,
   MonetizationOnOutlined as PaymentIcon,
-  BarChartOutlined as ReportIcon,
   PaymentOutlined as ExternalPaymentIcon,
-  AccessTimeOutlined as ExpiredIcon,
-  InsertChartOutlinedRounded as StatisticsIcon,
-  LocationOnOutlined as RegionIcon,
   EventNoteOutlined as ProyeccionIcon,
   CommentOutlined as BitacoraIcon,
   AddCircleOutline as AddIcon,
-  InsertChartOutlinedRounded
+  InsertChartOutlinedRounded,
+  Notifications,
+  Settings,
 } from '@mui/icons-material';
 
 interface NavLinkGroup {
@@ -54,6 +50,7 @@ interface NavLinkGroup {
   path: string;
   icon: React.ReactNode;
   show: boolean;
+  badge?: string;
   children?: NavLink[];
 }
 
@@ -62,6 +59,7 @@ interface NavLink {
   path: string;
   icon?: React.ReactNode;
   show: boolean;
+  badge?: string;
 }
 
 const Navbar: React.FC = () => {
@@ -114,6 +112,7 @@ const Navbar: React.FC = () => {
       path: '/clientes', 
       icon: <PeopleIcon />, 
       show: isAuthenticated,
+      badge: 'New',
       children: [
         { name: 'Lista de Clientes', path: '/clientes', show: isAuthenticated },
         { name: 'Nuevo Cliente', path: '/clientes/nuevo', show: isAuthenticated },
@@ -133,7 +132,6 @@ const Navbar: React.FC = () => {
       show: isAuthenticated,
       children: [
         { name: 'Lista de Facturas', path: '/facturas', show: isAuthenticated },
-      //  { name: 'Facturas Vencidas', path: '/facturas/vencidas', icon: <ExpiredIcon />, show: isAuthenticated }
       ]
     },
     { 
@@ -143,8 +141,8 @@ const Navbar: React.FC = () => {
       show: isAuthenticated,
       children: [
         { name: 'Lista de Cobranza', path: '/cobranza', show: isAuthenticated },
-        { name: 'Reporte de Cobranza', path: '/cobranza/reportes', icon: <StatisticsIcon />, show: isAuthenticated },
-        { name: 'Reporte por Región', path: '/cobranza/reportes/region', icon: <RegionIcon />, show: isAuthenticated }
+        { name: 'Reporte de Cobranza', path: '/cobranza/reportes', show: isAuthenticated },
+        { name: 'Reporte por Región', path: '/cobranza/reportes/region', show: isAuthenticated }
       ]
     },
     { 
@@ -154,12 +152,10 @@ const Navbar: React.FC = () => {
       show: isAuthenticated,
       children: [
         { name: 'Calendario de Proyecciones', path: '/proyecciones/calendario', show: isAuthenticated },
-
         { name: 'Lista de Proyecciones', path: '/proyecciones', show: isAuthenticated },
         { name: 'Nueva Proyección', path: '/proyecciones/nueva', icon: <AddIcon />, show: isAuthenticated },
-        { name: 'Estadísticas', path: '/proyecciones/estadisticas', icon: <StatisticsIcon />, show: isAuthenticated },
+        { name: 'Estadísticas', path: '/proyecciones/estadisticas', show: isAuthenticated },
         { name: 'Analítica', path: '/proyecciones/analitica', icon: <InsertChartOutlinedRounded />, show: isAuthenticated }
-     
       ]
     },
     { 
@@ -182,51 +178,55 @@ const Navbar: React.FC = () => {
         { name: 'Nuevo Pago', path: '/pagos-externos/nuevo', show: isAuthenticated }
       ]
     },
-
   ];
 
-  const drawer = (
+  const renderMobileDrawer = () => (
     <Box role="navigation" aria-label="Navegación principal">
       <Box 
         sx={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          p: 2
+          p: 2,
+          background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+          color: 'white',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <img
             src="/logo.svg"
             alt="Logo Del Valle"
-            style={{ height: 32, width: 'auto' }}
+            style={{ height: 32, width: 'auto', filter: 'brightness(0) invert(1)' }}
           />
-          <Typography variant="h6" color="primary" sx={{ ml: 1, fontWeight: 'bold' }}>
+          <Typography variant="h6" sx={{ ml: 1, fontWeight: 'bold' }}>
             Del Valle
           </Typography>
         </Box>
-        {isMobile && (
-          <IconButton 
-            onClick={() => setMobileOpen(false)}
-            aria-label="Cerrar menú"
-            edge="end"
-          >
-            <CloseIcon />
-          </IconButton>
-        )}
+        <IconButton 
+          onClick={() => setMobileOpen(false)}
+          aria-label="Cerrar menú"
+          edge="end"
+          sx={{ color: 'white' }}
+        >
+          <CloseIcon />
+        </IconButton>
       </Box>
       <Divider />
       
       {isAuthenticated && (
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2, background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Avatar 
               alt={user?.name || 'Usuario'} 
               src={user?.image || ''}
-              sx={{ width: 40, height: 40 }}
+              sx={{ 
+                width: 40, 
+                height: 40,
+                background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+              }}
             />
             <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle1" noWrap>
+              <Typography variant="subtitle1" noWrap sx={{ fontWeight: 600 }}>
                 {user?.name || 'Usuario'}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
@@ -238,7 +238,7 @@ const Navbar: React.FC = () => {
       )}
       <Divider />
       
-      <List component="nav" aria-label="Menú principal">
+      <List component="nav" aria-label="Menú principal" sx={{ px: 1 }}>
         {navigationGroups
           .filter(group => group.show)
           .map((group) => (
@@ -251,14 +251,37 @@ const Navbar: React.FC = () => {
                     selected={isActive(group.path)}
                     aria-expanded={openSubmenus[group.name]}
                     sx={{
-                      borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
-                      backgroundColor: isActive(group.path) ? alpha (theme.palette.primary.main, 0.1) : 'transparent'
+                      borderRadius: 2,
+                      mb: 0.5,
+                      '&.Mui-selected': {
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.08) 100%)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%)',
+                        },
+                      },
                     }}
                   >
-                    <ListItemIcon>
+                    <ListItemIcon sx={{ color: isActive(group.path) ? 'primary.main' : 'inherit' }}>
                       {group.icon}
                     </ListItemIcon>
-                    <ListItemText primary={group.name} />
+                    <ListItemText 
+                      primary={group.name}
+                      primaryTypographyProps={{
+                        fontWeight: isActive(group.path) ? 600 : 400,
+                      }}
+                    />
+                    {group.badge && (
+                      <Chip 
+                        label={group.badge} 
+                        size="small" 
+                        sx={{ 
+                          fontSize: '0.7rem',
+                          height: 20,
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                        }}
+                      />
+                    )}
                     {openSubmenus[group.name] ? <ExpandLess /> : <ExpandMore />}
                   </ListItemButton>
                   <Collapse in={openSubmenus[group.name]} timeout="auto" unmountOnExit>
@@ -271,14 +294,29 @@ const Navbar: React.FC = () => {
                           selected={isActive(child.path)}
                           sx={{ 
                             pl: 4,
-                            borderLeft: isActive(child.path) ? `4px solid ${theme.palette.secondary.main}` : '4px solid transparent',
-                            backgroundColor: isActive(child.path) ? alpha(theme.palette.secondary.main, 0.1) : 'transparent'
+                            borderRadius: 2,
+                            ml: 2,
+                            mr: 1,
+                            mb: 0.5,
+                            '&.Mui-selected': {
+                              backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                            }
                           }}
                         >
-                          <ListItemIcon>
+                          <ListItemIcon sx={{ minWidth: 36 }}>
                             {child.icon || group.icon}
                           </ListItemIcon>
                           <ListItemText primary={child.name} />
+                          {child.badge && (
+                            <Chip 
+                              label={child.badge} 
+                              size="small" 
+                              sx={{ 
+                                fontSize: '0.7rem',
+                                height: 18,
+                              }}
+                            />
+                          )}
                         </ListItemButton>
                       ))}
                     </List>
@@ -290,19 +328,43 @@ const Navbar: React.FC = () => {
                   to={group.path}
                   selected={isActive(group.path)}
                   sx={{
-                    borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
-                    backgroundColor: isActive(group.path) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
+                    borderRadius: 2,
+                    mb: 0.5,
+                    '&.Mui-selected': {
+                      background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.08) 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%)',
+                      },
+                    },
                   }}
                 >
-                  <ListItemIcon>
+                  <ListItemIcon sx={{ color: isActive(group.path) ? 'primary.main' : 'inherit' }}>
                     {group.icon}
                   </ListItemIcon>
-                  <ListItemText primary={group.name} />
+                  <ListItemText 
+                    primary={group.name}
+                    primaryTypographyProps={{
+                      fontWeight: isActive(group.path) ? 600 : 400,
+                    }}
+                  />
+                  {group.badge && (
+                    <Chip 
+                      label={group.badge} 
+                      size="small" 
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        height: 20,
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                      }}
+                    />
+                  )}
                 </ListItemButton>
               )}
             </React.Fragment>
           ))}
       </List>
+      
       {isMobile && (
         <Box sx={{ p: 2, mt: 'auto' }}>
           <AuthStatus />
@@ -311,27 +373,33 @@ const Navbar: React.FC = () => {
     </Box>
   );
 
-  // Import alpha for transparency effects
-  
-
   return (
     <>
       <AppBar 
         position="fixed" 
-        color="default" 
-        elevation={1} 
+        elevation={0}
         sx={{ 
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: 'white'
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
           <IconButton
             color="inherit"
             aria-label="Abrir menú"
             edge="start"
             onClick={() => setMobileOpen(true)}
-            sx={{ mr: 2, display: { md: 'none' } }}
+            sx={{ 
+              mr: 2, 
+              display: { md: 'none' },
+              color: 'text.primary',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+              }
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -342,7 +410,19 @@ const Navbar: React.FC = () => {
               alt="Logo Del Valle"
               style={{ height: 32, width: 'auto' }}
             />
-            <Typography variant="h6" color="primary" sx={{ ml: 1, fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
+            <Typography 
+              variant="h6" 
+              color="primary" 
+              sx={{ 
+                ml: 1, 
+                fontWeight: 'bold', 
+                display: { xs: 'none', sm: 'block' },
+                background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
               Del Valle
             </Typography>
           </RouterLink>
@@ -358,39 +438,66 @@ const Navbar: React.FC = () => {
                   sx={{ 
                     position: 'relative',
                     display: 'inline-block',
-                    '&:hover .MuiBox-root': { 
-                      display: 'block' 
+                    '&:hover .submenu': { 
+                      opacity: 1,
+                      visibility: 'visible',
+                      transform: 'translateY(0)',
                     }
                   }}
                 >
                   <Button
                     component={RouterLink}
                     to={group.path}
-                    color={isGroupActive ? 'primary' : 'inherit'}
+                    color="inherit"
                     sx={{
-                      my: 2, 
-                      mx: 1,
-                      borderBottom: isGroupActive ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      borderRadius: 0,
+                      my: 1, 
+                      mx: 0.5,
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      color: isGroupActive ? 'primary.main' : 'text.primary',
+                      backgroundColor: isGroupActive ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                      fontWeight: isGroupActive ? 600 : 500,
                       '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                      }
+                        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                        color: 'primary.main',
+                      },
+                      transition: 'all 0.2s ease-in-out',
                     }}
                     startIcon={group.icon}
-                    aria-haspopup="true"
+                    endIcon={group.badge ? (
+                      <Chip 
+                        label={group.badge} 
+                        size="small" 
+                        sx={{ 
+                          fontSize: '0.7rem',
+                          height: 18,
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                        }}
+                      />
+                    ) : null}
                   >
                     {group.name}
                   </Button>
                   <Box 
-                    className="MuiBox-root"
+                    className="submenu"
                     sx={{ 
-                      display: 'none',
-                      position: 'absolute', 
-                      zIndex: 1000,
-                      bgcolor: 'background.paper',
-                      boxShadow: 3,
-                      borderRadius: 1,
-                      width: 220,
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      mt: 1,
+                      zIndex: 1300,
+                      opacity: 0,
+                      visibility: 'hidden',
+                      transform: 'translateY(-10px)',
+                      transition: 'all 0.2s ease-in-out',
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 2,
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                      border: '1px solid rgba(226, 232, 240, 0.8)',
+                      width: 240,
                       overflow: 'hidden'
                     }}
                   >
@@ -405,12 +512,26 @@ const Navbar: React.FC = () => {
                           justifyContent: 'flex-start',
                           textAlign: 'left',
                           py: 1.5,
+                          px: 2,
+                          borderRadius: 0,
                           color: isActive(child.path) ? 'primary.main' : 'text.primary',
-                          bgcolor: isActive(child.path) ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                          backgroundColor: isActive(child.path) ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                          fontWeight: isActive(child.path) ? 600 : 400,
                           '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.04)
+                            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                            color: 'primary.main',
                           }
                         }}
+                        endIcon={child.badge ? (
+                          <Chip 
+                            label={child.badge} 
+                            size="small" 
+                            sx={{ 
+                              fontSize: '0.7rem',
+                              height: 18,
+                            }}
+                          />
+                        ) : null}
                       >
                         {child.name}
                       </Button>
@@ -422,17 +543,35 @@ const Navbar: React.FC = () => {
                   key={group.path}
                   component={RouterLink}
                   to={group.path}
-                  color={isGroupActive ? 'primary' : 'inherit'}
+                  color="inherit"
                   sx={{
-                    my: 2, 
-                    mx: 1,
-                    borderBottom: isGroupActive ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                    borderRadius: 0,
+                    my: 1, 
+                    mx: 0.5,
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    color: isGroupActive ? 'primary.main' : 'text.primary',
+                    backgroundColor: isGroupActive ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                    fontWeight: isGroupActive ? 600 : 500,
                     '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                    }
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      color: 'primary.main',
+                    },
+                    transition: 'all 0.2s ease-in-out',
                   }}
                   startIcon={group.icon}
+                  endIcon={group.badge ? (
+                    <Chip 
+                      label={group.badge} 
+                      size="small" 
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        height: 18,
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                      }}
+                    />
+                  ) : null}
                 >
                   {group.name}
                 </Button>
@@ -440,14 +579,65 @@ const Navbar: React.FC = () => {
             })}
           </Box>
           
-          {/* Auth status for desktop */}
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          {/* Desktop user actions */}
+          <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' } }}>
+            {isAuthenticated && (
+              <>
+                <IconButton
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      color: 'primary.main',
+                    }
+                  }}
+                >
+                  <Badge badgeContent={3} color="error">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
+                <IconButton
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      color: 'primary.main',
+                    }
+                  }}
+                >
+                  <Settings />
+                </IconButton>
+              </>
+            )}
             <AuthStatus />
-          </Box>
+          </Stack>
         </Toolbar>
       </AppBar> 
       
-      <Toolbar />
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 280,
+            background: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)',
+            border: 'none',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          },
+        }}
+      >
+        {renderMobileDrawer()}
+      </Drawer>
+      
+      <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }} />
     </>
   );
 };
