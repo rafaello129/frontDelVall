@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Box, Container, Typography, IconButton, Divider, Grid } from '@mui/material';
+import { Box, Container, Typography, IconButton, Divider, Stack } from '@mui/material';
 import { GitHub, Twitter, LinkedIn, Mail } from '@mui/icons-material';
 
 const Footer = () => {
@@ -16,9 +16,15 @@ const Footer = () => {
       }}
     >
       <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Grid container spacing={4}>
+        <Box 
+          sx={{ 
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+            gap: 4
+          }}
+        >
           {/* Brand Section */}
-          <Grid item xs={12} md={4}>
+          <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <img
                 src="/logo.svg"
@@ -41,7 +47,7 @@ const Footer = () => {
               Plataforma profesional de gestión empresarial. Simplificamos 
               tus procesos para que puedas enfocarte en lo que realmente importa.
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Stack direction="row" spacing={1}>
               <IconButton 
                 color="primary" 
                 href="https://twitter.com" 
@@ -105,15 +111,15 @@ const Footer = () => {
               >
                 <Mail fontSize="small" />
               </IconButton>
-            </Box>
-          </Grid>
+            </Stack>
+          </Box>
 
           {/* Links Section */}
-          <Grid item xs={12} md={4}>
+          <Box>
             <Typography variant="h6" color="text.primary" sx={{ mb: 2, fontWeight: 600 }}>
               Enlaces Útiles
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Stack spacing={1}>
               <Link 
                 to="/about" 
                 style={{ 
@@ -166,15 +172,15 @@ const Footer = () => {
               >
                 Centro de Ayuda
               </Link>
-            </Box>
-          </Grid>
+            </Stack>
+          </Box>
 
           {/* Legal Section */}
-          <Grid item xs={12} md={4}>
+          <Box>
             <Typography variant="h6" color="text.primary" sx={{ mb: 2, fontWeight: 600 }}>
               Legal
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Stack spacing={1}>
               <Link 
                 to="/privacy" 
                 style={{ 
@@ -227,9 +233,9 @@ const Footer = () => {
               >
                 Contacto
               </Link>
-            </Box>
-          </Grid>
-        </Grid>
+            </Stack>
+          </Box>
+        </Box>
         
         <Divider sx={{ my: 4 }} />
         

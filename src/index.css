@@ -290,6 +290,17 @@ input:checked + .slider:before {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Utility Classes */
 .text-gradient {
   background: linear-gradient(135deg, var(--primary-600), var(--primary-400));
