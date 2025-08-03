@@ -19,7 +19,8 @@ import {
   selectAntiguedadSaldos,
   selectPagination,
   selectClienteIsLoading,
-  selectClienteError
+  selectClienteError,
+  createBulkClientes
 } from '../clienteSlice';
 import type { 
   CreateClienteDto, 
@@ -67,6 +68,11 @@ export const useCliente = () => {
     return dispatch(createCliente(cliente)).unwrap();
   }, [dispatch]);
 
+  const addBulkClientes = useCallback((clientes: CreateClienteDto[]) => {
+    return dispatch(createBulkClientes(clientes)).unwrap();
+
+  }, [dispatch]);
+
   const editCliente = useCallback((noCliente: number, data: UpdateClienteDto) => {
     return dispatch(updateCliente({ noCliente, data })).unwrap();
   }, [dispatch]);
@@ -111,6 +117,7 @@ export const useCliente = () => {
     getFacturasPendientes,
     getAntiguedadSaldos,
     addCliente,
+    addBulkClientes,
     editCliente,
     removeCliente,
     clearCliente,

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import type { Factura } from '../../features/factura/types';
+import React, { useEffect, useState } from 'react';
+import type { Factura, FilterFacturaDto } from '../../features/factura/types';
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
@@ -17,29 +17,34 @@ import {
   CheckCircle as CheckCircleIcon,
   Block as BlockIcon
 } from '@mui/icons-material';
+import { useFacturas } from '../../features/factura/hooks/useFacturas';
 
 interface FacturasTableProps {
-  facturas: Factura[];
   onView: (factura: Factura) => void;
   onEdit?: (factura: Factura) => void;
   onDelete?: (factura: Factura) => void;
   isLoading?: boolean;
+  page?: number;
+  setPage: (page: number) => void;
+  filters: FilterFacturaDto;
   showCliente?: boolean;
 }
 
 type SortField = 'noFactura' | 'emision' | 'noCliente' | 'estado' | 'montoTotal' | 'saldo' | 'fechaVencimiento';
 
 const FacturasTable: React.FC<FacturasTableProps> = ({
-  facturas,
   onView,
   onEdit,
+  filters,
   onDelete,
+  setPage,
+  page= 0,
   showCliente = true
 }) => {
   const theme = useTheme();
   const today = new Date();
-  
-  const [page, setPage] = useState(0);
+  const {facturas,totalFacturas, getAllFacturas} = useFacturas();
+ 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState<SortField>('emision');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
@@ -122,13 +127,19 @@ const FacturasTable: React.FC<FacturasTableProps> = ({
   // Pagination handlers
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
+    filters.skip = newPage * rowsPerPage;
+    getAllFacturas(filters);
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    filters.limit = parseInt(event.target.value, 10);
+    setPage(0) // Reset to first page
   };
-
+useEffect(() => {
+  console.log(facturas);
+}
+, [facturas]);
   // Action menu handlers
   const handleOpenActionMenu = (event: React.MouseEvent<HTMLElement>, factura: Factura) => {
     setActionMenuAnchor(event.currentTarget);
@@ -141,7 +152,7 @@ const FacturasTable: React.FC<FacturasTableProps> = ({
   };
 
   // Get paginated data
-  const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginatedData = sortedData.slice(0 * rowsPerPage, 0 * rowsPerPage + rowsPerPage);
 
   if (facturas.length === 0) {
     return (
@@ -338,7 +349,7 @@ const FacturasTable: React.FC<FacturasTableProps> = ({
       <TablePagination
         rowsPerPageOptions={[5, 10, 25, 50]}
         component="div"
-        count={facturas.length}
+        count={totalFacturas}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

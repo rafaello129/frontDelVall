@@ -37,7 +37,8 @@ const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters 
 
   // Type-safe access to filter options
   const safeFilterOptions = {
-    noClientes: (filterOptions.noClientes || []) as number[],
+    //comvertir noclientes a string[]
+    noClientes: (filterOptions.noClientes || []).map(cliente => cliente.toString()),
     razonSocial: (filterOptions.razonSocial || []) as string[],
     comercial: (filterOptions.comercial || []) as string[]
   };
@@ -135,7 +136,7 @@ const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters 
                   id="noCliente"
                   options={safeFilterOptions.noClientes}
                   freeSolo
-                  value={filters.noCliente || null}
+                  value={filters.noCliente?.toString() || null}
                   onChange={(_, newValue) => handleChange('noCliente', newValue)}
                   renderInput={(params) => (
                     <TextField

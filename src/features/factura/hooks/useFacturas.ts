@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { use, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { 
   fetchFacturas,
@@ -16,13 +16,16 @@ import {
   selectFacturasPendientes,
   selectFacturasLoading,
   selectFacturasError,
-  clearSelectedFactura
+  clearSelectedFactura,
+  createBulkFactura,
+  selectTotalFacturas
 } from '../facturaSlice';
 import type { CreateFacturaDto, FilterFacturaDto, UpdateFacturaDto } from '../types';
 
 export const useFacturas = () => {
   const dispatch = useAppDispatch();
   const facturas = useAppSelector(selectFacturas);
+  const totalFacturas = useAppSelector(selectTotalFacturas);
   const selectedFactura = useAppSelector(selectSelectedFactura);
   const facturasVencidas = useAppSelector(selectFacturasVencidas);
   const facturasPendientes = useAppSelector(selectFacturasPendientes);
@@ -40,7 +43,9 @@ export const useFacturas = () => {
   const addFactura = useCallback((facturaData: CreateFacturaDto) => {
     return dispatch(createFactura(facturaData)).unwrap();
   }, [dispatch]);
-
+  const addBulkFacturas = useCallback((facturas: CreateFacturaDto[]) => {
+    return dispatch(createBulkFactura(facturas)).unwrap();
+  }, [dispatch]);
   const updateFacturaById = useCallback((noFactura: string, facturaData: UpdateFacturaDto) => {
     return dispatch(updateFactura({ noFactura, facturaData })).unwrap();
   }, [dispatch]);
@@ -73,6 +78,7 @@ export const useFacturas = () => {
     // Estado
     facturas,
     selectedFactura,
+    totalFacturas,
     facturasVencidas,
     facturasPendientes,
     isLoading,
@@ -82,6 +88,7 @@ export const useFacturas = () => {
     getAllFacturas,
     getFacturaById,
     addFactura,
+    addBulkFacturas,
     updateFacturaById,
     removeFactura,
     cambiarEstado,

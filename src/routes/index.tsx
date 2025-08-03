@@ -10,6 +10,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { es } from 'date-fns/locale'; // Import the Spanish locale if needed
 import ProyeccionDetailPage from '../features/proyeccion/pages/ProyeccionDetailPage';
+import TipoCambioDOF from '../test/TipoCambioDOF';
 // Lazy loading de las páginas para mejorar el rendimiento
 const HomePage = lazy(() => import('../components/pages/HomePage'));
 const LoginPage = lazy(() => import('../components/pages/LoginPage'));
@@ -25,22 +26,32 @@ const ClienteDetailPage = lazy(() => import('../features/cliente/pages/ClienteDe
 const ClienteCreatePage = lazy(() => import('../features/cliente/pages/ClienteCreatePage'));
 const ClienteEditPage = lazy(() => import('../features/cliente/pages/ClienteEditPage'));
 const ReportesClientePage = lazy(() => import('../features/cliente/pages/ReportesClientePage'));
-
+const SubirCsvClientePage = lazy(() => import('../features/cliente/pages/SubirCsvPage'));
+const SubirCsvFacturaPage = lazy(() => import('../features/factura/pages/SubirCsvFacturaPage'));
+const ClienteExcelPage = lazy(() => import('../features/cliente/pages/ClienteExcelPage'));
 // Banco pages
 const BancosPage = lazy(() => import('../features/banco/pages/BancosPage'));
 
 // Factura pages
 const FacturasPage = lazy(() => import('../features/factura/pages/FacturasPage'));
 const FacturasVencidasPage = lazy(() => import('../features/factura/pages/FacturasVencidasPage'));
-
+const FacturaExcelPage = lazy(() => import('../features/factura/pages/FacturaExcelPage'));
+const FacturaViewPage = lazy(() => import('../features/factura/pages/FacturaViewPage'));
+const FacturaCreatePage = lazy(() => import('../features/factura/pages/FacturaCreatePage'));
+const FacturaEditPage = lazy(() => import('../features/factura/pages/FacturaEditPage'));
 // Cobranza pages
 const CobranzasPage = lazy(() => import('../features/cobranza/pages/CobranzasPage'));
+const CobranzaDetailPage = lazy(() => import('../features/cobranza/pages/CobranzaDetailPage'));
+const CobranzaFormPage = lazy(() => import('../features/cobranza/pages/CobranzaFormPage'));
+const CobranzasExcelPage = lazy(() => import('../features/cobranza/pages/CobranzasExcelPage'));
+const SubirCsvCobranzaPage = lazy(() => import('../features/cobranza/pages/SubirCsvCobranzaPage'));
 const ReporteCobranzaPage = lazy(() => import('../features/cobranza/pages/ReporteCobranzaPage'));
 const ReporteRegionPage = lazy(() => import('../features/cobranza/pages/ReporteRegionPage'));
 
 const ProyeccionesPage = lazy(() => import('../features/proyeccion/pages/ProyeccionesPage'));
 const ProyeccionCreatePage = lazy(() => import('../features/proyeccion/pages/ProyeccionCreatePage'));
 const ProyeccionEditPage = lazy(() => import('../features/proyeccion/pages/ProyeccionEditPage'));
+const ProyeccionCalendario = lazy(() => import('../features/proyeccion/pages/ProyeccionCalendarPage'));
 
 const BitacoraPage = lazy(() => import('../features/bitacora/pages/BitacoraPage'));
 const BitacoraCreatePage = lazy(() => import('../features/bitacora/pages/BitacoraCreatePage'));
@@ -101,6 +112,45 @@ const AppRoutes = () => {
                 <ClienteCreatePage />
               </AuthGuard>
             } />
+
+              <Route path="clientes/csv" element={
+              <AuthGuard>
+                <SubirCsvClientePage />
+              </AuthGuard>
+            } />
+                          <Route path="clientes/excel" element={
+              <AuthGuard>
+                <ClienteExcelPage />
+              </AuthGuard>
+            } />
+              <Route path="facturas/csv" element={
+              <AuthGuard>
+                <SubirCsvFacturaPage />
+              </AuthGuard>
+            } />            
+            <Route path="facturas/excel" element={
+              <AuthGuard>
+                <FacturaExcelPage />
+              </AuthGuard>
+            } />
+               <Route path="facturasView/:id" element={
+              <AuthGuard>
+                <FacturaViewPage />
+              </AuthGuard>
+            } />
+
+<Route path="facturas/:id/editar" element={
+              <AuthGuard>
+                <FacturaEditPage />
+              </AuthGuard>
+            } />
+
+<Route path="facturas/nueva" element={
+              <AuthGuard>
+                <FacturaCreatePage />
+              </AuthGuard>
+            } />
+
             <Route path="clientes/:noCliente/editar" element={
               <AuthGuard>
                 <ClienteEditPage />
@@ -137,14 +187,41 @@ const AppRoutes = () => {
                 <CobranzasPage />
               </AuthGuard>
             } />
+
+            <Route path="cobranza/nueva" element={
+              <AuthGuard>
+                <CobranzaFormPage />
+              </AuthGuard>
+            } />
+            <Route path="cobranza/:id" element={
+              <AuthGuard>
+                <CobranzaDetailPage />
+              </AuthGuard>
+            } />
+            <Route path="cobranza/editar/:id" element={
+              <AuthGuard>
+                <CobranzaFormPage />
+              </AuthGuard>
+            } />
+
             <Route path="cobranza/reportes" element={
               <AuthGuard>
                 <ReporteCobranzaPage />
               </AuthGuard>
             } />
+            <Route path="cobranzas/csv" element={
+              <AuthGuard>
+                <SubirCsvCobranzaPage />
+              </AuthGuard>
+            } />
             <Route path="cobranza/reportes/region" element={
               <AuthGuard>
                 <ReporteRegionPage />
+              </AuthGuard>
+            } />
+                  <Route path="cobranzas/excel" element={
+              <AuthGuard>
+                <CobranzasExcelPage></CobranzasExcelPage>
               </AuthGuard>
             } />
               <Route path="/pagos-externos" element={<PagoExternoListPage />} />
@@ -185,7 +262,11 @@ const AppRoutes = () => {
     <ProyeccionEstadisticasPage />
   </AuthGuard>
 } />
-
+ <Route path="proyecciones/calendario" element={
+  <AuthGuard>
+    <ProyeccionCalendario />
+  </AuthGuard>
+} />
 <Route path="proyecciones/analitica" element={
   <AuthGuard>
     <ProyeccionAnaliticaPage />
@@ -218,6 +299,9 @@ const AppRoutes = () => {
     <BitacoraEditPage />
   </AuthGuard>
 } />
+
+            {/* Rutas de Test */}
+            <Route path='test' element={<TipoCambioDOF></TipoCambioDOF>} />
             <Route path="access-denied" element={<AccessDeniedPage />} />
             
             {/* Ruta 404 */}

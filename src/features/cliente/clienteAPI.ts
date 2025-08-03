@@ -17,10 +17,14 @@ export const clienteAPI = {
     const response = await privateApi.post(BASE_URL, dto);
     return response.data;
   },
-
+  createBulkClientes: async (clientes: CreateClienteDto[]): Promise<Cliente[]> => {
+    const response = await privateApi.post(`${BASE_URL}/bulk`, clientes);
+    return response.data;
+  },
   // Obtener todos los clientes con filtros, paginación y ordenamiento
   getAllClientes: async (filters: FilterClienteDto): Promise<{ data: Cliente[], total: number }> => {
     const response = await privateApi.get(BASE_URL, { params: filters });
+    
     return response.data;
   },
 

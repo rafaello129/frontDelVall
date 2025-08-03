@@ -1,32 +1,115 @@
 import ExcelJS from 'exceljs';
 import FileSaver from 'file-saver';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-// Types for the reporte region
+// Interfaces actualizadas para incluir los pagos externos
 interface ReporteRegionData {
-    regionesTotales: Record<string, number>;
-    totalGeneral: number;
-    totalBancos: number; // Añadido para el error de totalBancos
-    cobranzasPorFechaRegion: Array<{
-      fecha: string;
-      porRegion: Record<string, number>;
-      total: number;
-    }>;
-    // Nuevos campos para pagos externos
-    pagoExternosPorTipo?: Record<string, {
-      total: number;
-      porRegion: Record<string, number>;
-    }>;
-    totalFinal: number; // Añadido para el total final
-  }
+  regionesTotales: Record<string, number>;
+  totalGeneral: number;
+  totalBancos: number;
+  cobranzasPorFechaRegion: Array<{
+    fecha: string;
+    porRegion: Record<string, number>;
+    total: number;
+  }>;
+  pagoExternosPorTipo?: Record<string, {
+    total: number;
+    porRegion: Record<string, number>;
+  }>;
+  totalFinal: number;
+}
 
-// Excel styling definitions
+// Interfaces para los pagos externos
+interface PagoExterno {
+  id: number;
+  fechaPago: Date;
+  monto: number;
+  tipoCambio: number;
+  montoDolares?: number;
+  tipo: string; // TipoPagoExterno
+  noCliente?: number;
+  nombrePagador?: string;
+  sucursal?: string;
+  concepto?: string;
+  codigoTransferencia?: string;
+  tipoMovimiento?: string;
+  referenciaPago?: string;
+  tipoPago: string; // TipoPago
+  bancoId: number;
+  notas?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  banco?: {
+    id: number;
+    nombre: string;
+    codigoBancario?: string;
+  };
+  cliente?: {
+    noCliente: number;
+    razonSocial: string;
+    comercial: string;
+  };
+}
+
+// Interfaces para estadísticas
+interface EstadisticaAgrupada {
+  categoria: string;
+  total: number;
+  cantidad: number;
+  promedio: number;
+  minimo?: number;
+  maximo?: number;
+  tendencia?: number;
+  porcentaje?: number;
+  comparacion?: ComparacionEstadistica;
+  detallesPorPeriodo?: DetallePorPeriodo[];
+}
+
+interface ComparacionEstadistica {
+  total: number;
+  cantidad: number;
+  promedio: number;
+  diferencia: number;
+  porcentaje: number;
+}
+
+interface DetallePorPeriodo {
+  periodo: string;
+  total: number;
+  cantidad: number;
+}
+
+interface EstadisticasMetadata {
+  total: number;
+  cantidad: number;
+  promedio: number;
+  periodoActual?: { fechaDesde: Date; fechaHasta: Date };
+  periodoComparacion?: { fechaDesde: Date; fechaHasta: Date };
+}
+
+// Datos adicionales para exportación
+interface DatosAdicionales {
+  pagosExternos?: PagoExterno[];
+  estadisticasPorTipo?: EstadisticaAgrupada[];
+  estadisticasMetadata?: EstadisticasMetadata;
+}
+
+// Estructura para unificar datos por fecha
+interface DatosPorFecha {
+  fecha: Date;
+  fechaStr: string;
+  total: number;
+  valores: Record<string, number>;
+  esFechaExclusiva?: boolean;
+}
+
+// Estilos para el Excel
 const getExcelStyles = () => {
   return {
     title: {
-      font: { name: 'Arial', size: 16, bold: true, color: { argb: 'FF303F9F' } },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8EAF6' } } as ExcelJS.Fill,
+      font: { name: 'Arial', size: 16, bold: true, color: { argb: 'FF004D40' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } } as ExcelJS.Fill,
       alignment: { horizontal: 'center' as const, vertical: 'middle' as const },
       border: {
         top: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
@@ -36,12 +119,12 @@ const getExcelStyles = () => {
       }
     },
     subtitle: {
-      font: { name: 'Arial', size: 12, bold: true, color: { argb: 'FF303F9F' } },
+      font: { name: 'Arial', size: 12, bold: true, color: { argb: 'FF004D40' } },
       alignment: { horizontal: 'left' as const, vertical: 'middle' as const }
     },
     header: {
       font: { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF303F9F' } } as ExcelJS.Fill,
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF004D40' } } as ExcelJS.Fill,
       alignment: { horizontal: 'center' as const, vertical: 'middle' as const },
       border: {
         top: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
@@ -50,29 +133,8 @@ const getExcelStyles = () => {
         right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
       }
     },
-    totalRow: {
-      font: { name: 'Arial', size: 11, bold: true },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8EAF6' } } as ExcelJS.Fill,
-      border: {
-        top: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
-        left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
-        bottom: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
-        right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
-      }
-    },
-    totalAmount: {
-      font: { name: 'Arial', size: 11, bold: true, color: { argb: 'FF303F9F' } },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8EAF6' } } as ExcelJS.Fill,
-      alignment: { horizontal: 'right' as const },
-      numFmt: '"$"#,##0.00',
-      border: {
-        top: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
-        left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
-        bottom: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
-        right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
-      }
-    },
-    dataCell: {
+    dateCell: {
+      alignment: { horizontal: 'center' as const },
       border: {
         top: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
         left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
@@ -89,17 +151,59 @@ const getExcelStyles = () => {
         bottom: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
         right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
       }
+    },
+    moneyZeroCell: {
+      alignment: { horizontal: 'right' as const },
+      numFmt: '"$"#,##0.00',
+      font: { name: 'Arial', size: 10, color: { argb: 'FF808080' } }, // Gris para ceros
+      border: {
+        top: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        bottom: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
+      }
+    },
+    dataCell: {
+      border: {
+        top: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        bottom: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
+      }
+    },
+    totalRow: {
+      font: { name: 'Arial', size: 11, bold: true },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEFD5' } } as ExcelJS.Fill,
+      border: {
+        top: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
+        left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        bottom: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
+        right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
+      }
+    },
+    totalAmount: {
+      font: { name: 'Arial', size: 11, bold: true, color: { argb: 'FF004D40' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEFD5' } } as ExcelJS.Fill,
+      alignment: { horizontal: 'right' as const },
+      numFmt: '"$"#,##0.00',
+      border: {
+        top: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
+        left: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } },
+        bottom: { style: 'medium' as const, color: { argb: 'FFB0BEC5' } },
+        right: { style: 'thin' as const, color: { argb: 'FFB0BEC5' } }
+      }
     }
   };
 };
 
-// Hook for Excel export functionality
+// Hook para exportación a Excel
 export const useExcelExport = () => {
-  // Function to export region report to Excel
+  // Función principal de exportación
   const exportReporteRegion = async (
     reporteRegion: ReporteRegionData,
     fechaDesde: Date | null,
-    fechaHasta: Date | null
+    fechaHasta: Date | null,
+    datosAdicionales?: DatosAdicionales
   ): Promise<void> => {
     if (!reporteRegion || !fechaDesde || !fechaHasta) {
       console.error('Datos insuficientes para exportar');
@@ -107,39 +211,54 @@ export const useExcelExport = () => {
     }
 
     try {
-      const regiones = Object.keys(reporteRegion.regionesTotales);
-      const currentDate = new Date();
-      const fileName = `Reporte_Cobranza_Region_${format(currentDate, 'yyyyMMdd_HHmmss')}.xlsx`;
+      // Obtener las regiones desde los datos
+      let regiones = Object.keys(reporteRegion.regionesTotales);
       
-      // Crear libro de trabajo con ExcelJS
+      // Asegurar que PACIFICO y NORTE estén incluidos como regiones
+      if (!regiones.includes('PACIFICO')) {
+        regiones.push('PACIFICO');
+      }
+      if (!regiones.includes('NORTE')) {
+        regiones.push('NORTE');
+      }
+      
+      const currentDate = new Date();
+      const fileName = `Reporte_Cobranza_${format(currentDate, 'yyyyMMdd_HHmmss')}.xlsx`;
+      
+      // Crear libro de trabajo Excel
       const workbook = new ExcelJS.Workbook();
       
-      // Establecer propiedades del documento
-      workbook.creator = "Sistema de Cobranza Del Valle";
+      // Configurar propiedades del documento
+      workbook.creator = "Sistema de Cobranza";
       workbook.lastModifiedBy = "Sistema de Cobranza";
       workbook.created = currentDate;
       workbook.modified = currentDate;
       workbook.properties.date1904 = false;
       
-      // Establecer propiedades adicionales usando casting seguro
-      const docProps = workbook.properties as any;
-      docProps.title = "Reporte de Cobranza por Región";
-      docProps.subject = `Período ${format(fechaDesde, 'dd/MM/yyyy')} - ${format(fechaHasta, 'dd/MM/yyyy')}`;
-      docProps.keywords = "cobranza, región, finanzas, reporte";
-      docProps.category = "Reportes Financieros";
-      docProps.company = "Del Valle";
-      
-      // Get styles
+      // Obtener estilos
       const styles = getExcelStyles();
       
-      // ----- HOJA 1: RESUMEN EJECUTIVO -----
-      createResumenSheet(workbook, reporteRegion, regiones, fechaDesde, fechaHasta, currentDate, styles);
+      // Preparar datos de pagos externos y combinar todos los datos por fecha
+      const { valoresDiariosPacifico, valoresDiariosNorte, totalPacificoBanco, totalNorteBanco, datosPorFechaOrdenados } = 
+        procesarDatosCobranza(reporteRegion, datosAdicionales?.pagosExternos || [], fechaDesde, fechaHasta, regiones);
       
-      // ----- HOJA 2: DETALLE DEL REPORTE -----
-      createDetalleSheet(workbook, reporteRegion, regiones, fechaDesde, fechaHasta, styles);
+      // ----- HOJA 1: COBRANZA POR SUCURSAL (Principal) -----
+      createCobranzaSheet(
+        workbook, 
+        reporteRegion, 
+        regiones, 
+        fechaDesde, 
+        fechaHasta, 
+        styles,
+        valoresDiariosPacifico,
+        valoresDiariosNorte,
+        totalPacificoBanco,
+        totalNorteBanco,
+        datosPorFechaOrdenados,
+        datosAdicionales
+      );
       
-      // ----- HOJA 3: ESTADÍSTICAS -----
-      createStatsSheet(workbook, reporteRegion, fechaDesde, fechaHasta, styles);
+      // La segunda hoja ha sido eliminada según lo solicitado
       
       // Guardar el archivo Excel
       const buffer = await workbook.xlsx.writeBuffer();
@@ -153,341 +272,406 @@ export const useExcelExport = () => {
     }
   };
 
-  // Function to create summary sheet
-  const createResumenSheet = (
+  // Función para procesar y unificar todos los datos de cobranza
+  const procesarDatosCobranza = (
+    reporteRegion: ReporteRegionData,
+    pagosExternos: PagoExterno[],
+    fechaDesde: Date,
+    fechaHasta: Date,
+    regiones: string[]
+  ) => {
+    // Inicializar objetos para valores diarios
+    const valoresDiariosPacifico: Record<string, number> = {};
+    const valoresDiariosNorte: Record<string, number> = {};
+    
+    // Variables para los totales
+    let totalPacificoBanco = 0;
+    let totalNorteBanco = 0;
+    
+    // Mapa para almacenar todos los datos por fecha
+    const datosPorFecha: Map<string, DatosPorFecha> = new Map();
+    
+    // 1. Procesar datos del reporte original
+    reporteRegion.cobranzasPorFechaRegion.forEach(item => {
+      const fecha = new Date(item.fecha);
+      const fechaStr = format(fecha, 'dd/MM/yyyy');
+      
+      // Inicializar valores por región para esta fecha
+      const valores: Record<string, number> = {};
+      regiones.forEach(region => {
+        valores[region] = item.porRegion[region] ? Number(item.porRegion[region]) : 0;
+      });
+      
+      // Guardar esta fecha en el mapa
+      datosPorFecha.set(fechaStr, {
+        fecha,
+        fechaStr,
+        total: Number(item.total),
+        valores,
+        esFechaExclusiva: false
+      });
+    });
+    
+    // 2. Procesar pagos externos
+    pagosExternos.forEach(pago => {
+      const fechaPago = new Date(pago.fechaPago);
+      const fechaStr = format(fechaPago, 'dd/MM/yyyy');
+      
+      // Solo procesar pagos en el rango de fechas
+      if (fechaPago >= fechaDesde && fechaPago <= fechaHasta) {
+        // Para Pacífico - Solo cobros de tipo banco
+        if (pago.tipo === 'COBROS_PACIFICO_BANCO') {
+          valoresDiariosPacifico[fechaStr] = (valoresDiariosPacifico[fechaStr] || 0) + pago.monto;
+          totalPacificoBanco += pago.monto;
+          
+          // Si esta fecha ya existe en el mapa, actualizar el valor de Pacífico
+          if (datosPorFecha.has(fechaStr)) {
+            const datosExistentes = datosPorFecha.get(fechaStr)!;
+            datosExistentes.valores['PACIFICO'] = valoresDiariosPacifico[fechaStr];
+          } 
+          // Si no existe, crear nueva entrada
+          else {
+            const valores: Record<string, number> = {};
+            regiones.forEach(region => {
+              valores[region] = region === 'PACIFICO' ? pago.monto : 0;
+            });
+            
+            datosPorFecha.set(fechaStr, {
+              fecha: fechaPago,
+              fechaStr,
+              total: pago.monto, // El total para esta fecha es solo este pago por ahora
+              valores,
+              esFechaExclusiva: true
+            });
+          }
+        }
+        
+        // Para Norte - Solo cobros de tipo banco
+        if (pago.tipo === 'COBRANZA_NORTE_BANCO') {
+          valoresDiariosNorte[fechaStr] = (valoresDiariosNorte[fechaStr] || 0) + pago.monto;
+          totalNorteBanco += pago.monto;
+          
+          // Si esta fecha ya existe en el mapa, actualizar el valor de Norte
+          if (datosPorFecha.has(fechaStr)) {
+            const datosExistentes = datosPorFecha.get(fechaStr)!;
+            datosExistentes.valores['NORTE'] = valoresDiariosNorte[fechaStr];
+            
+            // Si es una fecha exclusiva (creada por Pacífico), actualizar el total
+            if (datosExistentes.esFechaExclusiva) {
+              datosExistentes.total += pago.monto;
+            }
+          } 
+          // Si no existe, crear nueva entrada
+          else {
+            const valores: Record<string, number> = {};
+            regiones.forEach(region => {
+              valores[region] = region === 'NORTE' ? pago.monto : 0;
+            });
+            
+            datosPorFecha.set(fechaStr, {
+              fecha: fechaPago,
+              fechaStr,
+              total: pago.monto, // El total para esta fecha es solo este pago
+              valores,
+              esFechaExclusiva: true
+            });
+          }
+        }
+      }
+    });
+    
+    // Convertir el mapa a un array ordenado por fecha
+    const datosPorFechaOrdenados = Array.from(datosPorFecha.values())
+      .sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
+    
+    return { 
+      valoresDiariosPacifico, 
+      valoresDiariosNorte,
+      totalPacificoBanco,
+      totalNorteBanco,
+      datosPorFechaOrdenados
+    };
+  };
+
+  // Función para crear la hoja principal de cobranza
+  const createCobranzaSheet = (
     workbook: ExcelJS.Workbook,
     reporteRegion: ReporteRegionData,
     regiones: string[],
     fechaDesde: Date,
     fechaHasta: Date,
-    currentDate: Date,
-    styles: ReturnType<typeof getExcelStyles>
+    styles: ReturnType<typeof getExcelStyles>,
+    valoresDiariosPacifico: Record<string, number>,
+    valoresDiariosNorte: Record<string, number>,
+    totalPacificoBanco: number,
+    totalNorteBanco: number,
+    datosPorFechaOrdenados: DatosPorFecha[],
+    datosAdicionales?: DatosAdicionales
   ) => {
-    const worksheetResumen = workbook.addWorksheet('Resumen', {
-      pageSetup: { paperSize: 9, orientation: 'portrait' }
+    const worksheet = workbook.addWorksheet('Cobranza por Sucursal', {
+      pageSetup: { 
+        paperSize: 9, 
+        orientation: 'landscape',
+        fitToPage: true,
+        fitToWidth: 1
+      }
     });
     
-    // Configurar columnas para la hoja Resumen
-    worksheetResumen.columns = [
-      { header: '', width: 25 },
-      { header: '', width: 18 },
-      { header: '', width: 12 }
+    // Configurar columnas - Primera la fecha, luego el total, después todas las regiones
+    const columns: Partial<ExcelJS.Column>[] = [
+      { key: 'fecha', width: 12 }, // Fecha
+      { key: 'total', width: 16 }  // Total
     ];
     
-    // Añadir datos del resumen
-    worksheetResumen.addRow(['', '', '']);  // Espacio para logo
-    const titleRow = worksheetResumen.addRow(['REPORTE DE COBRANZA POR REGIÓN', '', '']);
-    worksheetResumen.addRow(['', '', '']);  // Espacio
-    const periodoRow = worksheetResumen.addRow([
-      `Período: ${format(fechaDesde, 'dd/MM/yyyy')} - ${format(fechaHasta, 'dd/MM/yyyy')}`,
-      '', ''
-    ]);
-    worksheetResumen.addRow(['Fecha de generación:', format(currentDate, 'dd/MM/yyyy HH:mm:ss'), '']);
-    worksheetResumen.addRow(['', '', '']);  // Espacio
-    worksheetResumen.addRow(['RESUMEN POR REGIÓN', '', '']);
-    
-    // Encabezados de tabla
-    const headerRow = worksheetResumen.addRow(['Región', 'Monto Total', 'Porcentaje']);
-    
-    // Datos de regiones
+    // Agregar una columna para cada región
     regiones.forEach(region => {
-      const montoNumerico: number = Number(reporteRegion.regionesTotales[region]) || 0;
-      const porcentaje: number = reporteRegion.totalGeneral 
-        ? (montoNumerico / reporteRegion.totalGeneral) * 100 
-        : 0;
-      const row = worksheetResumen.addRow([
-        region.replace('_', ' '),
-        montoNumerico,
-        porcentaje.toFixed(2) + '%'
-      ]);
-      row.getCell(1).style = styles.dataCell;
-      row.getCell(2).style = styles.moneyCell;
-      row.getCell(3).style = styles.dataCell;
+      columns.push({ key: region, width: 15 });
     });
     
-    // Espacio y fila de totales
-    worksheetResumen.addRow(['', '', '']);
-    const totalRow = worksheetResumen.addRow([
-      'TOTAL GENERAL', 
-      Number(reporteRegion.totalGeneral),
-      '100%'
-    ]);
+    // Aplicar configuración de columnas
+    worksheet.columns = columns;
     
-    // Aplicar estilos
-    titleRow.getCell(1).style = styles.title;
-    titleRow.height = 30;
-    periodoRow.getCell(1).style = styles.subtitle;
+    // TÍTULO - "COBRANZA"
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = 'COBRANZA';
+    titleCell.font = { name: 'Arial', size: 14, bold: true };
+    titleCell.alignment = { horizontal: 'left', vertical: 'middle' };
     
-    headerRow.eachCell((cell) => {
-      cell.style = styles.header;
+    // FECHA DEL REPORTE
+    const fechaCell = worksheet.getCell('A2');
+    fechaCell.value = format(fechaHasta, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es });
+    fechaCell.font = { name: 'Arial', size: 12 };
+    fechaCell.alignment = { horizontal: 'left', vertical: 'middle' };
+    
+    // SUBTÍTULO - "Cobranza x Sucursal MES AÑO"
+    const mesAño = format(fechaHasta, "MMMM yyyy", { locale: es }).toUpperCase();
+    const subtitleCell = worksheet.getCell(`C3`);
+    subtitleCell.value = `Cobranza x Sucursal ${mesAño}`;
+    subtitleCell.font = { name: 'Arial', size: 12, bold: true };
+    subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    
+    // Combinar celdas para subtítulo
+    const lastCol = String.fromCharCode(65 + regiones.length + 1);
+    worksheet.mergeCells(`C3:${lastCol}3`);
+    
+    // ENCABEZADOS DE TABLA
+    const headerRow = worksheet.addRow(['']);
+    headerRow.getCell(1).value = 'FECHA';
+    headerRow.getCell(1).style = styles.header;
+    
+    headerRow.getCell(2).value = 'TOTAL'; // Ahora ponemos "TOTAL" como texto en vez de dejarlo vacío
+    headerRow.getCell(2).style = styles.header;
+    
+    // Encabezados para cada región
+    regiones.forEach((region, index) => {
+      headerRow.getCell(index + 3).value = region;
+      headerRow.getCell(index + 3).style = styles.header;
     });
+    
     headerRow.height = 20;
     
-    totalRow.getCell(1).style = styles.totalRow;
-    totalRow.getCell(2).style = styles.totalAmount;
-    totalRow.getCell(3).style = styles.totalRow;
+    // Variable para registrar la fila donde comienza la tabla
+    const dataStartRow = worksheet.rowCount;
     
-    // Combinar celdas para títulos
-    worksheetResumen.mergeCells('A2:C2');  // Título
-    worksheetResumen.mergeCells('A4:C4');  // Período
-  };
-
-  // Function to create details sheet
-  const createDetalleSheet = (
-    workbook: ExcelJS.Workbook,
-    reporteRegion: ReporteRegionData,
-    regiones: string[],
-    fechaDesde: Date,
-    fechaHasta: Date,
-    styles: ReturnType<typeof getExcelStyles>
-  ) => {
-    const worksheetDetalle = workbook.addWorksheet('Detalle por Fecha', {
-      pageSetup: { paperSize: 9, orientation: 'landscape' }
-    });
-    
-    // Definir columnas para la hoja de detalle
-    const detalleColumns = [
-      { header: 'FECHA', width: 20 },
-      { header: '', width: 2 }
-    ];
-    
-    regiones.forEach(region => {
-      detalleColumns.push({ header: region.replace('_', ' '), width: 18 });
-    });
-    
-    detalleColumns.push({ header: 'TOTAL', width: 20 });
-    worksheetDetalle.columns = detalleColumns;
-    
-    // Añadir título y período
-    const detalleTitleRow = worksheetDetalle.addRow(['COBRANZA POR REGIÓN']);
-    const detallePeriodoRow = worksheetDetalle.addRow([
-      `Del ${format(fechaDesde, 'dd/MM/yyyy')} al ${format(fechaHasta, 'dd/MM/yyyy')}`
-    ]);
-    worksheetDetalle.addRow([]);  // Espacio
-    
-    // Obtener la fila de encabezados que ya se estableció con las columnas
-    const detalleHeaderRow = worksheetDetalle.addRow(detalleColumns.map(col => col.header));
-    
-    // Datos por fecha
-    reporteRegion.cobranzasPorFechaRegion.forEach(item => {
-      const rowData: any[] = [
-        format(new Date(item.fecha), 'dd/MM/yyyy'),
-        ''
-      ];
+    // DATOS POR FECHA (ya ordenados cronológicamente)
+    datosPorFechaOrdenados.forEach(datosFecha => {
+      const row = worksheet.addRow(['']);
       
-      regiones.forEach(region => {
-        const valorNumerico: number = item.porRegion[region] ? Number(item.porRegion[region]) : 0;
-        rowData.push(valorNumerico);
+      // Fecha
+      row.getCell(1).value = datosFecha.fechaStr;
+      row.getCell(1).style = styles.dateCell;
+      
+      // Total
+      row.getCell(2).value = datosFecha.total;
+      row.getCell(2).style = styles.moneyCell;
+      
+      // Valores por región
+      regiones.forEach((region, index) => {
+        const valor = datosFecha.valores[region] || 0;
+        
+        row.getCell(index + 3).value = valor;
+        
+        // Aplicar estilo diferente si el valor es cero
+        if (valor === 0) {
+          row.getCell(index + 3).style = styles.moneyZeroCell;
+        } else {
+          row.getCell(index + 3).style = styles.moneyCell;
+        }
       });
+    });
+    
+    // Aplicar AutoFilter a las filas de datos
+    const dataEndRow = worksheet.rowCount;
+    const numColumns = regiones.length + 2; // +2 por la fecha y el total
+    const lastColLetter = String.fromCharCode(64 + numColumns);
+    
+    // Aplicar AutoFilter desde la fila de encabezado hasta la última fila de datos
+    worksheet.autoFilter = {
+      from: { row: dataStartRow, column: 1 },
+      to: { row: dataEndRow, column: numColumns }
+    };
+    
+    // FILA TOTAL BANCOS
+    const totalBancosRow = worksheet.addRow(['Total Bancos']);
+    totalBancosRow.getCell(1).style = styles.totalRow;
+    
+    // Total de bancos (segunda columna)
+    totalBancosRow.getCell(2).value = Number(reporteRegion.totalBancos);
+    totalBancosRow.getCell(2).style = styles.totalAmount;
+    
+    // Totales por región
+    regiones.forEach((region, index) => {
+      let valor = reporteRegion.regionesTotales[region] || 0;
       
-      rowData.push(Number(item.total));
-      const dataRow = worksheetDetalle.addRow(rowData);
-      
-      // Aplicar estilos a las celdas
-      dataRow.getCell(1).style = styles.dataCell;
-      dataRow.getCell(2).style = styles.dataCell;
-      
-      for (let i = 0; i < regiones.length; i++) {
-        dataRow.getCell(i + 3).style = styles.moneyCell;
+      // Usar los totales calculados para PACIFICO y NORTE
+      if (region === 'PACIFICO') {
+        valor = totalPacificoBanco; 
+      } else if (region === 'NORTE') {
+        valor = totalNorteBanco;
       }
       
-      dataRow.getCell(regiones.length + 3).style = styles.moneyCell;
+      totalBancosRow.getCell(index + 3).value = valor;
+      totalBancosRow.getCell(index + 3).style = styles.totalAmount;
     });
     
-    // Espacio y fila de totales bancos
-    worksheetDetalle.addRow([]);
+    // Encontrar y agrupar pagos externos por tipo
+    const tiposPagoExterno = obtenerTiposPagoExterno(datosAdicionales?.pagosExternos || []);
     
-    const detalleTotalBancosRow: any[] = ['TOTAL BANCOS', ''];
-    regiones.forEach(region => {
-      const valorTotal: number = reporteRegion.regionesTotales[region] ? 
-        Number(reporteRegion.regionesTotales[region]) : 0;
-      detalleTotalBancosRow.push(valorTotal);
-    });
-    detalleTotalBancosRow.push(Number(reporteRegion.totalBancos));
-    
-    const rowTotalesBancos = worksheetDetalle.addRow(detalleTotalBancosRow);
-    
-    // Aplicar estilos al total de bancos
-    rowTotalesBancos.getCell(1).style = styles.totalRow;
-    rowTotalesBancos.getCell(2).style = styles.totalRow;
-    
-    for (let i = 0; i < regiones.length; i++) {
-      rowTotalesBancos.getCell(i + 3).style = styles.totalAmount;
-    }
-    rowTotalesBancos.getCell(regiones.length + 3).style = styles.totalAmount;
-    
-    // Añadir filas de pagos externos por tipo
-    if (reporteRegion.pagoExternosPorTipo) {
-      Object.entries(reporteRegion.pagoExternosPorTipo).forEach(([tipo, data]) => {
-        const rowPagoExterno: any[] = [
-          tipo.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' '),
-          ''
-        ];
+    // FILAS DE PAGOS ESPECÍFICOS - Generados dinámicamente desde los datos
+    Object.entries(tiposPagoExterno).forEach(([tipo, datos]) => {
+      const row = worksheet.addRow([formatTipoPagoExterno(tipo)]);
+      row.getCell(1).style = styles.dataCell;
+      
+      // Total del tipo de pago
+      row.getCell(2).value = datos.total;
+      row.getCell(2).style = styles.moneyCell;
+      
+      // Inicializar todas las celdas con cero
+      for (let i = 0; i < regiones.length; i++) {
+        const regionActual = regiones[i];
+        const valorRegion = datos.porRegion[regionActual] || 0;
         
-        regiones.forEach(region => {
-          const valorRegion = data.porRegion[region] ? Number(data.porRegion[region]) : 0;
-          rowPagoExterno.push(valorRegion);
-        });
+        row.getCell(i + 3).value = valorRegion;
         
-        rowPagoExterno.push(Number(data.total));
-        const externalRow = worksheetDetalle.addRow(rowPagoExterno);
-        
-        // Estilos para filas de pagos externos
-        externalRow.getCell(1).style = {
-          ...styles.dataCell,
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } } as ExcelJS.Fill
-        };
-        externalRow.getCell(2).style = {
-          ...styles.dataCell,
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } } as ExcelJS.Fill
-        };
-        
-        for (let i = 0; i < regiones.length; i++) {
-          externalRow.getCell(i + 3).style = {
-            ...styles.moneyCell,
-            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } } as ExcelJS.Fill
-          };
+        if (valorRegion === 0) {
+          row.getCell(i + 3).style = styles.moneyZeroCell;
+        } else {
+          row.getCell(i + 3).style = styles.moneyCell;
         }
-        
-        externalRow.getCell(regiones.length + 3).style = {
-          ...styles.moneyCell,
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } } as ExcelJS.Fill
-        };
-      });
-    }
+      }
+    });
     
-    // Total final
-    const totalFinalRow: any[] = ['TOTAL COBRANZA', ''];
+    // FILA DE TOTAL COBRANZA
+    const totalFinal = reporteRegion.totalFinal;
+    const totalFinalRow = worksheet.addRow(['Total Cobranza']);
+    totalFinalRow.getCell(1).style = {
+      ...styles.totalRow,
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFD700' } } as ExcelJS.Fill,
+    };
+    
+    totalFinalRow.getCell(2).value = totalFinal;
+    totalFinalRow.getCell(2).style = {
+      ...styles.totalAmount,
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFD700' } } as ExcelJS.Fill,
+    };
     
     // Calcular totales por región incluyendo pagos externos
-    regiones.forEach(region => {
+    regiones.forEach((region, index) => {
       let totalRegion = reporteRegion.regionesTotales[region] || 0;
       
-      if (reporteRegion.pagoExternosPorTipo) {
-        Object.values(reporteRegion.pagoExternosPorTipo).forEach(tipo => {
-          totalRegion += tipo.porRegion[region] || 0;
-        });
-      }
+      // Añadir totales de pagos externos para cada región
+      Object.values(tiposPagoExterno).forEach(datos => {
+        totalRegion += datos.porRegion[region] || 0;
+      });
       
-      totalFinalRow.push(totalRegion);
-    });
-    
-    totalFinalRow.push(Number(reporteRegion.totalFinal));
-    const rowTotalFinal = worksheetDetalle.addRow(totalFinalRow);
-    
-    // Aplicar estilos al total final
-    rowTotalFinal.eachCell((cell, colNumber) => {
-      cell.style = {
+      totalFinalRow.getCell(index + 3).value = totalRegion;
+      totalFinalRow.getCell(index + 3).style = {
         ...styles.totalAmount,
-        font: { name: 'Arial', size: 11, bold: true, color: { argb: 'FF006100' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } } as ExcelJS.Fill,
-        border: {
-          top: { style: 'medium' as const, color: { argb: 'FF006100' } },
-          left: { style: 'thin' as const, color: { argb: 'FF006100' } },
-          bottom: { style: 'medium' as const, color: { argb: 'FF006100' } },
-          right: { style: 'thin' as const, color: { argb: 'FF006100' } }
-        }
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFD700' } } as ExcelJS.Fill,
       };
-      if (colNumber === 1) {
-        cell.alignment = { horizontal: 'left' as const };
-      }
     });
     
-    // Aplicar estilo al título de la hoja de detalle
-    detalleTitleRow.getCell(1).style = styles.title;
-    detalleTitleRow.height = 30;
-    detallePeriodoRow.getCell(1).style = styles.subtitle;
-    
-    detalleHeaderRow.eachCell((cell) => {
-      cell.style = styles.header;
-    });
-    detalleHeaderRow.height = 20;
-    
-    // Combinar celdas para títulos en la hoja de detalle
-    const lastCol = String.fromCharCode(65 + regiones.length + 2);
-    worksheetDetalle.mergeCells(`A1:${lastCol}1`); // Título
-    worksheetDetalle.mergeCells(`A2:${lastCol}2`); // Período
-    
-    // Establecer autofilter para facilitar la navegación
-    worksheetDetalle.autoFilter = {
-      from: { row: 4, column: 1 },
-      to: { row: 4, column: regiones.length + 3 }
-    };
-    
-    // Congelar la primera fila y columna
-    worksheetDetalle.views = [
+    // Configurar vista congelada para una mejor navegación
+    worksheet.views = [
       { state: 'frozen', xSplit: 1, ySplit: 4, activeCell: 'B5' }
     ];
-    
-    // Configurar encabezados y pies de página
-    worksheetDetalle.headerFooter = {
-      oddHeader: '&L&B&20Detalle de Cobranza por Región&C&D&R&F',
-      oddFooter: '&L&BPágina &P de &N&C&B' +
-        format(new Date(), 'dd/MM/yyyy HH:mm') +
-        '&R&BGenerado por: Sistema Del Valle'
-    };
   };
 
-  // Function to create stats sheet
-  const createStatsSheet = (
-    workbook: ExcelJS.Workbook,
-    reporteRegion: ReporteRegionData,
-    fechaDesde: Date,
-    fechaHasta: Date,
-    styles: ReturnType<typeof getExcelStyles>
-  ) => {
-    const regiones = Object.keys(reporteRegion.regionesTotales);
-    const worksheetStats = workbook.addWorksheet('Estadísticas', {
-      pageSetup: { paperSize: 9, orientation: 'portrait' }
+  // Función para agrupar pagos externos por tipo
+  const obtenerTiposPagoExterno = (pagosExternos: PagoExterno[]) => {
+    const tiposPago: Record<string, {
+      total: number;
+      porRegion: Record<string, number>;
+    }> = {};
+    
+    pagosExternos.forEach(pago => {
+      // Inicializar el tipo si no existe
+      if (!tiposPago[pago.tipo]) {
+        tiposPago[pago.tipo] = {
+          total: 0,
+          porRegion: {}
+        };
+      }
+      
+      // Sumar al total del tipo
+      tiposPago[pago.tipo].total += pago.monto;
+      
+      // Sumar a la región correspondiente según el tipo
+      let region = pago.sucursal || '';
+      
+      // Asignar la región correcta según el tipo de pago
+      switch(pago.tipo) {
+        case 'COBROS_EFECTIVO_RIVIERA':
+          if (pago.sucursal === 'QUINTANA_ROO') {
+            region = 'QUINTANA ROO';
+          } else if (pago.sucursal === 'YUCATAN') {
+            region = 'YUCATAN';
+          }
+          break;
+        case 'COBROS_PACIFICO_BANCO':
+        case 'COBROS_PACIFICO_EFECTIVO':
+          region = 'PACIFICO';
+          break;
+        case 'COBRANZA_NORTE_BANCO':
+          region = 'NORTE';
+          break;
+        case 'CUENTA_NASSIM':
+          // Distribuir entre QUINTANA ROO (70%) y YUCATAN (30%)
+          if (!tiposPago[pago.tipo].porRegion['QUINTANA ROO']) {
+            tiposPago[pago.tipo].porRegion['QUINTANA ROO'] = 0;
+          }
+          if (!tiposPago[pago.tipo].porRegion['YUCATAN']) {
+            tiposPago[pago.tipo].porRegion['YUCATAN'] = 0;
+          }
+          tiposPago[pago.tipo].porRegion['QUINTANA ROO'] += pago.monto * 0.7;
+          tiposPago[pago.tipo].porRegion['YUCATAN'] += pago.monto * 0.3;
+          return; // Salimos para evitar la asignación genérica de abajo
+        default:
+          // Si no es un tipo especial, usar la sucursal como región
+          region = pago.sucursal?.replace('_', ' ') || '';
+      }
+      
+      // Acumular en la región correspondiente
+      if (region) {
+        if (!tiposPago[pago.tipo].porRegion[region]) {
+          tiposPago[pago.tipo].porRegion[region] = 0;
+        }
+        tiposPago[pago.tipo].porRegion[region] += pago.monto;
+      }
     });
     
-    // Configurar columnas para estadísticas
-    worksheetStats.columns = [
-      { header: '', width: 25 },
-      { header: '', width: 15 }
-    ];
+    return tiposPago;
+  };
+
+  // Función auxiliar para formatear tipos de pago externo
+  const formatTipoPagoExterno = (tipo: string): string => {
+    if (!tipo) return 'Desconocido';
     
-    // Añadir datos de estadísticas
-    worksheetStats.addRow(['ESTADÍSTICAS DE COBRANZA', '']);
-    worksheetStats.addRow(['', '']);
-    worksheetStats.addRow(['Período analizado:', `${format(fechaDesde, 'dd/MM/yyyy')} - ${format(fechaHasta, 'dd/MM/yyyy')}`]);
-    worksheetStats.addRow(['Total de registros:', reporteRegion.cobranzasPorFechaRegion.length.toString()]);
-    
-    const montoTotalRow = worksheetStats.addRow(['Monto total cobrado:', Number(reporteRegion.totalGeneral)]);
-    montoTotalRow.getCell(2).numFmt = '"$"#,##0.00';
-    
-    const promedioDiario = reporteRegion.cobranzasPorFechaRegion.length > 0 
-      ? Number(reporteRegion.totalGeneral) / reporteRegion.cobranzasPorFechaRegion.length
-      : 0;
-    const promedioDiarioRow = worksheetStats.addRow(['Promedio diario:', promedioDiario]);
-    promedioDiarioRow.getCell(2).numFmt = '"$"#,##0.00';
-    
-    worksheetStats.addRow(['', '']);
-    worksheetStats.addRow(['DISTRIBUCIÓN POR REGIÓN', '']);
-    
-    const distribucionHeaderRow = worksheetStats.addRow(['Región', 'Porcentaje']);
-    distribucionHeaderRow.eachCell((cell) => {
-      cell.style = styles.header;
-    });
-    
-    // Datos de distribución por región
-    regiones.forEach(region => {
-      const montoRegion: number = Number(reporteRegion.regionesTotales[region]) || 0;
-      const porcentajeRegion: number = reporteRegion.totalGeneral 
-        ? (montoRegion / reporteRegion.totalGeneral) * 100 
-        : 0;
-      worksheetStats.addRow([
-        region.replace('_', ' '),
-        porcentajeRegion.toFixed(2) + '%'
-      ]);
-    });
-    
-    // Aplicar estilo al título de estadísticas
-    worksheetStats.getRow(1).getCell(1).style = styles.title;
-    worksheetStats.mergeCells('A1:B1');
-    
-    worksheetStats.getRow(8).getCell(1).style = styles.subtitle;
-    worksheetStats.mergeCells('A8:B8');
+    // Convertir COBROS_EFECTIVO_RIVIERA a "Cobros Efectivo Riviera"
+    return tipo
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   return {

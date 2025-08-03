@@ -18,19 +18,22 @@ import {
   People as PeopleIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  InsertChartOutlinedSharp
 } from '@mui/icons-material';
-
+import {usePapaParse} from 'react-papaparse';
+import CsvReader from '../components/csvReader';
 const ClientesPage: React.FC = () => {
   const theme = useTheme();
-  const { getAllClientes, resetError, isLoading } = useCliente();
+  const { getAllClientes, resetError, setPagination } = useCliente();
   const [filters, setFilters] = useState<FilterClienteDto>({});
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0); // Used to force filter component refresh
-
   useEffect(() => {
+    setPagination(10,10)
     resetError();
     getAllClientes(filters);
+    console.log('ClientesPage mounted, fetching clientes with filters:', filters);
   }, []);
 
   const handleFilter = (newFilters: FilterClienteDto) => {
@@ -104,13 +107,13 @@ const ClientesPage: React.FC = () => {
 
             <Button
               component={Link}
-              to="/reportes/clientes"
+              to="/clientes/csv"
               variant="outlined"
               color="secondary"
               startIcon={<BarChartIcon />}
               sx={{ whiteSpace: 'nowrap', display: { xs: 'none', sm: 'flex' } }}
             >
-              Reportes
+              Subir CSV
             </Button>
             
             <Button
@@ -121,6 +124,15 @@ const ClientesPage: React.FC = () => {
               sx={{ whiteSpace: 'nowrap' }}
             >
               Nuevo Cliente
+            </Button>
+            <Button
+              component={Link}
+              to="/clientes/excel"
+              variant="outlined"
+              startIcon={<InsertChartOutlinedSharp></InsertChartOutlinedSharp>}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Exportar Excel
             </Button>
           </Box>
         </Box>
@@ -155,22 +167,7 @@ const ClientesPage: React.FC = () => {
         <Box sx={{ position: 'relative', mb: 7 }}>
           <ClienteList filters={filters} />
           
-          <Tooltip title="Actualizar">
-            <Fab
-              color="primary"
-              size="small"
-              onClick={handleRefresh}
-              disabled={isLoading}
-              sx={{ 
-                position: 'absolute',
-                bottom: -28,
-                right: 16,
-                boxShadow: 2
-              }}
-            >
-              <RefreshIcon />
-            </Fab>
-          </Tooltip>
+    
         </Box>
       </Box>
     </motion.div>

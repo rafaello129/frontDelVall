@@ -18,7 +18,8 @@ import {
   selectReporteCobranza,
   selectCobranzasLoading,
   selectCobranzasError,
-  clearSelectedCobranza
+  clearSelectedCobranza,
+  createbulkCobranza
 } from '../cobranzaSlice';
 import type { CreateCobranzaDto, FilterCobranzaDto, UpdateCobranzaDto } from '../types';
 
@@ -47,6 +48,9 @@ export const useCobranzas = () => {
   const addCobranza = useCallback((cobranzaData: CreateCobranzaDto) => {
     return dispatch(createCobranza(cobranzaData)).unwrap();
   }, [dispatch]);
+  const addBulkCobranzas = useCallback((cobranzas: CreateCobranzaDto[]) => {
+    return dispatch(createbulkCobranza(cobranzas)).unwrap();
+  }, [dispatch]);
 
   const updateCobranzaById = useCallback((id: number, cobranzaData: UpdateCobranzaDto) => {
     return dispatch(updateCobranza({ id, cobranzaData })).unwrap();
@@ -56,7 +60,7 @@ export const useCobranzas = () => {
     return dispatch(deleteCobranza(id)).unwrap();
   }, [dispatch]);
 
-  const getPagosPorFactura = useCallback((noFactura: number) => {
+  const getPagosPorFactura = useCallback((noFactura: string) => {
     return dispatch(fetchPagosPorFactura(noFactura));
   }, [dispatch]);
 
@@ -87,6 +91,7 @@ export const useCobranzas = () => {
     getAllCobranzas,
     getCobranzaById,
     addCobranza,
+    addBulkCobranzas,
     updateCobranzaById,
     removeCobranza,
     getPagosPorFactura,

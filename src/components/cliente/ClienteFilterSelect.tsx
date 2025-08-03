@@ -27,8 +27,7 @@ const ClienteFilterSelect: React.FC<ClienteFilterSelectProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
-    getAllClientes();
-   // console.log('Clientes cargados:', clientes);
+    getAllClientes({limit: 1000});
   }, [getAllClientes]);
 
   // Filtrar clientes según el término de búsqueda

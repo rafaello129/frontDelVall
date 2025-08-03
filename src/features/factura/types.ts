@@ -49,27 +49,28 @@ export interface ClienteResumen {
     monto: number;
   }
   
-  // Filtros para consultar facturas
-  export interface FilterFacturaDto {
-    noFactura?: string;
-    noCliente?: number;
-    estado?: string;
-    emisionDesde?: Date;
-    emisionHasta?: Date;
-    vencimientoDesde?: Date;
-    vencimientoHasta?: Date;
-    saldoMinimo?: number;
-    soloVencidas?: boolean;
-    incluirCliente?: boolean;
-    limit?: number;
-    skip?: number;
-    sortBy?: string;
-    order?: 'asc' | 'desc';
-  }
-  
+    // Filtros para consultar facturas
+    export interface FilterFacturaDto {
+      noFactura?: string;
+      noCliente?: number;
+      estado?: string;
+      emisionDesde?: Date;
+      emisionHasta?: Date;
+      vencimientoDesde?: Date;
+      vencimientoHasta?: Date;
+      saldoMinimo?: number;
+      soloVencidas?: boolean;
+      incluirCliente?: boolean;
+      limit?: number;
+      skip?: number;
+      sortBy?: string;
+      order?: 'asc' | 'desc';
+    }
+    
  // Estado para el slice de Redux
 export interface FacturaState {
   facturas: Factura[];
+  total: number; // Total de facturas
   selectedFactura: Factura | null;
   facturasVencidas: Factura[]; // Para facturas vencidas
   facturasPendientes: Factura[]; // Para facturas pendientes por cliente

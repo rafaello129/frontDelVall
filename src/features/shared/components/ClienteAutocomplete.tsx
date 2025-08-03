@@ -31,7 +31,7 @@ export const ClienteAutocomplete: React.FC<ClienteAutocompleteProps> = ({
 
   useEffect(() => {
     setLoading(true);
-    dispatch(fetchClientes({ limit: 100 }))
+    dispatch(fetchClientes({ limit: 1000 }))
       .finally(() => setLoading(false));
   }, [dispatch]);
 

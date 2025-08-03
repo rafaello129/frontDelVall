@@ -14,7 +14,6 @@ const ProyeccionCreatePage: React.FC = () => {
   const queryParams = new URLSearchParams(location.search);
   const noCliente = queryParams.get('noCliente') ? Number(queryParams.get('noCliente')) : undefined;
 
-  // Fixed type to match what ProyeccionForm expects
   const handleSubmit = async (data: CreateProyeccionPagoDto | UpdateProyeccionPagoDto) => {
     try {
       // Since we're creating, we know it's a CreateProyeccionPagoDto
@@ -32,7 +31,7 @@ const ProyeccionCreatePage: React.FC = () => {
           Nueva Proyección de Pago
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
-          Registra una nueva proyección de pago para un cliente.
+          Registra una nueva proyección de pago con los datos esenciales.
         </Typography>
         
         <ProyeccionForm 

@@ -106,6 +106,7 @@ export interface Cliente {
   
   export interface ClienteState {
     clientes: Cliente[];
+    clientesForFilters: Cliente[];
     selectedCliente: Cliente | null;
     facturasPendientes: FacturaPendiente[];
     antiguedadSaldos: SaldoAntiguedad[];
@@ -115,7 +116,7 @@ export interface Cliente {
       skip: number;
     };
     filteredOptions: {
-      noClientes: [],
+      noClientes:number[],
       razonSocial: [],
       comercial: []
     },

@@ -369,7 +369,7 @@ const ClienteDetail: React.FC<ClienteDetailProps> = ({ cliente, showActions = tr
           }}
         />
         <CardContent>
-          <FacturasPendientesTable noCliente={cliente.noCliente} />
+          <FacturasPendientesTable noCliente={cliente.noCliente} cliente= {cliente} />
         </CardContent>
       </Card>
     </Box>

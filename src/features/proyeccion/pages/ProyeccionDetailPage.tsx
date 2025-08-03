@@ -6,7 +6,6 @@ import {
   Typography,
   Paper,
   Divider,
-  Chip,
   Card,
   CardContent,
   Alert,
@@ -16,25 +15,17 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  List,
   Stack
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
-  Add as AddIcon,
-  Notifications as NotificationsIcon
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useProyecciones } from '../hooks/useProyecciones';
-import { EstadoProyeccion } from '../types';
-import { TipoPago } from '../../shared/enums';
 import { ProyeccionEstadoChip } from '../components/ProyeccionEstadoChip';
-import { TipoPagoChip } from '../../shared/components/TipoPagoChip';
-import { useBitacora } from '../../bitacora/hooks/useBitacora';
-import { BitacoraListItem } from '../../bitacora/components/BitacoraListItem';
 
 const ProyeccionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,17 +33,10 @@ const ProyeccionDetailPage: React.FC = () => {
   const { 
     selectedProyeccion, 
     getProyeccionById, 
-    removeProyeccion, 
-    markNotificacionEnviada,
+    removeProyeccion,
     isLoading, 
     error 
   } = useProyecciones();
-  
-  const { 
-    proyeccionBitacoras,
-    getBitacorasByProyeccion,
-    isLoading: bitacoraLoading
-  } = useBitacora();
   
   const [loadingData, setLoadingData] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -63,7 +47,6 @@ const ProyeccionDetailPage: React.FC = () => {
         if (id) {
           const proyeccionId = parseInt(id, 10);
           await getProyeccionById(proyeccionId);
-          await getBitacorasByProyeccion(proyeccionId);
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -73,7 +56,7 @@ const ProyeccionDetailPage: React.FC = () => {
     };
 
     loadData();
-  }, [id, getProyeccionById, getBitacorasByProyeccion]);
+  }, [id, getProyeccionById]);
 
   const handleEdit = () => {
     navigate(`/proyecciones/${id}/editar`);
@@ -97,28 +80,6 @@ const ProyeccionDetailPage: React.FC = () => {
 
   const handleDeleteCancel = () => {
     setDeleteDialog(false);
-  };
-
-  const handleMarkNotificacion = async () => {
-    try {
-      if (id && selectedProyeccion && !selectedProyeccion.notificacionEnviada) {
-        await markNotificacionEnviada(parseInt(id, 10));
-      }
-    } catch (error) {
-      console.error('Error al marcar notificación como enviada:', error);
-    }
-  };
-  
-  const handleAddBitacora = () => {
-    navigate(`/bitacora/nuevo?proyeccionId=${id}`);
-  };
-  
-  const handleEditBitacora = (bitacoraId: number) => {
-    navigate(`/bitacora/${bitacoraId}/editar`);
-  };
-  
-  const handleDeleteBitacora = (bitacoraId: number) => {
-    navigate(`/bitacora/${bitacoraId}`);
   };
 
   if (loadingData) {
@@ -157,16 +118,6 @@ const ProyeccionDetailPage: React.FC = () => {
           </Typography>
         </Box>
         <Box>
-          {!selectedProyeccion.notificacionEnviada && (
-            <Button
-              variant="outlined"
-              startIcon={<NotificationsIcon />}
-              onClick={handleMarkNotificacion}
-              sx={{ mr: 1 }}
-            >
-              Marcar Notificación Enviada
-            </Button>
-          )}
           <Button 
             variant="outlined" 
             startIcon={<EditIcon />} 
@@ -192,253 +143,112 @@ const ProyeccionDetailPage: React.FC = () => {
         </Alert>
       )}
 
-      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3}>
-        <Box sx={{ flex: 2 }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <Typography variant="h6">
-                  Estado:
-                </Typography>
-                <ProyeccionEstadoChip estado={selectedProyeccion.estado} />
-                {selectedProyeccion.notificacionEnviada && (
-                  <Chip 
-                    label="Notificación Enviada" 
-                    color="success" 
-                    size="small"
-                    icon={<NotificationsIcon />}
-                  />
-                )}
-              </Box>
-              <Divider sx={{ mb: 3 }} />
+      <Card>
+        <CardContent>
+          <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <Typography variant="h6">
+              Estado:
+            </Typography>
+            <ProyeccionEstadoChip estado={selectedProyeccion.estado} />
+          </Box>
+          <Divider sx={{ mb: 3 }} />
 
-              <Stack spacing={3}>
-                <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={3}>
-                  {/* Información del Cliente */}
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Información del Cliente
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2 }}>
-                      <Stack spacing={2}>
+          <Stack spacing={3}>
+            <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={3}>
+              {/* Información del Cliente */}
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Información del Cliente
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        No. Cliente
+                      </Typography>
+                      <Typography variant="body1">
+                        {selectedProyeccion.noCliente}
+                        {selectedProyeccion.cliente && (
+                          <Button 
+                            variant="text" 
+                            size="small"
+                            onClick={() => navigate(`/clientes/${selectedProyeccion.noCliente}`)}
+                            sx={{ ml: 1 }}
+                          >
+                            Ver Cliente
+                          </Button>
+                        )}
+                      </Typography>
+                    </Box>
+                    
+                    {selectedProyeccion.cliente && (
+                      <>
                         <Box>
                           <Typography variant="body2" color="text.secondary">
-                            No. Cliente
+                            Razón Social
                           </Typography>
                           <Typography variant="body1">
-                            {selectedProyeccion.noCliente}
-                            {selectedProyeccion.cliente && (
-                              <Button 
-                                variant="text" 
-                                size="small"
-                                onClick={() => navigate(`/clientes/${selectedProyeccion.noCliente}`)}
-                                sx={{ ml: 1 }}
-                              >
-                                Ver Cliente
-                              </Button>
-                            )}
+                            {selectedProyeccion.cliente.razonSocial}
                           </Typography>
                         </Box>
                         
-                        {selectedProyeccion.cliente && (
-                          <>
-                            <Box>
-                              <Typography variant="body2" color="text.secondary">
-                                Razón Social
-                              </Typography>
-                              <Typography variant="body1">
-                                {selectedProyeccion.cliente.razonSocial}
-                              </Typography>
-                            </Box>
-                            
-                            <Box>
-                              <Typography variant="body2" color="text.secondary">
-                                Nombre Comercial
-                              </Typography>
-                              <Typography variant="body1">
-                                {selectedProyeccion.cliente.comercial || selectedProyeccion.cliente.razonSocial}
-                              </Typography>
-                            </Box>
-                          </>
-                        )}
-                      </Stack>
-                    </Paper>
-                  </Box>
-
-                  {/* Información de Pago */}
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Información de Pago
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2 }}>
-                      <Stack spacing={2}>
-                        <Box display="flex" justifyContent="space-between" flexWrap="wrap">
-                          <Box sx={{ minWidth: '48%' }}>
-                            <Typography variant="body2" color="text.secondary">
-                              Fecha Proyectada
-                            </Typography>
-                            <Typography variant="body1">
-                              {format(new Date(selectedProyeccion.fechaProyectada), 'dd/MM/yyyy', { locale: es })}
-                            </Typography>
-                          </Box>
-                          
-                          <Box sx={{ minWidth: '48%' }}>
-                            <Typography variant="body2" color="text.secondary">
-                              Monto
-                            </Typography>
-                            <Typography variant="body1">
-                              ${selectedProyeccion.monto.toLocaleString('es-MX')}
-                            </Typography>
-                          </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Nombre Comercial
+                          </Typography>
+                          <Typography variant="body1">
+                            {selectedProyeccion.cliente.comercial || selectedProyeccion.cliente.razonSocial}
+                          </Typography>
                         </Box>
-                        
-                        {(selectedProyeccion.tipoCambio && selectedProyeccion.tipoCambio > 0) || 
-                         (selectedProyeccion.montoDolares && selectedProyeccion.montoDolares > 0) ? (
-                          <Box display="flex" justifyContent="space-between" flexWrap="wrap">
-                            {selectedProyeccion.tipoCambio && selectedProyeccion.tipoCambio > 0 && (
-                              <Box sx={{ minWidth: '48%' }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Tipo de Cambio
-                                </Typography>
-                                <Typography variant="body1">
-                                  ${selectedProyeccion.tipoCambio.toLocaleString('es-MX')}
-                                </Typography>
-                              </Box>
-                            )}
-                            
-                            {selectedProyeccion.montoDolares && selectedProyeccion.montoDolares > 0 && (
-                              <Box sx={{ minWidth: '48%' }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Monto en Dólares
-                                </Typography>
-                                <Typography variant="body1">
-                                  USD ${selectedProyeccion.montoDolares.toLocaleString('es-MX')}
-                                </Typography>
-                              </Box>
-                            )}
-                          </Box>
-                        ) : null}
-                        
-                        <Box display="flex" justifyContent="space-between" flexWrap="wrap">
-                          {selectedProyeccion.tipoPago && (
-                            <Box sx={{ minWidth: '48%' }}>
-                              <Typography variant="body2" color="text.secondary">
-                                Tipo de Pago
-                              </Typography>
-                              <Box mt={0.5}>
-                                <TipoPagoChip tipoPago={selectedProyeccion.tipoPago} />
-                              </Box>
-                            </Box>
-                          )}
-                          
-                          {selectedProyeccion.banco && (
-                            <Box sx={{ minWidth: '48%' }}>
-                              <Typography variant="body2" color="text.secondary">
-                                Banco
-                              </Typography>
-                              <Typography variant="body1">
-                                {selectedProyeccion.banco.nombre}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                        
-                        {selectedProyeccion.noFactura && (
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              Número de Factura
-                            </Typography>
-                            <Typography variant="body1">
-                              {selectedProyeccion.noFactura}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Stack>
-                    </Paper>
-                  </Box>
-                </Box>
-
-                {selectedProyeccion.conceptoPago && (
-                  <Box>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Concepto de Pago
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2 }}>
-                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                        {selectedProyeccion.conceptoPago}
-                      </Typography>
-                    </Paper>
-                  </Box>
-                )}
-
-                <Box>
-                  <Divider sx={{ my: 1 }} />
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body2" color="text.secondary">
-                      Creado el {format(new Date(selectedProyeccion.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Última actualización: {format(new Date(selectedProyeccion.updatedAt), 'dd/MM/yyyy HH:mm', { locale: es })}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Box sx={{ flex: 1 }}>
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h6">
-                  Bitácora de Seguimiento
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddBitacora}
-                  size="small"
-                >
-                  Añadir
-                </Button>
+                      </>
+                    )}
+                  </Stack>
+                </Paper>
               </Box>
 
-              {bitacoraLoading ? (
-                <Box display="flex" justifyContent="center" p={3}>
-                  <CircularProgress size={30} />
-                </Box>
-              ) : proyeccionBitacoras.length === 0 ? (
-                <Paper sx={{ p: 3, textAlign: 'center', bgcolor: 'background.default' }}>
-                  <Typography color="text.secondary">
-                    No hay registros de bitácora para esta proyección.
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    onClick={handleAddBitacora}
-                    sx={{ mt: 1 }}
-                    size="small"
-                  >
-                    Crear Primer Registro
-                  </Button>
+              {/* Información de Pago - Simplified */}
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Información de Pago
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Stack spacing={2}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Fecha Proyectada
+                      </Typography>
+                      <Typography variant="body1">
+                        {format(new Date(selectedProyeccion.fechaProyectada), 'dd/MM/yyyy', { locale: es })}
+                      </Typography>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Monto
+                      </Typography>
+                      <Typography variant="body1">
+                        ${selectedProyeccion.monto.toLocaleString('es-MX')}
+                      </Typography>
+                    </Box>
+                  </Stack>
                 </Paper>
-              ) : (
-                <List sx={{ maxHeight: 400, overflow: 'auto', border: 1, borderColor: 'divider', borderRadius: 1 }}>
-                  {proyeccionBitacoras.map((bitacora) => (
-                    <BitacoraListItem 
-                      key={bitacora.id}
-                      bitacora={bitacora}
-                      onEdit={handleEditBitacora}
-                      onDelete={handleDeleteBitacora}
-                    />
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
-      </Box>
+              </Box>
+            </Box>
+
+            <Box>
+              <Divider sx={{ my: 1 }} />
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  Creado el {format(new Date(selectedProyeccion.createdAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Última actualización: {format(new Date(selectedProyeccion.updatedAt), 'dd/MM/yyyy HH:mm', { locale: es })}
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {/* Delete Confirmation Dialog */}
       <Dialog

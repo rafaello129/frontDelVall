@@ -29,7 +29,10 @@ export const facturaAPI = {
     const response = await privateApi.post(BASE_URL, facturaData);
     return response.data;
   },
-
+  createBulk: async (facturas: CreateFacturaDto[]): Promise<Factura[]> => {
+    const response = await privateApi.post(`${BASE_URL}/bulk`, facturas);
+    return response.data;
+  },
   // Actualizar una factura por número
   updateFactura: async (noFactura: string, facturaData: UpdateFacturaDto): Promise<Factura> => {
     const response = await privateApi.patch(`${BASE_URL}/${noFactura}`, facturaData);

@@ -84,7 +84,6 @@ export const createProyeccion = createAsyncThunk(
   async (proyeccionData: CreateProyeccionPagoDto, { rejectWithValue }) => {
     try {
       const response = await proyeccionPagoAPI.createProyeccion(proyeccionData);
-      toast.success('Proyección de pago creada exitosamente');
       return response;
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al crear proyección de pago');
@@ -252,9 +251,141 @@ const proyeccionSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Existing reducers for CRUD operations
-    // ...
+ // fetchProyecciones
+ builder
+ .addCase(fetchProyecciones.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(fetchProyecciones.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyecciones = action.payload.data;
+   state.pagination.total = action.payload.total;
+ })
+ .addCase(fetchProyecciones.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
 
+// fetchProyeccionById
+builder
+ .addCase(fetchProyeccionById.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(fetchProyeccionById.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.selectedProyeccion = action.payload;
+ })
+ .addCase(fetchProyeccionById.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
+
+// fetchProyeccionesByCliente
+builder
+ .addCase(fetchProyeccionesByCliente.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(fetchProyeccionesByCliente.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyecciones = action.payload;
+ })
+ .addCase(fetchProyeccionesByCliente.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
+
+// fetchProyeccionesVencidas
+builder
+ .addCase(fetchProyeccionesVencidas.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(fetchProyeccionesVencidas.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyeccionesVencidas = action.payload;
+ })
+ .addCase(fetchProyeccionesVencidas.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
+
+// createProyeccion
+builder
+ .addCase(createProyeccion.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(createProyeccion.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyecciones.unshift(action.payload);
+   state.pagination.total += 1;
+ })
+ .addCase(createProyeccion.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
+
+// updateProyeccion
+builder
+ .addCase(updateProyeccion.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(updateProyeccion.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyecciones = state.proyecciones.map(proyeccion => 
+     proyeccion.id === action.payload.id ? action.payload : proyeccion
+   );
+   if (state.selectedProyeccion?.id === action.payload.id) {
+     state.selectedProyeccion = action.payload;
+   }
+ })
+ .addCase(updateProyeccion.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
+
+// marcarNotificacionEnviada
+builder
+ .addCase(marcarNotificacionEnviada.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(marcarNotificacionEnviada.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyecciones = state.proyecciones.map(proyeccion => 
+     proyeccion.id === action.payload.id ? action.payload : proyeccion
+   );
+   if (state.selectedProyeccion?.id === action.payload.id) {
+     state.selectedProyeccion = action.payload;
+   }
+ })
+ .addCase(marcarNotificacionEnviada.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
+
+// deleteProyeccion
+builder
+ .addCase(deleteProyeccion.pending, (state) => {
+   state.isLoading = true;
+   state.error = null;
+ })
+ .addCase(deleteProyeccion.fulfilled, (state, action) => {
+   state.isLoading = false;
+   state.proyecciones = state.proyecciones.filter(proyeccion => proyeccion.id !== action.payload);
+   if (state.selectedProyeccion?.id === action.payload) {
+     state.selectedProyeccion = null;
+   }
+   state.pagination.total -= 1;
+ })
+ .addCase(deleteProyeccion.rejected, (state, action) => {
+   state.isLoading = false;
+   state.error = action.payload as string;
+ });
     // NEW REDUCERS FOR ANALYTICS AND AI FEATURES
 
     // fetchEstadisticasGenerales

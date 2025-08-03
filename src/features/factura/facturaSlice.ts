@@ -14,6 +14,7 @@ import { toast } from 'react-toastify';
 
 const initialState: FacturaState = {
   facturas: [],
+  total: 0,
   selectedFactura: null,
   facturasVencidas: [],
   facturasPendientes: [],
@@ -60,7 +61,19 @@ export const createFactura = createAsyncThunk(
     }
   }
 );
-
+export const createBulkFactura = createAsyncThunk(
+  'factura/createBulk',
+  async (facturas: CreateFacturaDto[], { rejectWithValue }) => {
+    try {
+      const response = await facturaAPI.createBulk(facturas);
+      toast.success('Facturas creadas exitosamente');
+      return response;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al crear facturas en bloque');
+      return rejectWithValue(error.response?.data?.message || 'Error al crear facturas en bloque');
+    }
+  }
+);
 export const updateFactura = createAsyncThunk(
   'factura/update',
   async ({ noFactura, facturaData }: { noFactura: string; facturaData: UpdateFacturaDto }, { rejectWithValue }) => {
@@ -161,6 +174,7 @@ const facturaSlice = createSlice({
       .addCase(fetchFacturas.fulfilled, (state, action) => {
         state.isLoading = false;
         state.facturas = action.payload.data;
+        state.total = action.payload.total;
       })
       .addCase(fetchFacturas.rejected, (state, action) => {
         state.isLoading = false;
@@ -196,7 +210,20 @@ const facturaSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       });
-
+    //createBulkFactura
+    builder
+      .addCase(createBulkFactura.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createBulkFactura.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.facturas.unshift(...action.payload);
+      })
+      .addCase(createBulkFactura.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
     // updateFactura
     builder
       .addCase(updateFactura.pending, (state) => {
@@ -310,5 +337,5 @@ export const selectFacturasVencidas = (state: RootState) => state.facturas.factu
 export const selectFacturasPendientes = (state: RootState) => state.facturas.facturasPendientes;
 export const selectFacturasLoading = (state: RootState) => state.facturas.isLoading;
 export const selectFacturasError = (state: RootState) => state.facturas.error;
-
+export const selectTotalFacturas = (state: RootState) => state.facturas.total;
 export default facturaSlice.reducer;

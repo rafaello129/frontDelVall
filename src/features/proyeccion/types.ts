@@ -5,9 +5,9 @@ import type { Banco } from '../banco/types';
 // Existing Enums
 export enum EstadoProyeccion {
   PENDIENTE = 'PENDIENTE',
-  CUMPLIDA = 'CUMPLIDA',
-  CANCELADA = 'CANCELADA',
-  VENCIDA = 'VENCIDA'
+  CUMPLIDA = 'CUMPLIDO',
+  CANCELADA = 'CANCELADO',
+  VENCIDA = 'VENCIDO'
 }
 
 // Main entity
@@ -32,22 +32,23 @@ export interface ProyeccionPago {
   banco?: Banco;
 }
 
-// DTO for creating a projection
+// Simplified DTO for creating a projection - only essential fields required
 export interface CreateProyeccionPagoDto {
   noCliente: number;
   fechaProyectada: Date;
   monto: number;
+  // All other fields are optional
   estado?: EstadoProyeccion;
+  conceptoPago?: string;
   noFactura?: string;
   tipoCambio?: number;
   montoDolares?: number;
   bancoId?: number;
   tipoPago?: TipoPago;
-  conceptoPago?: string;
   notificacionEnviada?: boolean;
 }
 
-// DTO for updating a projection
+// DTO for updating a projection - all fields optional
 export interface UpdateProyeccionPagoDto {
   noCliente?: number;
   fechaProyectada?: Date;
@@ -106,9 +107,7 @@ export interface PaginatedProyeccionPagoResponse {
   total: number;
 }
 
-// NEW INTERFACES FOR ANALYTICS AND AI FEATURES
-
-// Filter DTO for statistics
+// Analytics interfaces - keeping these for future expansion
 export interface EstadisticasProyeccionFilterDto {
   fechaDesde?: Date;
   fechaHasta?: Date;
@@ -124,7 +123,6 @@ export interface EstadisticasProyeccionFilterDto {
   compararConPeriodoAnterior?: number;
 }
 
-// Estadísticas Generales
 export interface EstadisticaProyeccionAgrupada {
   categoria: string;
   total: number;
@@ -162,7 +160,6 @@ export interface EstadisticasGenerales {
   }[];
 }
 
-// Patrón Pago
 export interface PatronPago {
   cliente: number;
   frecuenciaDias: number;
@@ -176,7 +173,6 @@ export interface PatronPago {
   montoEstimado: number;
 }
 
-// Análisis Comportamiento
 export interface AnalisisComportamiento {
   cliente: number;
   razonSocial: string;
@@ -197,7 +193,6 @@ export interface AnalisisComportamiento {
   recomendaciones: string[];
 }
 
-// Evaluación Riesgo
 export interface EvaluacionRiesgo {
   cliente: number;
   razonSocial: string;
@@ -211,7 +206,6 @@ export interface EvaluacionRiesgo {
   recomendacionesAccion: string[];
 }
 
-// Análisis Estacionalidad
 export interface MesEstacionalidad {
   mes: number;
   nombre: string;
@@ -230,7 +224,6 @@ export interface AnalisisEstacionalidad {
   recomendaciones: string[];
 }
 
-// Proyección Automática
 export interface ProyeccionAutomaticaDto {
   noCliente?: number;
   diasFuturo?: number;

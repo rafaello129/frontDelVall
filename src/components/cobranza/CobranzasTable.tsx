@@ -29,7 +29,7 @@ import {
 
 interface CobranzasTableProps {
   cobranzas: Cobranza[];
-  onView: (cobranza: Cobranza) => void;
+  onView?: (cobranza: Cobranza) => void;
   onEdit?: (cobranza: Cobranza) => void;
   onDelete?: (id: number) => void;
   isLoading?: boolean;
@@ -46,7 +46,6 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
   showFactura = true,
   showCliente = true
 }) => {
-  const theme = useTheme();
   
   if (isLoading) {
     return (
@@ -104,7 +103,6 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell sx={{ fontWeight: 'medium' }}>ID</TableCell>
             <TableCell sx={{ fontWeight: 'medium' }}>Fecha Pago</TableCell>
             {showFactura && (
               <TableCell sx={{ fontWeight: 'medium' }}>Factura</TableCell>
@@ -125,11 +123,7 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
               hover
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell>
-                <Typography variant="body2">
-                  {cobranza.id}
-                </Typography>
-              </TableCell>
+ 
               <TableCell>
                 <Typography variant="body2">
                   {format(new Date(cobranza.fechaPago), 'dd-MM-yyyy HH:mm', { locale: es })}
@@ -185,7 +179,7 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
               </TableCell>
               <TableCell align="center">
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <Tooltip title="Ver detalles">
+                { onView &&(  <Tooltip title="Ver detalles">
                     <IconButton
                       size="small"
                       color="info"
@@ -194,7 +188,7 @@ const CobranzasTable: React.FC<CobranzasTableProps> = ({
                       <VisibilityIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  
+                )}
                   {onEdit && (
                     <Tooltip title="Editar">
                       <IconButton

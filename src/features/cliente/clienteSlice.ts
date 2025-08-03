@@ -16,6 +16,7 @@ import { toast } from 'react-toastify';
 
 const initialState: ClienteState = {
   clientes: [],
+  clientesForFilters: [], // Para manejar filtros de clientes
   selectedCliente: null,
   facturasPendientes: [],
   antiguedadSaldos: [],
@@ -26,7 +27,7 @@ const initialState: ClienteState = {
   },
   pagination: {
     total: 0,
-    limit: 1000,
+    limit: 10,
     skip: 0
   },
   isLoading: false,
@@ -69,6 +70,20 @@ export const createCliente = createAsyncThunk(
     }
   }
 );
+
+export const createBulkClientes = createAsyncThunk(
+  'cliente/bulk',
+  async(clientes: CreateClienteDto[], { rejectWithValue }) => {
+    try{
+      const response = await clienteAPI.createBulkClientes(clientes);
+      toast.success(`Clientes creados correctamente`);
+      return response;
+    }
+    catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al crear clientes');
+      return rejectWithValue(error.response?.data?.message || 'Error al crear clientes');
+    }
+  });
 
 export const updateCliente = createAsyncThunk(
   'cliente/update',
@@ -169,13 +184,12 @@ const clienteSlice = createSlice({
     })
     .addCase(fetchClientesForFilters.fulfilled, (state, action: PayloadAction<Cliente[]>) => {
       state.isLoading = false;
-      state.clientes = action.payload;
+      state.clientesForFilters = action.payload;
       
       // Generar opciones de filtro automáticamente después de cargar clientes
       const noClientes : any= [...new Set(action.payload.map(c => c.noCliente))].sort((a, b) => a - b);
       const razonSocial: any = [...new Set(action.payload.map(c => c.razonSocial))].sort();
       const comercial : any= [...new Set(action.payload.map(c => c.comercial))].sort();
-      
       state.filteredOptions = {
         noClientes,
         razonSocial,
@@ -232,7 +246,20 @@ const clienteSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       });
-
+    builder
+      .addCase(createBulkClientes.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createBulkClientes.fulfilled, (state, action: PayloadAction<Cliente[]>) => {
+        state.isLoading = false;
+        state.clientes.push(...action.payload);
+        state.pagination.total += action.payload.length;
+      })
+      .addCase(createBulkClientes.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
     // Update cliente
     builder
       .addCase(updateCliente.pending, (state) => {
@@ -309,8 +336,6 @@ export const fetchClientesForFilters = createAsyncThunk(
       // pero con proyección mínima para optimizar
       const response = await clienteAPI.getAllClientes({
         limit: 1000, // Asumiendo que no hay más de 1000 clientes activos
-        status: 'Activo', // Solo clientes activos
-
       });
       return response.data;
     } catch (error: any) {

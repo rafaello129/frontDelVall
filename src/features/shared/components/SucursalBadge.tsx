@@ -20,7 +20,7 @@ export const SucursalBadge: React.FC<SucursalBadgeProps> = ({ sucursal, ...props
         return 'warning';
       case Sucursal.ACAPULCO:
         return 'error';
-      case Sucursal.TEPAPULCO:
+      case Sucursal.TEPEAPULCO:
         return 'secondary';
       case Sucursal.BLUELINE:
         return 'primary';

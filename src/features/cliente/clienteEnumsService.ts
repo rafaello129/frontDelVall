@@ -1,4 +1,5 @@
 import { privateApi } from '../../services/api';
+import { Sucursal } from '../shared/enums';
 
 interface ClienteEnums {
   sucursales: string[];
@@ -7,18 +8,8 @@ interface ClienteEnums {
 
 // Default values in case API fails
 const DEFAULT_ENUMS: ClienteEnums = {
-  sucursales: [
-    'QUINTANA_ROO',
-    'PTO_VALLARTA',
-    'HIDALGO',
-    'ACAPULCO', 
-    'CABOS',
-    'COACH_LINE',
-    'YUCATAN',
-    'PACIFICO',
-    'NORTE'
-  ],
-  clasificaciones: ['AAA', 'AA', 'A', 'B', 'C', 'D']
+  sucursales: Object.values(Sucursal),
+  clasificaciones: ['TURISMO', 'GRUPO HYATT', 'PERSONAL']
 };
 
 // Cache the values once fetched

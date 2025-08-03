@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 
 // Create a motion-enhanced version of TableRow
-const MotionTableRow = motion(TableRow);
+const MotionTableRow = motion.create(TableRow);
 
 interface ClienteListProps {
   filters?: FilterClienteDto;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFacturas } from '../../factura/hooks/useFacturas';
-import type { FacturaPendiente } from '../types';
+import type { Cliente, FacturaPendiente } from '../types';
 import { 
   Box, Paper, TableContainer, Table, TableHead, TableRow, 
   TableCell, TableBody, TableFooter, CircularProgress,
@@ -13,19 +13,25 @@ import {
   Payment as PaymentIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
+import { useExportCarteraClienteExcel } from '../../../hooks/useExcelExportCarteraCliente';
 
 interface FacturasPendientesTableProps {
   noCliente: number;
+  cliente : Cliente;
 }
 
-const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCliente }) => {
+const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCliente, cliente }) => {
   const theme = useTheme();
   const { getFacturasPendientesPorCliente } = useFacturas();
   const [facturas, setFacturas] = useState<FacturaPendiente[]>([]);
   const [totalSaldo, setTotalSaldo] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { exportCarteraClienteExcel } = useExportCarteraClienteExcel();
+  const handleExport = () => {
+    console.log(facturas)
+    exportCarteraClienteExcel(cliente, facturas);
+  };
   useEffect(() => {
     const fetchFacturas = async () => {
       setIsLoading(true);
@@ -90,6 +96,17 @@ const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCli
 
   return (
     <TableContainer component={Paper} elevation={0} variant="outlined">
+      <Box sx={{ p: 2, backgroundColor: theme.palette.background.paper }}>
+        <Box display="flex" justifyContent="flex-end" mt={1}>
+        <Button
+          variant="contained"
+          color="primary"
+           onClick={handleExport}
+        >
+          Exportar Excel
+        </Button>
+          </Box>
+      </Box>
       <Table size="small" aria-label="facturas pendientes">
         <TableHead>
           <TableRow sx={{ backgroundColor: theme.palette.action.hover }}>
@@ -146,23 +163,14 @@ const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCli
                   <Tooltip title="Ver factura">
                     <IconButton 
                       component={Link} 
-                      to={`/facturas/${factura.noFactura}`}
+                      to={`/facturasView/${factura.noFactura}`}
                       size="small"
                       color="info"
                     >
                       <VisibilityIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Registrar pago">
-                    <IconButton 
-                      component={Link} 
-                      to={`/cobranzas/nueva?factura=${factura.noFactura}`}
-                      size="small"
-                      color="success"
-                    >
-                      <PaymentIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+
                 </Box>
               </TableCell>
             </TableRow>

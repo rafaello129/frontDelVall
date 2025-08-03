@@ -29,7 +29,10 @@ export const cobranzaAPI = {
     const response = await privateApi.post(BASE_URL, cobranzaData);
     return response.data;
   },
-
+  createbulk: async (cobranzas: CreateCobranzaDto[]): Promise<Cobranza[]> => {
+    const response = await privateApi.post(`${BASE_URL}/bulk`, cobranzas);
+    return response.data;
+  },
   // Actualizar una cobranza por ID
   updateCobranza: async (id: number, cobranzaData: UpdateCobranzaDto): Promise<Cobranza> => {
     const response = await privateApi.patch(`${BASE_URL}/${id}`, cobranzaData);
@@ -43,7 +46,7 @@ export const cobranzaAPI = {
   },
 
   // Obtener pagos por factura
-  getPagosPorFactura: async (noFactura: number): Promise<{
+  getPagosPorFactura: async (noFactura: string): Promise<{
     data: Cobranza[];
     total: number;
     montoTotal: number;
@@ -76,5 +79,5 @@ export const cobranzaAPI = {
     
     const response = await privateApi.get(`${BASE_URL}/reportes/por-region`, { params });
     return response.data;
-  }
+  },
 };

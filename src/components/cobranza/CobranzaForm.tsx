@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Button from '../common/Button';
 import FormInput from '../common/FormInput';
-import axios from 'axios';
 import type { CreateCobranzaDto, UpdateCobranzaDto, Cobranza } from '../../features/cobranza/types';
 import { TipoPago } from '../../features/shared/enums';
 import { useBancos } from '../../features/banco/hooks/useBancos';
@@ -32,6 +31,7 @@ import {
   Notes as NotesIcon,
   Event as EventIcon
 } from '@mui/icons-material';
+import { useTipoCambioDOF } from '../../hooks/useTipoCambioDOF';
 
 // Schema de validación para el formulario
 const cobranzaSchema = z.object({
@@ -66,18 +66,26 @@ interface CobranzaFormProps {
   onSubmit: (data: CreateCobranzaDto | UpdateCobranzaDto) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  initialFacturaId?: string | number; // Nueva prop para recibir el ID de factura inicial
+  initialClienteId?: number; // Nueva prop para recibir el ID de cliente inicial
 }
 
 const CobranzaForm: React.FC<CobranzaFormProps> = ({
   cobranza,
   onSubmit,
   onCancel,
-  isLoading = false
+  isLoading = false,
+  initialFacturaId,
+  initialClienteId
 }) => {
   const theme = useTheme();
   const { bancos, getAllBancos } = useBancos();
   const { getFacturaById, selectedFactura, clearFactura } = useFacturas();
-  const [selectedClienteId, setSelectedClienteId] = useState<number | undefined>(cobranza?.noCliente);
+  
+  // Usar initialClienteId si está disponible
+  const [selectedClienteId, setSelectedClienteId] = useState<number | undefined>(
+    cobranza?.noCliente || initialClienteId
+  );
 
   // Format date for datetime-local input
   const formatDateForInput = (date: Date): string => {
@@ -89,10 +97,13 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
   }, [getAllBancos]);
 
   useEffect(() => {
+    // Cargar la factura desde cobranza existente o desde initialFacturaId
     if (cobranza?.noFactura) {
       getFacturaById(cobranza.noFactura);
+    } else if (initialFacturaId) {
+      getFacturaById(String(initialFacturaId));
     }
-  }, [cobranza, getFacturaById]);
+  }, [cobranza, initialFacturaId, getFacturaById]);
 
   const {
     register,
@@ -105,7 +116,7 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
   } = useForm<CobranzaFormData>({
     resolver: zodResolver(cobranzaSchema),
     defaultValues: cobranza ? {
-      fechaPago: formatDateForInput(new Date(cobranza.fechaPago)), // Format for datetime-local input
+      fechaPago: formatDateForInput(new Date(cobranza.fechaPago)),
       noFactura: String(cobranza.noFactura),
       noCliente: cobranza.noCliente,
       total: cobranza.total,
@@ -116,33 +127,28 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
       bancoId: cobranza.bancoId,
       notas: cobranza.notas
     } : {
-      fechaPago: formatDateForInput(new Date()), // Format for datetime-local input
-      noFactura: '',
-      noCliente: undefined as unknown as number,
+      fechaPago: formatDateForInput(new Date()),
+      noFactura: initialFacturaId ? String(initialFacturaId) : undefined,
+      noCliente: initialClienteId || undefined as unknown as number,
       total: undefined as unknown as number,
-      tipoCambio: 19.5,
+      tipoCambio: undefined,
       tipoPago: TipoPago.TRANSFERENCIA,
-      bancoId: undefined as unknown as number,
+      bancoId: undefined,
     }
   });
   
+  const hoy = format(new Date(), "dd/MM/yyyy");
+  const { data: tipoCambioData } = useTipoCambioDOF(hoy);
+      
   useEffect(() => {
-    const fetchDollarPrice = async () => {
-      if (!cobranza) return;
-      try {
-        const response = await axios.get('https://mx.dolarapi.com/v1/cotizaciones/usd');
-        setValue('tipoCambio', Math.floor(response.data.compra * 100) / 100);
-      } catch (err) {
-        console.error('Error fetching dollar price:', err);
-      }
-    };
-
-    fetchDollarPrice();
-  }, []);
+    if (!cobranza && tipoCambioData && tipoCambioData.valor) {
+      setValue('tipoCambio', Number(tipoCambioData.valor));
+    }
+  }, [cobranza, tipoCambioData, setValue]);
 
   // Cuando se selecciona una factura, cargar sus datos
   useEffect(() => {
-    if(cobranza) {
+    if (cobranza) {
       if (selectedFactura) {
         setValue('noFactura', String(selectedFactura.noFactura));
         setValue('tipoCambio', cobranza.tipoCambio);
@@ -150,15 +156,20 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
       }
     } else if (selectedFactura) {
       setValue('noFactura', String(selectedFactura.noFactura));
+      setValue('noCliente', selectedFactura.noCliente);
+      setSelectedClienteId(selectedFactura.noCliente);
+      
       const currentTotal = getValues('total');
       if (!currentTotal || selectedFactura.saldo > currentTotal) {
         setValue('total', selectedFactura.saldo);
         const tipoCambio = getValues('tipoCambio');
-        const usd = Math.floor((selectedFactura.saldo / tipoCambio) * 100) / 100;
-        setValue('montoDolares', usd);
+        if (tipoCambio) {
+          const usd = Math.floor((selectedFactura.saldo / tipoCambio) * 100) / 100;
+          setValue('montoDolares', usd);
+        }
       }
     }
-  }, [selectedFactura, setValue, getValues, cobranza]);
+  }, [selectedFactura, setValue, getValues, cobranza, setSelectedClienteId]);
 
   // Vigilar el valor del monto total y tipo de cambio para calcular USD automáticamente
   const totalAmount = watch('total');
@@ -248,7 +259,7 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
             type="noCliente"
             placeholder="Selecciona un cliente"
             required
-            disabled={isLoading || !!cobranza}
+            disabled={isLoading || !!cobranza || !!initialFacturaId}
           />
         </Box>
 
@@ -262,7 +273,7 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
             placeholder="Selecciona una factura"
             required
             error={errors.noFactura?.message}
-            disabled={isLoading || !!cobranza || !selectedClienteId}
+            disabled={!!initialFacturaId}
           />
         </Box>
         
@@ -359,6 +370,7 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
                   labelId="banco-label"
                   label="Banco *"
                   {...field}
+                  value={field.value ?? ''}
                   disabled={isLoading}
                 >
                   <MenuItem value="">Selecciona un banco</MenuItem>
@@ -379,7 +391,6 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
         <FormControl fullWidth>
           <FormInput
             label="Notas"
-            
             {...register('notas')}
             error={errors.notas?.message}
             disabled={isLoading}

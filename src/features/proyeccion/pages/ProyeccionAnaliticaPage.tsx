@@ -272,9 +272,9 @@ const ProyeccionAnaliticaPage: React.FC = () => {
           
           {/* Riesgo tab */}
           <TabPanel value={tabValue} index={1}>
-            {selectedCliente ? (
+            {selectedCliente && riesgoCliente ? (
               <RiesgoClienteCard 
-                evaluacionRiesgo={riesgoCliente!}
+                evaluacionRiesgo={riesgoCliente}
                 loading={loadingRiesgo}
               />
             ) : (
@@ -306,9 +306,9 @@ const ProyeccionAnaliticaPage: React.FC = () => {
 
           {/* Patrón de Pago tab */}
           <TabPanel value={tabValue} index={3}>
-            {selectedCliente ? (
+            {selectedCliente&& patronPago ? (
               <PatronPagoCard 
-                patronPago={patronPago!} 
+                patronPago={patronPago} 
                 loading={loadingPatron}
               />
             ) : (

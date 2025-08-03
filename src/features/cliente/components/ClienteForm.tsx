@@ -26,19 +26,12 @@ import {
   LocationOn as LocationIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
+import { Sucursal } from '../../shared/enums';
 
 // Define enum values for sucursal and clasificacion
-const SUCURSALES = [
-  "ACAPULCO",
-  "BLUELINE",
-  "CABOS",
-  "CANCUN",
-  "TEPAPULCO",
-  "VALLARTA",
-  "YUCATAN",
-];
+const SUCURSALES= Object.values(Sucursal) as string[];
 
-const CLASIFICACIONES = ['AAA', 'AA', 'A', 'B', 'C', 'D'];
+const CLASIFICACIONES = ['TURISMO', 'GRUPO HYATT', 'PERSONAL'];
 
 interface ClienteFormProps {
   cliente?: Cliente | null;

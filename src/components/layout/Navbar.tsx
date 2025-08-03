@@ -153,6 +153,8 @@ const Navbar: React.FC = () => {
       icon: <ProyeccionIcon />, 
       show: isAuthenticated,
       children: [
+        { name: 'Calendario de Proyecciones', path: '/proyecciones/calendario', show: isAuthenticated },
+
         { name: 'Lista de Proyecciones', path: '/proyecciones', show: isAuthenticated },
         { name: 'Nueva Proyección', path: '/proyecciones/nueva', icon: <AddIcon />, show: isAuthenticated },
         { name: 'Estadísticas', path: '/proyecciones/estadisticas', icon: <StatisticsIcon />, show: isAuthenticated },
@@ -180,12 +182,7 @@ const Navbar: React.FC = () => {
         { name: 'Nuevo Pago', path: '/pagos-externos/nuevo', show: isAuthenticated }
       ]
     },
-    { 
-      name: 'Reportes', 
-      path: '/reportes/clientes', 
-      icon: <ReportIcon />, 
-      show: isAuthenticated 
-    },
+
   ];
 
   const drawer = (

@@ -222,12 +222,7 @@ const FacturasVencidasPage: React.FC = () => {
           }
         </div>
       ) : (
-        <FacturasTable
-          facturas={facturasFiltradas}
-          onView={handleOpenViewDetails}
-          isLoading={isLoading}
-          showCliente={true}
-        />
+        <div></div>
       )}
     </div>
   );

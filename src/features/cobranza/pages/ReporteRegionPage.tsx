@@ -43,6 +43,20 @@ import { toast } from 'react-toastify';
 import ExcelJS from 'exceljs';
 import { useExcelExport } from '../../../hooks/useExcelExport';
 import FileSaver from 'file-saver';
+import { 
+  fetchEstadisticasPorTipo, 
+  fetchPagosExternos,
+  selectEstadisticasPorTipo, 
+  selectEstadisticasMetadata,
+  selectPagosExternos
+} from '../../pagoExterno/pagoExternoSlice';
+import { 
+  FilterAlt as FilterAltIcon,
+  Search as SearchIcon,
+  Sort as SortIcon
+} from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+
 const formatoMoneda = (valor: number): string =>
   new Intl.NumberFormat('es-MX', {
     style: 'currency',
@@ -126,7 +140,14 @@ const ReporteRegionPage: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [expandirTabla, setExpandirTabla] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
   const { exportReporteRegion } = useExcelExport();
+  
+  const dispatch = useDispatch();
+  const estadisticasPorTipo = useSelector(selectEstadisticasPorTipo);
+  const estadisticasMetadata = useSelector(selectEstadisticasMetadata);
+  const pagosExternos = useSelector(selectPagosExternos);
+
   // auto-buscar al cargar componente
   useEffect(() => {
     if (fechaDesde && fechaHasta) handleBuscar();
@@ -145,6 +166,7 @@ const ReporteRegionPage: React.FC = () => {
       setIsSearching(false);
     }
   };
+  
   const handleExportarExcel = async () => {
     if (!reporteRegion || !fechaDesde || !fechaHasta) {
       toast.error('Datos insuficientes para exportar');
@@ -152,44 +174,149 @@ const ReporteRegionPage: React.FC = () => {
     }
     
     try {
-      await exportReporteRegion(reporteRegion, fechaDesde, fechaHasta);
+      const filtrosCobranza = {
+        fechaDesde,
+        fechaHasta,
+        incluirBanco: true,
+        limit: 1000000 
+      };
+      // Primero obtener los pagos externos (para Pacifico y Norte)
+      await dispatch(fetchPagosExternos(filtrosCobranza) as any);
+    
+      await dispatch(fetchEstadisticasPorTipo({
+        fechaDesde,
+        fechaHasta,
+        incluirDetalle: true
+      }) as any); // Cast to any to bypass type checking
+      await exportReporteRegion(
+        reporteRegion, 
+        fechaDesde, 
+        fechaHasta, 
+        { 
+          pagosExternos,
+          estadisticasPorTipo, 
+          estadisticasMetadata 
+        }
+      );
       toast.success('Reporte exportado exitosamente');
     } catch (error) {
       toast.error('Error al exportar el reporte');
       console.error('Error al exportar:', error);
     }
   };
+  
   const toggleExpandirTabla = () => {
     setExpandirTabla(!expandirTabla);
+  };
+
+  // Función para obtener color de gradiente basado en el valor
+  const getIntensityColor = (valor: number, max: number) => {
+    if (valor === 0) return theme.palette.grey[100];
+    const intensity = Math.min(Math.max(valor / max, 0.1), 1);
+    return alpha(theme.palette.primary.main, 0.1 + (intensity * 0.25));
   };
 
   // ---- Tabla de reporte visual, sticky y colorida
   const renderTablaReporte = () => {
     if (!reporteRegion) return null;
+    
     const regiones = Object.keys(reporteRegion.regionesTotales);
-  
+    
+    // Calcular el total general por región para colorear las celdas según su valor relativo
+    const maxValorRegion = Math.max(...regiones.map(region => 
+      reporteRegion.regionesTotales[region] || 0
+    ));
+    
     return (
-      <>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <Tooltip title={expandirTabla ? "Mostrar vista compacta" : "Expandir para ver toda la tabla"}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={toggleExpandirTabla}
-              startIcon={expandirTabla ? <HeightIcon /> : <AspectRatioIcon />}
-              sx={{ borderRadius: 8, textTransform: 'none' }}
-            >
-              {expandirTabla ? "Vista compacta" : "Ver tabla completa"}
-            </Button>
-          </Tooltip>
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 4,
+          overflow: 'hidden',
+          border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: theme.shadows[3]
+          }
+        }}
+      >
+        {/* Header con título y controles */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            p: 2,
+            bgcolor: alpha(theme.palette.primary.main, 0.03),
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.6)}`
+          }}
+          onMouseEnter={() => setShowToolbar(true)}
+          onMouseLeave={() => setShowToolbar(false)}
+        >
+          <Typography variant="h6" fontWeight="600" color="primary.main">
+            Reporte de Cobranzas por Región
+          </Typography>
+          
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Fade in={showToolbar}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Tooltip title="Buscar">
+                  <IconButton size="small" sx={{ color: theme.palette.text.secondary }}>
+                    <SearchIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Filtrar">
+                  <IconButton size="small" sx={{ color: theme.palette.text.secondary }}>
+                    <FilterAltIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Ordenar">
+                  <IconButton size="small" sx={{ color: theme.palette.text.secondary }}>
+                    <SortIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Exportar a Excel">
+                  <IconButton 
+                    size="small"
+                    onClick={handleExportarExcel}
+                    sx={{ 
+                      color: theme.palette.success.main,
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.success.main, 0.1)
+                      }
+                    }}
+                  >
+                    <FileDownloadIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+              </Box>
+            </Fade>
+            
+            <Tooltip title={expandirTabla ? "Mostrar vista compacta" : "Expandir para ver toda la tabla"}>
+              <Button
+                variant={expandirTabla ? "contained" : "outlined"}
+                size="small"
+                color={expandirTabla ? "primary" : "inherit"}
+                onClick={toggleExpandirTabla}
+                startIcon={expandirTabla ? <HeightIcon /> : <AspectRatioIcon />}
+                sx={{ 
+                  borderRadius: 8, 
+                  textTransform: 'none',
+                  boxShadow: expandirTabla ? 1 : 0,
+                  px: 2
+                }}
+              >
+                {expandirTabla ? "Vista compacta" : "Ver tabla completa"}
+              </Button>
+            </Tooltip>
+          </Box>
         </Box>
         
+        {/* Contenedor de la tabla con scroll */}
         <TableContainer
-          component={Paper}
           sx={{
             maxHeight: expandirTabla ? 'none' : 430,
-            boxShadow: 3,
-            borderRadius: 3,
             overflowX: 'auto',
             position: 'relative',
             '&::-webkit-scrollbar': {
@@ -206,32 +333,44 @@ const ReporteRegionPage: React.FC = () => {
             transition: 'max-height 0.3s ease-in-out',
           }}
         >
+          {/* Indicador de scroll en vista compacta */}
           {!expandirTabla && reporteRegion.cobranzasPorFechaRegion.length > 8 && (
-            <Box 
-              sx={{
-                position: 'absolute', 
-                bottom: 0, 
-                left: 0, 
-                right: 0, 
-                height: '40px',
-                background: `linear-gradient(to bottom, rgba(255,255,255,0) 0%, ${theme.palette.background.paper} 100%)`,
-                pointerEvents: 'none',
-                zIndex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Chip 
-                size="small" 
-                icon={<InfoOutlinedIcon fontSize="small" />} 
-                label="Desplaza para ver más o expande la tabla" 
-                sx={{ opacity: 0.7, pointerEvents: 'all' }}
-                onClick={toggleExpandirTabla}
-              />
-            </Box>
+            <Fade in={true}>
+              <Box 
+                sx={{
+                  position: 'absolute', 
+                  bottom: 0, 
+                  left: 0, 
+                  right: 0, 
+                  height: '50px',
+                  background: `linear-gradient(to bottom, rgba(255,255,255,0) 0%, ${theme.palette.background.paper} 100%)`,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Chip 
+                  size="small" 
+                  icon={<InfoOutlinedIcon fontSize="small" />} 
+                  label="Desplaza para ver más o expande la tabla" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    pointerEvents: 'all',
+                    boxShadow: theme.shadows[2],
+                    '&:hover': {
+                      opacity: 1,
+                      boxShadow: theme.shadows[4],
+                    }
+                  }}
+                  onClick={toggleExpandirTabla}
+                />
+              </Box>
+            </Fade>
           )}
           
+          {/* Tabla principal con datos */}
           <Table stickyHeader aria-label="reporte de cobranza por región">
             <TableHead>
               <TableRow>
@@ -245,10 +384,14 @@ const ReporteRegionPage: React.FC = () => {
                     left: 0,
                     zIndex: 3,
                     minWidth: '120px',
+                    borderBottom: 'none',
+                    px: 2.5,
+                    py: 2,
                   }}
                 >
                   FECHA
                 </TableCell>
+                
                 {regiones.map(region => (
                   <TableCell
                     key={region}
@@ -259,30 +402,46 @@ const ReporteRegionPage: React.FC = () => {
                       color: 'white',
                       position: 'sticky',
                       top: 0,
-                      zIndex: 3,
+                      zIndex: 2,
                       minWidth: '150px',
+                      borderBottom: 'none',
+                      px: 2.5,
+                      py: 2,
+                      // Destacar visualmente cada región
+                      borderLeft: `1px solid ${alpha('#fff', 0.1)}`,
                     }}
                   >
-                    {region.replace('_', ' ')}
+                    <Typography variant="subtitle2" component="span" sx={{ textTransform: 'uppercase' }}>
+                      {region.replace('_', ' ')}
+                    </Typography>
                   </TableCell>
                 ))}
+                
                 <TableCell
                   align="right"
                   sx={{
                     fontWeight: 'bold',
-                    bgcolor: theme.palette.primary.main,
+                    bgcolor: theme.palette.primary.dark,
                     color: 'white',
                     position: 'sticky',
                     top: 0,
-                    zIndex: 3,
+                    zIndex: 2,
                     minWidth: '150px',
+                    borderBottom: 'none',
+                    px: 2.5,
+                    py: 2,
+                    borderLeft: `2px solid ${alpha('#fff', 0.2)}`,
                   }}
                 >
-                  TOTAL
+                  <Typography variant="subtitle2" component="span" sx={{ textTransform: 'uppercase' }}>
+                    TOTAL
+                  </Typography>
                 </TableCell>
               </TableRow>
             </TableHead>
+            
             <TableBody>
+              {/* Filas de datos por fecha */}
               {reporteRegion.cobranzasPorFechaRegion.map((item, index) => (
                 <TableRow
                   key={index}
@@ -301,22 +460,51 @@ const ReporteRegionPage: React.FC = () => {
                       left: 0,
                       bgcolor: index % 2 === 0 ? alpha(theme.palette.primary.light, 0.025) : 'white',
                       zIndex: 1,
-                      '&:hover': { bgcolor: alpha(theme.palette.primary.light, 0.12) },
+                      borderLeft: `3px solid ${theme.palette.primary.light}`,
+                      transition: 'all 0.2s',
+                      '&:hover': { 
+                        bgcolor: alpha(theme.palette.primary.light, 0.12),
+                        borderLeft: `3px solid ${theme.palette.primary.main}`,
+                      },
+                      py: 1.5,
                     }}
                   >
-                    {format(new Date(item.fecha), 'dd/MM/yyyy')}
+                    <Typography variant="body2" fontWeight={500}>
+                      {format(new Date(item.fecha), 'dd/MM/yyyy')}
+                    </Typography>
                   </TableCell>
+                  
                   {regiones.map(region => {
                     const valor = item.porRegion[region] ? Number(item.porRegion[region]) : 0;
                     return (
-                      <TableCell key={region} align="right">
+                      <TableCell 
+                        key={region} 
+                        align="right"
+                        sx={{
+                          py: 1.5,
+                          bgcolor: valor > 0 ? alpha(theme.palette.primary.light, 0.03) : 'transparent',
+                          transition: 'all 0.2s',
+                        }}
+                      >
                         <Typography
                           variant="body2"
                           component="span"
                           sx={{
-                            fontFamily: 'monospace',
+                            fontFamily: '"Roboto Mono", monospace',
                             color: valor === 0 ? 'text.disabled' : 'text.primary',
                             fontWeight: valor > 0 ? 500 : 400,
+                            borderRadius: 1,
+                            px: 1,
+                            py: 0.5,
+                            display: 'inline-block',
+                            backgroundColor: valor > 0 
+                              ? getIntensityColor(valor, maxValorRegion) 
+                              : 'transparent',
+                            transition: 'all 0.2s',
+                            '&:hover': valor > 0 ? {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                            } : {}
                           }}
                         >
                           {formatoMoneda(valor)}
@@ -324,14 +512,27 @@ const ReporteRegionPage: React.FC = () => {
                       </TableCell>
                     );
                   })}
-                  <TableCell align="right">
+                  
+                  <TableCell 
+                    align="right" 
+                    sx={{ 
+                      borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      py: 1.5,
+                      bgcolor: alpha(theme.palette.secondary.light, 0.05)
+                    }}
+                  >
                     <Typography
                       variant="body2"
                       component="span"
                       sx={{
                         fontWeight: 600,
                         color: theme.palette.secondary.main,
-                        fontFamily: 'monospace',
+                        fontFamily: '"Roboto Mono", monospace',
+                        borderRadius: 1,
+                        px: 1.5,
+                        py: 0.5,
+                        display: 'inline-block',
+                        backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                       }}
                     >
                       {formatoMoneda(Number(item.total))}
@@ -339,13 +540,15 @@ const ReporteRegionPage: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ))}
+              
+              {/* Fila de totales por banco */}
               <TableRow
                 sx={{
                   '& td, & th': {
                     fontWeight: 'bold',
-                    fontSize: '1.05em',
                     backgroundColor: alpha(theme.palette.primary.main, 0.08),
                     borderTop: `2px solid ${theme.palette.primary.main}`,
+                    py: 2
                   },
                   '& th': {
                     position: 'sticky',
@@ -357,32 +560,69 @@ const ReporteRegionPage: React.FC = () => {
                 <TableCell component="th" scope="row">
                   <Typography fontWeight="bold">Total Bancos</Typography>
                 </TableCell>
+                
                 {regiones.map(region => {
                   const valor = reporteRegion.regionesTotales[region]
                     ? Number(reporteRegion.regionesTotales[region])
                     : 0;
                   return (
-                    <TableCell key={region} align="right">
-                      <Typography fontWeight="bold" color="primary.dark">
+                    <TableCell 
+                      key={region} 
+                      align="right"
+                      sx={{
+                        backgroundColor: getIntensityColor(valor, maxValorRegion),
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <Typography 
+                        fontWeight="bold" 
+                        color="primary.dark"
+                        sx={{
+                          borderRadius: 1,
+                          px: 1.5,
+                          py: 0.5,
+                          display: 'inline-block',
+                        }}
+                      >
                         {formatoMoneda(valor)}
                       </Typography>
                     </TableCell>
                   );
                 })}
-                <TableCell align="right">
-                  <Typography fontWeight="bold" color="primary.dark" fontSize="1.1em">
+                
+                <TableCell 
+                  align="right"
+                  sx={{ 
+                    borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.12)
+                  }}
+                >
+                  <Typography 
+                    fontWeight="bold" 
+                    color="primary.dark" 
+                    fontSize="1.1em"
+                    sx={{
+                      borderRadius: 2,
+                      px: 2,
+                      py: 0.5,
+                      display: 'inline-block',
+                      backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                  >
                     {formatoMoneda(Number(reporteRegion.totalBancos))}
                   </Typography>
                 </TableCell>
               </TableRow>
   
-              {/* NUEVA PARTE: Mostrar pagos externos por tipo */}
+              {/* Sección de pagos externos por tipo */}
               {reporteRegion.pagoExternosPorTipo && Object.entries(reporteRegion.pagoExternosPorTipo).map(([tipo, data], index) => (
                 <TableRow
                   key={`ext-${tipo}`}
                   sx={{
-                    backgroundColor: alpha(theme.palette.warning.light, 0.1),
-                    '&:hover': { backgroundColor: alpha(theme.palette.warning.light, 0.2) },
+                    backgroundColor: alpha(theme.palette.warning.light, 0.05),
+                    '&:hover': { backgroundColor: alpha(theme.palette.warning.light, 0.1) },
+                    borderTop: index === 0 ? `1px dashed ${theme.palette.divider}` : undefined,
                   }}
                 >
                   <TableCell 
@@ -392,25 +632,41 @@ const ReporteRegionPage: React.FC = () => {
                       fontWeight: 500,
                       position: 'sticky',
                       left: 0,
-                      backgroundColor: alpha(theme.palette.warning.light, 0.1),
+                      backgroundColor: alpha(theme.palette.warning.light, 0.05),
+                      borderLeft: `3px solid ${theme.palette.warning.light}`,
                       zIndex: 1,
-                      '&:hover': { backgroundColor: alpha(theme.palette.warning.light, 0.2) },
+                      py: 1.5,
+                      '&:hover': { 
+                        backgroundColor: alpha(theme.palette.warning.light, 0.1),
+                        borderLeft: `3px solid ${theme.palette.warning.main}`,
+                      },
                     }}
                   >
-                    {tipo.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')}
+                    <Tooltip title="Pago externo">
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {tipo.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                      </Typography>
+                    </Tooltip>
                   </TableCell>
                   
                   {regiones.map(region => {
                     const valor = data.porRegion[region] ? Number(data.porRegion[region]) : 0;
                     return (
-                      <TableCell key={region} align="right">
+                      <TableCell key={region} align="right" sx={{ py: 1.5 }}>
                         <Typography
                           variant="body2"
                           component="span"
                           sx={{
-                            fontFamily: 'monospace',
-                            color: valor === 0 ? 'text.disabled' : 'text.primary',
+                            fontFamily: '"Roboto Mono", monospace',
+                            color: valor === 0 ? 'text.disabled' : theme.palette.warning.dark,
                             fontWeight: valor > 0 ? 500 : 400,
+                            borderRadius: 1,
+                            px: 1,
+                            py: 0.5,
+                            display: 'inline-block',
+                            backgroundColor: valor > 0 
+                              ? alpha(theme.palette.warning.main, 0.1) 
+                              : 'transparent',
                           }}
                         >
                           {formatoMoneda(valor)}
@@ -419,13 +675,25 @@ const ReporteRegionPage: React.FC = () => {
                     );
                   })}
                   
-                  <TableCell align="right">
+                  <TableCell 
+                    align="right"
+                    sx={{ 
+                      borderLeft: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      py: 1.5,
+                    }}
+                  >
                     <Typography
                       variant="body2"
                       component="span"
                       sx={{
                         fontWeight: 600,
-                        fontFamily: 'monospace',
+                        fontFamily: '"Roboto Mono", monospace',
+                        color: theme.palette.warning.dark,
+                        borderRadius: 1,
+                        px: 1.5,
+                        py: 0.5,
+                        display: 'inline-block',
+                        backgroundColor: alpha(theme.palette.warning.main, 0.1),
                       }}
                     >
                       {formatoMoneda(Number(data.total))}
@@ -434,7 +702,7 @@ const ReporteRegionPage: React.FC = () => {
                 </TableRow>
               ))}
   
-              {/* TOTAL FINAL */}
+              {/* Fila de total final */}
               <TableRow
                 sx={{
                   '& td, & th': {
@@ -443,6 +711,7 @@ const ReporteRegionPage: React.FC = () => {
                     backgroundColor: alpha(theme.palette.success.main, 0.1),
                     borderTop: `2px solid ${theme.palette.success.main}`,
                     borderBottom: `2px solid ${theme.palette.success.main}`,
+                    py: 2.5
                   },
                   '& th': {
                     position: 'sticky',
@@ -452,26 +721,63 @@ const ReporteRegionPage: React.FC = () => {
                 }}
               >
                 <TableCell component="th" scope="row">
-                  <Typography fontWeight="bold">Total Cobranza</Typography>
+                  <Typography fontWeight="bold">TOTAL COBRANZA</Typography>
                 </TableCell>
+                
                 {regiones.map(region => {
                   // Calcular total por región incluyendo pagos externos
                   let totalRegion = reporteRegion.regionesTotales[region] || 0;
                   
-                  Object.values(reporteRegion.pagoExternosPorTipo).forEach(tipo => {
-                    totalRegion += tipo.porRegion[region] || 0;
-                  });
+                  if (reporteRegion.pagoExternosPorTipo) {
+                    Object.values(reporteRegion.pagoExternosPorTipo).forEach(tipo => {
+                      totalRegion += tipo.porRegion[region] || 0;
+                    });
+                  }
                   
                   return (
-                    <TableCell key={region} align="right">
-                      <Typography fontWeight="bold" color="success.dark">
+                    <TableCell 
+                      key={region} 
+                      align="right"
+                      sx={{
+                        backgroundColor: alpha(theme.palette.success.light, 0.15),
+                      }}
+                    >
+                      <Typography 
+                        fontWeight="bold" 
+                        color="success.dark"
+                        sx={{
+                          borderRadius: 1,
+                          px: 1.5,
+                          py: 0.5,
+                          display: 'inline-block',
+                        }}
+                      >
                         {formatoMoneda(totalRegion)}
                       </Typography>
                     </TableCell>
                   );
                 })}
-                <TableCell align="right">
-                  <Typography fontWeight="bold" color="success.dark" fontSize="1.1em">
+                
+                <TableCell 
+                  align="right"
+                  sx={{ 
+                    borderLeft: `2px solid ${alpha(theme.palette.success.main, 0.3)}`,
+                    backgroundColor: alpha(theme.palette.success.light, 0.2)
+                  }}
+                >
+                  <Typography 
+                    fontWeight="bold" 
+                    color="success.dark" 
+                    fontSize="1.1em"
+                    sx={{
+                      borderRadius: 2,
+                      px: 2,
+                      py: 0.5,
+                      display: 'inline-block',
+                      backgroundColor: alpha(theme.palette.success.main, 0.15),
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                  >
                     {formatoMoneda(Number(reporteRegion.totalFinal))}
                   </Typography>
                 </TableCell>
@@ -479,17 +785,46 @@ const ReporteRegionPage: React.FC = () => {
             </TableBody>
           </Table>
         </TableContainer>
-      </>
+        
+        {/* Footer con información adicional */}
+        <Box 
+          sx={{ 
+            p: 2, 
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            bgcolor: alpha(theme.palette.background.paper, 0.6)
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Mostrando {reporteRegion.cobranzasPorFechaRegion.length} días | 
+            {reporteRegion.pagoExternosPorTipo ? 
+              ` ${Object.keys(reporteRegion.pagoExternosPorTipo).length} tipos de pago externo |` : 
+              ''}
+            &nbsp;{regiones.length} regiones
+          </Typography>
+          
+          <Chip 
+            label={`Última actualización: ${format(new Date(), "dd/MM/yyyy HH:mm")}`}
+            size="small"
+            variant="outlined" 
+            sx={{ fontSize: '0.7rem' }}
+          />
+        </Box>
+      </Paper>
     );
   };
 
   // --- info para tarjetas resumen
   const getSummaryData = () => {
     if (!reporteRegion) return null;
+    
     const regiones = Object.keys(reporteRegion.regionesTotales);
     const regionMasAlta = regiones.reduce((a, b) =>
       reporteRegion.regionesTotales[a] > reporteRegion.regionesTotales[b] ? a : b
     );
+    
     return {
       totalGeneral: formatoMoneda(Number(reporteRegion.totalGeneral)),
       regionMasAlta: {
@@ -500,17 +835,17 @@ const ReporteRegionPage: React.FC = () => {
     };
   };
 
-  const summaryData = getSummaryData();
+  const summaryData = reporteRegion ? getSummaryData() : null;
 
   return (
     <Container
-      maxWidth="xl"
-      sx={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        py: 2,
-      }}
+    maxWidth={false}
+    sx={{
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      py: 2,
+    }}
     >
       <Fade in timeout={800}>
         <Box>
@@ -605,7 +940,7 @@ const ReporteRegionPage: React.FC = () => {
                     variant="outlined"
                     color="primary"
                     size="large"
-                    onClick={handleExportarExcel} // Ignorada según tu nota
+                    onClick={handleExportarExcel}
                     startIcon={<FileDownloadIcon />}
                     disabled={isLoading || isSearching || !reporteRegion}
                     sx={{ borderRadius: 2, px: 3 }}

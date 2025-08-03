@@ -15,11 +15,9 @@ import { es } from 'date-fns/locale';
 import {
   Visibility as VisibilityIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
-  Notifications as NotificationsIcon
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { ProyeccionEstadoChip } from './ProyeccionEstadoChip';
-import { TipoPagoChip } from '../../shared/components/TipoPagoChip';
 import type { ProyeccionPago } from '../types';
 
 interface ProyeccionListItemProps {
@@ -31,7 +29,6 @@ interface ProyeccionListItemProps {
 
 export const ProyeccionListItem: React.FC<ProyeccionListItemProps> = ({
   proyeccion,
-  onMarkNotificacion,
   onEdit,
   onDelete
 }) => {
@@ -51,24 +48,12 @@ export const ProyeccionListItem: React.FC<ProyeccionListItemProps> = ({
     if (onDelete) onDelete(proyeccion.id);
   };
 
-  const handleMarkNotificacion = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onMarkNotificacion) onMarkNotificacion(proyeccion.id);
-  };
-
   return (
     <>
       <ListItem
         disablePadding
         secondaryAction={
           <Box>
-            {!proyeccion.notificacionEnviada && (
-              <Tooltip title="Marcar notificación como enviada">
-                <IconButton edge="end" aria-label="notification" onClick={handleMarkNotificacion} color="info">
-                  <NotificationsIcon />
-                </IconButton>
-              </Tooltip>
-            )}
             <Tooltip title="Ver detalles">
               <IconButton edge="end" aria-label="view" onClick={handleView}>
                 <VisibilityIcon />
@@ -95,7 +80,6 @@ export const ProyeccionListItem: React.FC<ProyeccionListItemProps> = ({
                   {proyeccion.cliente?.comercial || proyeccion.cliente?.razonSocial || `Cliente #${proyeccion.noCliente}`}
                 </Typography>
                 <ProyeccionEstadoChip estado={proyeccion.estado} />
-                {proyeccion.tipoPago && <TipoPagoChip tipoPago={proyeccion.tipoPago} />}
               </Box>
             }
             secondary={
@@ -106,17 +90,9 @@ export const ProyeccionListItem: React.FC<ProyeccionListItemProps> = ({
                 <Typography variant="body2" component="span">
                   {' '}{format(new Date(proyeccion.fechaProyectada), 'dd/MM/yyyy', { locale: es })}
                 </Typography>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography variant="body2">
-                    Monto: ${proyeccion.monto.toLocaleString('es-MX')} 
-                    {proyeccion.montoDolares && ` (USD $${proyeccion.montoDolares.toLocaleString('es-MX')})`}
-                  </Typography>
-                  {proyeccion.noFactura && (
-                    <Typography variant="body2">
-                      Factura: {proyeccion.noFactura}
-                    </Typography>
-                  )}
-                </Box>
+                <Typography variant="body2" display="block">
+                  Monto: ${proyeccion.monto.toLocaleString('es-MX')}
+                </Typography>
               </Box>
             }
           />

@@ -45,9 +45,9 @@ export interface Cobranza {
 
 // DTOs para crear/actualizar cobranzas
 export interface CreateCobranzaDto {
-  fechaPago: Date;
-  noFactura: string;
-  noCliente: number;
+  fechaPago: Date; //
+  noFactura: string;//
+  noCliente: number;//
   total: number;
   tipoCambio: number;
   montoDolares?: number;
@@ -59,6 +59,7 @@ export interface CreateCobranzaDto {
 
 export interface UpdateCobranzaDto {
   fechaPago?: Date;
+  noFactura?: string;
   total?: number;
   tipoCambio?: number;
   montoDolares?: number;
@@ -73,7 +74,7 @@ export interface FilterCobranzaDto {
   id?: number;
   fechaDesde?: Date;
   fechaHasta?: Date;
-  noFactura?: number;
+  noFactura?: string;
   noCliente?: number;
   razonSocial?: string;
   sucursal?: Sucursal;

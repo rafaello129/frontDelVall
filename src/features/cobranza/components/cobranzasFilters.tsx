@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TipoPago, Sucursal } from '../../shared/enums';
@@ -42,10 +43,25 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
   className = '',
 }) => {
   const theme = useTheme();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const { bancos, getAllBancos, isLoading: bancosLoading } = useBancos();
-  const { control, register, handleSubmit, reset, setValue, watch } = useForm<FilterCobranzaDto>({
-    defaultValues: initialFilters,
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch
+  } = useForm<FilterCobranzaDto>({
+    defaultValues: {
+      ...initialFilters,
+      tipoPago: initialFilters.tipoPago ?? undefined,
+      sucursal: initialFilters.sucursal ?? undefined,
+      bancoId: initialFilters.bancoId ??undefined,
+      sortBy: initialFilters.sortBy ?? 'fechaPago',
+      order: initialFilters.order ?? 'desc',
+      limit: initialFilters.limit ?? 25
+    },
   });
 
   // Selected client and invoice states for the filter selects
@@ -77,64 +93,50 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
       limit: 25,
       skip: 0
     };
-    
     // Only add pagination and include flags
     cleanedData.limit = data.limit || 25;
     cleanedData.skip = data.skip || 0;
     cleanedData.incluirBanco = data.incluirBanco;
     cleanedData.incluirCliente = data.incluirCliente;
     cleanedData.incluirFactura = data.incluirFactura;
-    
     // Only add sorting if specified
     if (data.sortBy && data.sortBy !== '') {
       cleanedData.sortBy = data.sortBy;
     }
-    
     if (data.order) {
       cleanedData.order = data.order;
     }
-    
     // Only add filters with actual values
     if (data.fechaDesde) {
       cleanedData.fechaDesde = new Date(data.fechaDesde);
     }
-    
     if (data.fechaHasta) {
       cleanedData.fechaHasta = new Date(data.fechaHasta);
     }
-    
     if (data.noFactura && data.noFactura.toString() !== '') {
-      cleanedData.noFactura = Number(data.noFactura);
+      cleanedData.noFactura = data.noFactura;
     }
-    
     if (data.noCliente) {
       cleanedData.noCliente = data.noCliente;
     }
-    
     if (data.razonSocial && data.razonSocial.trim() !== '') {
       cleanedData.razonSocial = data.razonSocial.trim();
     }
-    
-    if (data.sucursal) {
+    if (data.sucursal && data.sucursal !== undefined) {
       cleanedData.sucursal = data.sucursal;
     }
-    
     if (data.montoMinimo !== undefined && data.montoMinimo !== null) {
       cleanedData.montoMinimo = data.montoMinimo;
     }
-    
     if (data.montoMaximo !== undefined && data.montoMaximo !== null) {
       cleanedData.montoMaximo = data.montoMaximo;
     }
-    
-    if (data.tipoPago) {
+    if (data.tipoPago && data.tipoPago !== undefined) {
       cleanedData.tipoPago = data.tipoPago;
     }
-    
-    if (data.bancoId) {
+    if (data.bancoId && data.bancoId !== undefined) {
       cleanedData.bancoId = data.bancoId;
     }
-    
     onFilterChange(cleanedData);
   };
 
@@ -147,13 +149,13 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
       incluirCliente: true,
       incluirFactura: true,
       sortBy: 'fechaPago',
-      order: 'desc'
+      order: 'desc',
+      tipoPago: undefined,
+      sucursal: undefined,
+      bancoId: undefined
     };
-    
-    // Reset the local state for selects
     setSelectedClienteId(undefined);
     setSelectedFacturaId(undefined);
-    
     reset(defaultFilters);
     onFilterChange(defaultFilters);
   };
@@ -161,15 +163,13 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
   const handleClienteChange = (clienteId: number | undefined) => {
     setSelectedClienteId(clienteId);
     setValue('noCliente', clienteId);
-    
-    // Clear factura when client changes
     setSelectedFacturaId(undefined);
     setValue('noFactura', undefined);
   };
 
   const handleFacturaChange = (facturaId: string | undefined) => {
     setSelectedFacturaId(facturaId);
-    setValue('noFactura', facturaId ? Number(facturaId) : undefined);
+    setValue('noFactura', facturaId ? facturaId : undefined);
   };
 
   return (
@@ -279,16 +279,24 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
             <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
               <FormControl fullWidth size="small">
                 <InputLabel id="tipo-pago-label">Tipo de Pago</InputLabel>
-                <Select
-                  labelId="tipo-pago-label"
-                  label="Tipo de Pago"
-                  {...register('tipoPago')}
-                >
-                  <MenuItem value="">Todos</MenuItem>
-                  {Object.values(TipoPago).map((tipo) => (
-                    <MenuItem key={tipo} value={tipo}>{tipo}</MenuItem>
-                  ))}
-                </Select>
+                <Controller
+                  name="tipoPago"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      labelId="tipo-pago-label"
+                      label="Tipo de Pago"
+                      {...field}
+                      value={field.value === undefined ? '' : field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    >
+                      <MenuItem value="">Todos</MenuItem>
+                      {Object.values(TipoPago).map((tipo) => (
+                        <MenuItem key={tipo} value={tipo}>{tipo}</MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Box>
             
@@ -296,18 +304,26 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
             <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
               <FormControl fullWidth size="small">
                 <InputLabel id="sucursal-label">Sucursal</InputLabel>
-                <Select
-                  labelId="sucursal-label"
-                  label="Sucursal"
-                  {...register('sucursal')}
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {Object.values(Sucursal).map((sucursal) => (
-                    <MenuItem key={sucursal} value={sucursal}>
-                      {sucursal.replace('_', ' ')}
-                    </MenuItem>
-                  ))}
-                </Select>
+                <Controller
+                  name="sucursal"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      labelId="sucursal-label"
+                      label="Sucursal"
+                      {...field}
+                      value={field.value === undefined ? '' : field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    >
+                      <MenuItem value="">Todas</MenuItem>
+                      {Object.values(Sucursal).map((sucursal) => (
+                        <MenuItem key={sucursal} value={sucursal}>
+                          {sucursal.replace('_', ' ')}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Box>
             
@@ -315,19 +331,27 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
             <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
               <FormControl fullWidth size="small">
                 <InputLabel id="banco-label">Banco</InputLabel>
-                <Select
-                  labelId="banco-label"
-                  label="Banco"
-                  {...register('bancoId')}
-                  disabled={bancosLoading}
-                >
-                  <MenuItem value="">Todos</MenuItem>
-                  {bancos.map((banco) => (
-                    <MenuItem key={banco.id} value={banco.id}>
-                      {banco.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
+                <Controller
+                  name="bancoId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      labelId="banco-label"
+                      label="Banco"
+                      {...field}
+                      value={field.value === undefined ? '' : field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      disabled={bancosLoading}
+                    >
+                      <MenuItem value="">Todos</MenuItem>
+                      {bancos.map((banco) => (
+                        <MenuItem key={banco.id} value={banco.id}>
+                          {banco.nombre}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Box>
             
@@ -388,29 +412,45 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
             <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' }, display: 'flex', gap: 1 }}>
               <FormControl fullWidth size="small">
                 <InputLabel id="sort-by-label">Ordenar por</InputLabel>
-                <Select
-                  labelId="sort-by-label"
-                  label="Ordenar por"
-                  {...register('sortBy')}
-                >
-                  <MenuItem value="fechaPago">Fecha de Pago</MenuItem>
-                  <MenuItem value="id">ID</MenuItem>
-                  <MenuItem value="noFactura">Núm. Factura</MenuItem>
-                  <MenuItem value="noCliente">Núm. Cliente</MenuItem>
-                  <MenuItem value="total">Monto</MenuItem>
-                  <MenuItem value="tipoPago">Tipo de Pago</MenuItem>
-                </Select>
+                <Controller
+                  name="sortBy"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      labelId="sort-by-label"
+                      label="Ordenar por"
+                      {...field}
+                      value={field.value === undefined ? 'fechaPago' : field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    >
+                      <MenuItem value="fechaPago">Fecha de Pago</MenuItem>
+                      <MenuItem value="id">ID</MenuItem>
+                      <MenuItem value="noFactura">Núm. Factura</MenuItem>
+                      <MenuItem value="noCliente">Núm. Cliente</MenuItem>
+                      <MenuItem value="total">Monto</MenuItem>
+                      <MenuItem value="tipoPago">Tipo de Pago</MenuItem>
+                    </Select>
+                  )}
+                />
               </FormControl>
               <FormControl sx={{ minWidth: 120 }} size="small">
                 <InputLabel id="order-label">Orden</InputLabel>
-                <Select
-                  labelId="order-label"
-                  label="Orden"
-                  {...register('order')}
-                >
-                  <MenuItem value="desc">Descendente</MenuItem>
-                  <MenuItem value="asc">Ascendente</MenuItem>
-                </Select>
+                <Controller
+                  name="order"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      labelId="order-label"
+                      label="Orden"
+                      {...field}
+                      value={field.value === undefined ? 'desc' : field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    >
+                      <MenuItem value="desc">Descendente</MenuItem>
+                      <MenuItem value="asc">Ascendente</MenuItem>
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Box>
             
@@ -418,18 +458,26 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
             <Box sx={{ width: { xs: '100%', md: 'calc(33.333% - 11px)' } }}>
               <FormControl fullWidth size="small">
                 <InputLabel id="limit-label">Registros por página</InputLabel>
-                <Select
-                  labelId="limit-label"
-                  label="Registros por página"
-                  {...register('limit', {
-                    valueAsNumber: true
-                  })}
-                >
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={25}>25</MenuItem>
-                  <MenuItem value={50}>50</MenuItem>
-                  <MenuItem value={100}>100</MenuItem>
-                </Select>
+                <Controller
+                  name="limit"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      labelId="limit-label"
+                      label="Registros por página"
+                      {...field}
+                      value={field.value === undefined ? 25 : field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    >
+                      <MenuItem value={10}>10</MenuItem>
+                      <MenuItem value={25}>25</MenuItem>
+                      <MenuItem value={50}>50</MenuItem>
+                      <MenuItem value={100}>100</MenuItem>
+                      <MenuItem value={1000}>1000</MenuItem>
+                      <MenuItem value={1000000}>1000000</MenuItem>
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Box>
           </Box>

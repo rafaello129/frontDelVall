@@ -73,7 +73,19 @@ export const createCobranza = createAsyncThunk(
     }
   }
 );
-
+export const createbulkCobranza = createAsyncThunk(
+  'cobranza/createBulk',
+  async (cobranzas: CreateCobranzaDto[], { rejectWithValue }) => {
+    try {
+      const response = await cobranzaAPI.createbulk(cobranzas);
+      toast.success('Pagos registrados exitosamente');
+      return response;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al registrar pagos');
+      return rejectWithValue(error.response?.data?.message || 'Error al registrar pagos');
+    }
+  }
+);
 export const updateCobranza = createAsyncThunk(
   'cobranza/update',
   async ({ id, cobranzaData }: { id: number; cobranzaData: UpdateCobranzaDto }, { rejectWithValue }) => {
@@ -104,7 +116,7 @@ export const deleteCobranza = createAsyncThunk(
 
 export const fetchPagosPorFactura = createAsyncThunk(
   'cobranza/fetchByFactura',
-  async (noFactura: number, { rejectWithValue }) => {
+  async (noFactura: string, { rejectWithValue }) => {
     try {
       return await cobranzaAPI.getPagosPorFactura(noFactura);
     } catch (error: any) {
@@ -189,6 +201,20 @@ const cobranzaSlice = createSlice({
         state.cobranzas.unshift(action.payload);
       })
       .addCase(createCobranza.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+      //createbulkCobranza
+      builder
+      .addCase(createbulkCobranza.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createbulkCobranza.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.cobranzas.unshift(...action.payload);
+      })
+      .addCase(createbulkCobranza.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

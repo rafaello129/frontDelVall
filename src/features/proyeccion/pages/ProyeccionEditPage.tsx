@@ -61,7 +61,7 @@ const ProyeccionEditPage: React.FC = () => {
           Editar Proyección de Pago
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
-          Actualiza la información de esta proyección de pago.
+          Actualiza la información esencial de esta proyección de pago.
         </Typography>
         
         {error && (

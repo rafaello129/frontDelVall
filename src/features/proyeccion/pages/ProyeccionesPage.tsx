@@ -19,8 +19,7 @@ import {
   DialogTitle,
   IconButton,
   Tooltip,
-  Stack,
-  
+  Stack
 } from '@mui/material';
 import type { SelectChangeEvent} from '@mui/material/Select';
 import { Add as AddIcon, FilterList as FilterListIcon, Clear as ClearIcon } from '@mui/icons-material';
@@ -28,6 +27,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { ProyeccionListItem } from '../components/ProyeccionListItem';
 import { useProyecciones } from '../hooks/useProyecciones';
 import { EstadoProyeccion } from '../types';
+import { CalendarIcon } from '@mui/x-date-pickers';
 
 const ProyeccionesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,12 +37,11 @@ const ProyeccionesPage: React.FC = () => {
     isLoading, 
     error, 
     getAllProyecciones, 
-    markNotificacionEnviada, 
     removeProyeccion, 
     setPaginationParams 
   } = useProyecciones();
 
-  // Filter state
+  // Simplified Filter state
   const [filters, setFilters] = useState({
     fechaDesde: null as Date | null,
     fechaHasta: null as Date | null,
@@ -57,7 +56,7 @@ const ProyeccionesPage: React.FC = () => {
   });
 
   // Show filters state
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Load initial data
   useEffect(() => {
@@ -66,20 +65,17 @@ const ProyeccionesPage: React.FC = () => {
 
   // Load proyecciones with current filters
   const loadProyecciones = () => {
-    // Fixed: Convert Date | null to Date | undefined
+    // Convert Date | null to Date | undefined
     const appliedFilters = {
       page: pagination.page,
       limit: pagination.limit,
       estado: filters.estado || undefined,
-      // Convert null to undefined for API call
       fechaDesde: filters.fechaDesde || undefined,
       fechaHasta: filters.fechaHasta || undefined,
       searchTerm: filters.searchTerm || undefined,
     };
     
     getAllProyecciones(appliedFilters);
-    console.log('Cargando proyecciones con filtros:', appliedFilters);
-    console.log(proyecciones)
   };
 
   // Handle filter changes
@@ -157,16 +153,6 @@ const ProyeccionesPage: React.FC = () => {
     navigate(`/proyecciones/${id}/editar`);
   };
 
-  // Handle mark notification
-  const handleMarkNotificacion = async (id: number) => {
-    try {
-      await markNotificacionEnviada(id);
-      loadProyecciones(); // Reload after update
-    } catch (error) {
-      console.error('Error al marcar la notificación:', error);
-    }
-  };
-
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -174,6 +160,17 @@ const ProyeccionesPage: React.FC = () => {
           Proyecciones de Pago
         </Typography>
         <Box>
+        <Tooltip title="Ver Calendario">
+      <Button
+        variant="outlined"
+        startIcon={<CalendarIcon />}
+        onClick={() => navigate('/proyecciones/calendario')}
+        sx={{ mr: 1 }}
+      >
+        Vista Calendario
+      </Button>
+    </Tooltip>
+    
           <Tooltip title={showFilters ? "Ocultar filtros" : "Mostrar filtros"}>
             <IconButton onClick={() => setShowFilters(!showFilters)}>
               <FilterListIcon />
@@ -191,7 +188,7 @@ const ProyeccionesPage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Filters Section */}
+      {/* Simplified Filters Section */}
       {showFilters && (
         <Paper sx={{ p: 2, mb: 3 }}>
           <Stack spacing={2}>
@@ -308,7 +305,6 @@ const ProyeccionesPage: React.FC = () => {
               <ProyeccionListItem
                 key={proyeccion.id}
                 proyeccion={proyeccion}
-                onMarkNotificacion={handleMarkNotificacion}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
               />

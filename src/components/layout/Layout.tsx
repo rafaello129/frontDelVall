@@ -29,7 +29,7 @@ const Layout = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
       
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="flex-grow w-full px-4 py-8">
         <Suspense fallback={<LoadingSpinner />}>
           <Outlet />
         </Suspense>
