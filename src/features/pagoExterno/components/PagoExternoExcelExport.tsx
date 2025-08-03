@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
-import { Button, Tooltip, Snackbar, Alert } from '@mui/material';
-import { FileDownload as ExportIcon } from '@mui/icons-material';
+import { 
+  Button, 
+  Tooltip, 
+  Snackbar, 
+  Alert, 
+  useTheme,
+  CircularProgress,
+  alpha,
+  Box,
+  Typography
+} from '@mui/material';
+import { 
+  FileDownload as ExportIcon,
+  Check as CheckIcon,
+  Error as ErrorIcon
+} from '@mui/icons-material';
 import { useExcelExportPagosExternos } from '../../../hooks/useExcelExportPagosExternos';
 import type { EstadisticaAgrupada, EstadisticasOptions } from '../types';
 
@@ -26,6 +40,7 @@ export const PagoExternoExcelExport: React.FC<PagoExternoExcelExportProps> = ({
   disabled = false
 }) => {
   const { exportEstadisticas } = useExcelExportPagosExternos();
+  const theme = useTheme();
   const [exporting, setExporting] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -82,26 +97,38 @@ export const PagoExternoExcelExport: React.FC<PagoExternoExcelExportProps> = ({
 
   return (
     <>
-      <Tooltip title="Exportar a Excel">
-        <span>
+      <Tooltip 
+        title={disabled || estadisticasMetadata.total === 0 ? 
+          "No hay datos disponibles para exportar" : 
+          "Exportar datos a Excel"
+        }
+        arrow
+      >
+        <Box>
           <Button
             variant="contained"
             color="success"
-            startIcon={<ExportIcon />}
+            startIcon={exporting ? 
+              <CircularProgress size={20} color="inherit" /> : 
+              <ExportIcon />
+            }
             onClick={handleExport}
             disabled={disabled || exporting || estadisticasMetadata.total === 0}
             sx={{ 
-              px: 2,
-              py: 1,
-              boxShadow: 2,
+              px: 2.5,
+              py: 1.25,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              boxShadow: theme.shadows[3],
               '&:hover': {
-                boxShadow: 4
+                boxShadow: theme.shadows[5]
               }
             }}
           >
             {exporting ? 'Exportando...' : 'Exportar a Excel'}
           </Button>
-        </span>
+        </Box>
       </Tooltip>
 
       <Snackbar
@@ -114,9 +141,17 @@ export const PagoExternoExcelExport: React.FC<PagoExternoExcelExportProps> = ({
           onClose={handleCloseSnackbar} 
           severity={snackbar.severity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ 
+            width: '100%',
+            borderRadius: 2,
+            alignItems: 'center',
+            boxShadow: theme.shadows[6]
+          }}
+          icon={snackbar.severity === 'success' ? <CheckIcon /> : <ErrorIcon />}
         >
-          {snackbar.message}
+          <Typography variant="body2" fontWeight={500}>
+            {snackbar.message}
+          </Typography>
         </Alert>
       </Snackbar>
     </>

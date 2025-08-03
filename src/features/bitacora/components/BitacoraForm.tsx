@@ -12,7 +12,16 @@ import {
   Select,
   MenuItem,
   FormHelperText,
-  Typography
+  Typography,
+  useTheme,
+  Stack,
+  Divider,
+  alpha,
+  Tooltip,
+  CircularProgress,
+  Alert,
+  Paper,
+  InputAdornment
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -22,6 +31,25 @@ import { Sucursal } from '../../shared/enums';
 import { useCliente } from '../../cliente/hooks/useCliente';
 import { useProyecciones } from '../../proyeccion/hooks/useProyecciones';
 import type { CreateBitacoraPagoDto, UpdateBitacoraPagoDto, BitacoraPago } from '../types';
+import { 
+  Save as SaveIcon,
+  Cancel as CancelIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+  Comment as CommentIcon,
+  ReplyAll as ReplyAllIcon,
+  Phone as PhoneIcon,
+  BusinessCenter as BusinessCenterIcon,
+  LocationOn as LocationOnIcon,
+  AccountBalance as AccountBalanceIcon,
+  AttachMoney as AttachMoneyIcon,
+  Email as EmailIcon,
+  Receipt as ReceiptIcon,
+  Category as CategoryIcon,
+  Info as InfoIcon,
+  AdminPanelSettings as AdminPanelSettingsIcon,
+  Help as HelpIcon
+} from '@mui/icons-material';
 
 interface BitacoraFormProps {
   initialData?: BitacoraPago;
@@ -39,6 +67,7 @@ export const BitacoraForm: React.FC<BitacoraFormProps> = ({
   noCliente
 }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const isEditing = !!initialData;
   const { getClienteById } = useCliente();
   const { getProyeccionById } = useProyecciones();
@@ -66,6 +95,8 @@ export const BitacoraForm: React.FC<BitacoraFormProps> = ({
 
   // Form errors
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  
   
   // Load client data when cliente changes
   useEffect(() => {
@@ -78,7 +109,7 @@ export const BitacoraForm: React.FC<BitacoraFormProps> = ({
             razonSocial: cliente.razonSocial,
             comercial: cliente.comercial || cliente.razonSocial,
             sucursal: cliente.sucursal as Sucursal,
-            clasificacion: cliente.clasificacion || ''
+            clasificacion: cliente.clasificacion || '',
           }));
         } catch (error) {
           console.error('Error loading cliente data:', error);
@@ -126,79 +157,122 @@ export const BitacoraForm: React.FC<BitacoraFormProps> = ({
     const { name, value } = e.target;
     if (name) {
       setFormData(prev => ({ ...prev, [name]: value }));
+      setTouched(prev => ({ ...prev, [name]: true }));
       if (errors[name]) {
-        setErrors(prev => ({ ...prev, [name]: '' }));
+        validateField(name, value);
       }
     }
   };
 
-  // Handle Select changes specifically
+  // Handle Select changes
   const handleSelectChange = (e: SelectChangeEvent<unknown>) => {
     const { name, value } = e.target;
     if (name) {
       setFormData(prev => ({ ...prev, [name]: value }));
+      setTouched(prev => ({ ...prev, [name as string]: true }));
       if (errors[name as string]) {
-        setErrors(prev => ({ ...prev, [name as string]: '' }));
+        validateField(name as string, value);
       }
     }
   };
 
   const handleClienteChange = (clienteId: number | null) => {
     setFormData(prev => ({ ...prev, noCliente: clienteId || 0 }));
+    setTouched(prev => ({ ...prev, noCliente: true }));
     if (errors.noCliente) {
-      setErrors(prev => ({ ...prev, noCliente: '' }));
+      validateField('noCliente', clienteId);
     }
   };
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
       setFormData(prev => ({ ...prev, fecha: date }));
+      setTouched(prev => ({ ...prev, fecha: true }));
       if (errors.fecha) {
-        setErrors(prev => ({ ...prev, fecha: '' }));
+        validateField('fecha', date);
       }
     }
+  };
+  
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
+    validateField(fieldName, formData[fieldName as keyof typeof formData]);
+  };
+
+  // Validate a single field
+  const validateField = (fieldName: string, value: any): boolean => {
+    let error = '';
+
+    switch (fieldName) {
+      case 'noCliente':
+        if (!value || value <= 0) {
+          error = 'El cliente es requerido';
+        }
+        break;
+      
+      case 'fecha':
+        if (!value) {
+          error = 'La fecha es requerida';
+        }
+        break;
+      
+      case 'razonSocial':
+        if (!value) {
+          error = 'La razón social es requerida';
+        }
+        break;
+      
+      case 'comercial':
+        if (!value) {
+          error = 'El nombre comercial es requerido';
+        }
+        break;
+      
+      case 'tipo':
+        if (!value) {
+          error = 'El tipo de registro es requerido';
+        }
+        break;
+    }
+
+    setErrors(prev => ({ ...prev, [fieldName]: error }));
+    return !error;
   };
 
   // Validate form
   const validateForm = (): boolean => {
+    const requiredFields = ['noCliente', 'fecha', 'razonSocial', 'comercial', 'tipo'];
     const newErrors: Record<string, string> = {};
-
-    if (!formData.noCliente) {
-      newErrors.noCliente = 'El cliente es requerido';
-    }
+    let isValid = true;
     
-    if (!formData.fecha) {
-      newErrors.fecha = 'La fecha es requerida';
-    }
+    requiredFields.forEach(fieldName => {
+      const value = formData[fieldName as keyof typeof formData];
+      if (!validateField(fieldName, value)) {
+        newErrors[fieldName] = errors[fieldName] || `Este campo es requerido`;
+        isValid = false;
+      }
+    });
     
-    if (!formData.razonSocial) {
-      newErrors.razonSocial = 'La razón social es requerida';
-    }
-    
-    if (!formData.comercial) {
-      newErrors.comercial = 'El nombre comercial es requerido';
-    }
-    
-    if (!formData.tipo) {
-      newErrors.tipo = 'El tipo de registro es requerido';
-    }
-
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    // Mark all required fields as touched
+    const requiredFields = ['noCliente', 'fecha', 'razonSocial', 'comercial', 'tipo'];
+    const newTouched = { ...touched };
+    requiredFields.forEach(field => {
+      newTouched[field] = true;
+    });
+    setTouched(newTouched);
+    
     if (!validateForm()) return;
     
     try {
       await onSubmit(formData);
-      // If we're in a client detail page or proyeccion detail page, don't navigate away
-      if (!noCliente && !proyeccionId) {
-        navigate('/bitacora');
-      }
     } catch (error) {
       console.error('Error al guardar la bitácora:', error);
     }
@@ -206,210 +280,500 @@ export const BitacoraForm: React.FC<BitacoraFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            {isEditing ? 'Editar Registro en Bitácora' : 'Nuevo Registro en Bitácora'}
+      {/* Information Alert */}
+      {!isEditing && (
+        <Alert 
+          severity="info" 
+          variant="outlined"
+          icon={<InfoIcon />}
+          sx={{ 
+            mb: 3, 
+            borderRadius: 2,
+            backgroundColor: alpha(theme.palette.info.main, 0.04)
+          }}
+        >
+          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+            Sobre los registros en la bitácora
           </Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Cliente */}
-            <ClienteAutocomplete
-              value={formData.noCliente || ''}
-              onChange={handleClienteChange}
-              error={!!errors.noCliente}
-              helperText={errors.noCliente}
-              // Disable if coming from a client page or already editing
-              
-            />
-
-            {/* Fecha */}
-            <DateTimePicker
-              label="Fecha"
-              value={formData.fecha ? new Date(formData.fecha) : null}
-              onChange={handleDateChange}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  error: !!errors.fecha,
-                  helperText: errors.fecha
+          <Typography variant="body2">
+            La bitácora permite registrar interacciones, comentarios y seguimientos relacionados a pagos de los clientes. Complete todos los campos marcados con <Box component="span" color="error.main">*</Box> para continuar.
+          </Typography>
+        </Alert>
+      )}
+      
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+        {/* Left Column */}
+        <Box sx={{ width: { xs: '100%', md: '50%' } }}>
+          {/* Client Information Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography 
+              variant="subtitle1" 
+              fontWeight={600} 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mb: 2,
+                color: theme.palette.primary.main,
+                '&::before': {
+                  content: '""',
+                  display: 'block',
+                  width: 4,
+                  height: 20,
+                  backgroundColor: theme.palette.primary.main,
+                  borderRadius: 1,
+                  marginRight: 1
                 }
               }}
-            />
+            >
+              <PersonIcon sx={{ mr: 1 }} />
+              Información del Cliente
+            </Typography>
+            
+            <Stack spacing={2.5}>
+              {/* Cliente */}
+              <ClienteAutocomplete
+                value={formData.noCliente || ''}
+                onChange={handleClienteChange}
+                error={touched.noCliente && !!errors.noCliente}
+                helperText={touched.noCliente && errors.noCliente ? errors.noCliente : ''}
+                // Disable if coming from a client page or already editing
+              />
 
-            {/* Razón Social */}
-            <TextField
-              name="razonSocial"
-              label="Razón Social"
-              fullWidth
-              value={formData.razonSocial || ''}
-              onChange={handleChange}
-              error={!!errors.razonSocial}
-              helperText={errors.razonSocial}
-            />
+              {/* Fecha */}
+              <DateTimePicker
+                label="Fecha y Hora del Registro *"
+                value={formData.fecha ? new Date(formData.fecha) : null}
+                onChange={handleDateChange}
+                onClose={() => handleBlur('fecha')}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: touched.fecha && !!errors.fecha,
+                    helperText: touched.fecha && errors.fecha ? errors.fecha : '',
+                    InputProps: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EventIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }
+                  }
+                }}
+              />
 
-            {/* Nombre Comercial */}
-            <TextField
-              name="comercial"
-              label="Nombre Comercial"
-              fullWidth
-              value={formData.comercial || ''}
-              onChange={handleChange}
-              error={!!errors.comercial}
-              helperText={errors.comercial}
-            />
+              {/* Razón Social */}
+              <TextField
+                name="razonSocial"
+                label="Razón Social *"
+                fullWidth
+                value={formData.razonSocial || ''}
+                onChange={handleChange}
+                onBlur={() => handleBlur('razonSocial')}
+                error={touched.razonSocial && !!errors.razonSocial}
+                helperText={touched.razonSocial && errors.razonSocial ? errors.razonSocial : ''}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BusinessCenterIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            {/* Tipo de Registro */}
-            <FormControl fullWidth error={!!errors.tipo}>
-              <InputLabel>Tipo de Registro</InputLabel>
-              <Select
-                name="tipo"
-                value={formData.tipo || ''}
-                onChange={handleSelectChange}
-                label="Tipo de Registro"
-              >
-                {Object.values(TipoBitacora).map((tipo) => (
-                  <MenuItem key={tipo} value={tipo}>
-                    {tipo}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.tipo && <FormHelperText>{errors.tipo}</FormHelperText>}
-            </FormControl>
+              {/* Nombre Comercial */}
+              <TextField
+                name="comercial"
+                label="Nombre Comercial *"
+                fullWidth
+                value={formData.comercial || ''}
+                onChange={handleChange}
+                onBlur={() => handleBlur('comercial')}
+                error={touched.comercial && !!errors.comercial}
+                helperText={touched.comercial && errors.comercial ? errors.comercial : ''}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BusinessCenterIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            {/* Sucursal */}
-            <FormControl fullWidth>
-              <InputLabel>Sucursal</InputLabel>
-              <Select
-                name="sucursal"
-                value={formData.sucursal || ''}
-                onChange={handleSelectChange}
-                label="Sucursal"
-              >
-                <MenuItem value="">
-                  <em>Ninguna</em>
-                </MenuItem>
-                {Object.values(Sucursal).map((sucursal) => (
-                  <MenuItem key={sucursal} value={sucursal}>
-                    {sucursal}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              {/* Teléfono and Clasificación */}
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    name="telefono"
+                    label="Teléfono"
+                    fullWidth
+                    value={formData.telefono || ''}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PhoneIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
 
-            {/* Teléfono */}
-            <TextField
-              name="telefono"
-              label="Teléfono"
-              fullWidth
-              value={formData.telefono || ''}
-              onChange={handleChange}
-            />
-
-            {/* Clasificación */}
-            <TextField
-              name="clasificacion"
-              label="Clasificación"
-              fullWidth
-              value={formData.clasificacion || ''}
-              onChange={handleChange}
-            />
-
-            {/* Banco */}
-            <TextField
-              name="banco"
-              label="Banco"
-              fullWidth
-              value={formData.banco || ''}
-              onChange={handleChange}
-            />
-
-            {/* Moneda */}
-            <TextField
-              name="moneda"
-              label="Moneda"
-              fullWidth
-              value={formData.moneda || ''}
-              onChange={handleChange}
-            />
-
-            {/* Ubicación */}
-            <TextField
-              name="ubicacion"
-              label="Ubicación"
-              fullWidth
-              value={formData.ubicacion || ''}
-              onChange={handleChange}
-            />
-
-            {/* Estado de Envío de Correo */}
-            <TextField
-              name="envioCorreo"
-              label="Estado de Envío de Correo"
-              fullWidth
-              value={formData.envioCorreo || ''}
-              onChange={handleChange}
-            />
-
-            {/* Estado de Timbrado */}
-            <TextField
-              name="timbrado"
-              label="Estado de Timbrado"
-              fullWidth
-              value={formData.timbrado || ''}
-              onChange={handleChange}
-            />
-
-            {/* Comentario */}
-            <TextField
-              name="comentario"
-              label="Comentario"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.comentario || ''}
-              onChange={handleChange}
-            />
-
-            {/* Contestación */}
-            <TextField
-              name="contestacion"
-              label="Contestación/Respuesta"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.contestacion || ''}
-              onChange={handleChange}
-            />
-
-            {/* Creado Por */}
-            <TextField
-              name="creadoPor"
-              label="Registrado Por"
-              fullWidth
-              value={formData.creadoPor || ''}
-              onChange={handleChange}
-            />
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    name="clasificacion"
+                    label="Clasificación"
+                    fullWidth
+                    value={formData.clasificacion || ''}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CategoryIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Stack>
           </Box>
-        </CardContent>
-        <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-          <Button 
-            variant="outlined" 
-            onClick={() => navigate(noCliente ? `/clientes/${noCliente}` : proyeccionId ? `/proyecciones/${proyeccionId}` : '/bitacora')}
-            disabled={isLoading}
+          
+          {/* Comments Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography 
+              variant="subtitle1" 
+              fontWeight={600} 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mb: 2,
+                color: theme.palette.primary.main,
+                '&::before': {
+                  content: '""',
+                  display: 'block',
+                  width: 4,
+                  height: 20,
+                  backgroundColor: theme.palette.primary.main,
+                  borderRadius: 1,
+                  marginRight: 1
+                }
+              }}
+            >
+              <CommentIcon sx={{ mr: 1 }} />
+              Comentarios y Respuestas
+            </Typography>
+            
+            <Stack spacing={2.5}>
+              {/* Tipo de Registro */}
+              <FormControl 
+                fullWidth 
+                error={touched.tipo && !!errors.tipo}
+              >
+                <InputLabel>Tipo de Registro *</InputLabel>
+                <Select
+                  name="tipo"
+                  value={formData.tipo || ''}
+                  onChange={handleSelectChange}
+                  onBlur={() => handleBlur('tipo')}
+                  label="Tipo de Registro *"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <CategoryIcon color="action" />
+                    </InputAdornment>
+                  }
+                >
+                  {Object.values(TipoBitacora).map((tipo) => (
+                    <MenuItem key={tipo} value={tipo}>
+                      {tipo}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {touched.tipo && errors.tipo && (
+                  <FormHelperText>{errors.tipo}</FormHelperText>
+                )}
+              </FormControl>
+
+              {/* Comentario */}
+              <TextField
+                name="comentario"
+                label="Comentario"
+                fullWidth
+                multiline
+                rows={4}
+                value={formData.comentario || ''}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ mt: 1.5 }}>
+                      <CommentIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder="Ingrese aquí el comentario principal o la descripción del registro"
+              />
+
+              {/* Contestación */}
+              <TextField
+                name="contestacion"
+                label="Contestación/Respuesta"
+                fullWidth
+                multiline
+                rows={4}
+                value={formData.contestacion || ''}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ mt: 1.5 }}>
+                      <ReplyAllIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder="Ingrese aquí la respuesta o contestación al comentario principal"
+              />
+            </Stack>
+          </Box>
+        </Box>
+        
+        {/* Right Column */}
+        <Box sx={{ width: { xs: '100%', md: '50%' } }}>
+          {/* Payment Information Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography 
+              variant="subtitle1" 
+              fontWeight={600} 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mb: 2,
+                color: theme.palette.primary.main,
+                '&::before': {
+                  content: '""',
+                  display: 'block',
+                  width: 4,
+                  height: 20,
+                  backgroundColor: theme.palette.primary.main,
+                  borderRadius: 1,
+                  marginRight: 1
+                }
+              }}
+            >
+              <AccountBalanceIcon sx={{ mr: 1 }} />
+              Información de Pago
+            </Typography>
+            
+            <Stack spacing={2.5}>
+              {/* Sucursal */}
+              <FormControl fullWidth>
+                <InputLabel>Sucursal</InputLabel>
+                <Select
+                  name="sucursal"
+                  value={formData.sucursal || ''}
+                  onChange={handleSelectChange}
+                  label="Sucursal"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <LocationOnIcon color="action" />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="">
+                    <em>Ninguna</em>
+                  </MenuItem>
+                  {Object.values(Sucursal).map((sucursal) => (
+                    <MenuItem key={sucursal} value={sucursal}>
+                      {sucursal}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Banco y Moneda */}
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    name="banco"
+                    label="Banco"
+                    fullWidth
+                    value={formData.banco || ''}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AccountBalanceIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    name="moneda"
+                    label="Moneda"
+                    fullWidth
+                    value={formData.moneda || ''}
+                    onChange={handleChange}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <AttachMoneyIcon color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Box>
+              </Box>
+
+              {/* Ubicación */}
+              <TextField
+                name="ubicacion"
+                label="Ubicación"
+                fullWidth
+                value={formData.ubicacion || ''}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LocationOnIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Estado de Envío de Correo */}
+              <TextField
+                name="envioCorreo"
+                label="Estado de Envío de Correo"
+                fullWidth
+                value={formData.envioCorreo || ''}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Estado de Timbrado */}
+              <TextField
+                name="timbrado"
+                label="Estado de Timbrado"
+                fullWidth
+                value={formData.timbrado || ''}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <ReceiptIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Creado Por */}
+              <TextField
+                name="creadoPor"
+                label="Registrado Por"
+                fullWidth
+                value={formData.creadoPor || ''}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AdminPanelSettingsIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                placeholder="Nombre del usuario que realiza el registro"
+              />
+
+              {/* Proyección ID */}
+              {(proyeccionId || formData.proyeccionId) && (
+                <TextField
+                  name="proyeccionId"
+                  label="ID Proyección"
+                  fullWidth
+                  value={formData.proyeccionId || proyeccionId || ''}
+                  disabled
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EventIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              )}
+            </Stack>
+          </Box>
+          
+          {/* Help Information */}
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              backgroundColor: alpha(theme.palette.background.default, 0.7),
+              borderColor: alpha(theme.palette.divider, 0.6),
+              mb: 4
+            }}
           >
-            Cancelar
-          </Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
-            disabled={isLoading}
-          >
-            {isLoading ? 'Guardando...' : isEditing ? 'Actualizar' : 'Guardar'}
-          </Button>
-        </CardActions>
-      </Card>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+              <HelpIcon color="action" sx={{ mt: 0.5 }} />
+              <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
+                Información de ayuda
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              La bitácora permite dar seguimiento a los pagos y comunicaciones con los clientes. Registre cualquier interacción, llamada, acuerdo o recordatorio relacionado con los pagos del cliente.
+            </Typography>
+          </Paper>
+        </Box>
+      </Box>
+
+      {/* Form Actions */}
+      <Box sx={{ 
+        mt: 4, 
+        pt: 3,
+        display: 'flex', 
+        justifyContent: 'flex-end',
+        gap: 2,
+        borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`
+      }}>
+        <Button
+          variant="outlined"
+          onClick={() => navigate(noCliente 
+            ? `/clientes/${noCliente}` 
+            : proyeccionId 
+              ? `/proyecciones/${proyeccionId}` 
+              : '/bitacora')}
+          disabled={isLoading}
+          startIcon={<CancelIcon />}
+          sx={{ 
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600
+          }}
+        >
+          Cancelar
+        </Button>
+        
+        <Button 
+          type="submit" 
+          variant="contained" 
+          color="primary" 
+          disabled={isLoading}
+          startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
+          sx={{ 
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600
+          }}
+        >
+          {isLoading ? 'Guardando...' : isEditing ? 'Actualizar' : 'Guardar'}
+        </Button>
+      </Box>
     </form>
   );
 };

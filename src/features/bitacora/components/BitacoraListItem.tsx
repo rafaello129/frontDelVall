@@ -9,7 +9,11 @@ import {
   Box,
   IconButton,
   Tooltip,
-  Avatar
+  Avatar,
+  useTheme,
+  alpha,
+  Paper,
+  Chip
 } from '@mui/material';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -18,7 +22,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Person as PersonIcon,
-  Comment as CommentIcon
+  Comment as CommentIcon,
+  Business as BusinessIcon
 } from '@mui/icons-material';
 import { TipoBitacoraChip } from './TipoBitacoraChip';
 import { SucursalBadge } from '../../shared/components/SucursalBadge';
@@ -36,6 +41,7 @@ export const BitacoraListItem: React.FC<BitacoraListItemProps> = ({
   onDelete
 }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleView = () => {
     navigate(`/bitacora/${bitacora.id}`);
@@ -51,9 +57,18 @@ export const BitacoraListItem: React.FC<BitacoraListItemProps> = ({
     if (onDelete) onDelete(bitacora.id);
   };
 
-  // Get first letter of the user who created the record
-  const getInitial = () => {
-    return bitacora.creadoPor ? bitacora.creadoPor.charAt(0).toUpperCase() : '?';
+  // Get color based on tipo
+  const getColorByTipo = () => {
+    switch (bitacora.tipo) {
+      case TipoBitacora.COMENTARIO:
+        return theme.palette.info.main;
+      case TipoBitacora.SEGUIMIENTO:
+        return theme.palette.primary.main;
+      case TipoBitacora.CONTACTO:
+        return theme.palette.success.main;
+      default:
+        return theme.palette.text.primary;
+    }
   };
 
   // Format comments for display - truncate if too long
@@ -63,37 +78,101 @@ export const BitacoraListItem: React.FC<BitacoraListItemProps> = ({
   };
 
   return (
-    <>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        mb: 1,
+        borderRadius: 2,
+        overflow: 'hidden',
+        backgroundColor: alpha(getColorByTipo(), 0.03),
+        borderLeft: `4px solid ${getColorByTipo()}`,
+        '&:hover': {
+          backgroundColor: alpha(getColorByTipo(), 0.08),
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        },
+        transition: 'all 0.2s ease-in-out',
+      }}
+    >
       <ListItem
         disablePadding
         secondaryAction={
-          <Box>
-            <Tooltip title="Ver detalles">
-              <IconButton edge="end" aria-label="view" onClick={handleView}>
-                <VisibilityIcon />
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="Ver detalles" arrow>
+              <IconButton 
+                size="small"
+                aria-label="view" 
+                onClick={handleView}
+                sx={{ 
+                  color: theme.palette.info.main,
+                  backgroundColor: alpha(theme.palette.info.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.info.main, 0.2),
+                  }
+                }}
+              >
+                <VisibilityIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Editar">
-              <IconButton edge="end" aria-label="edit" onClick={handleEdit}>
-                <EditIcon />
+            <Tooltip title="Editar" arrow>
+              <IconButton 
+                size="small"
+                aria-label="edit" 
+                onClick={handleEdit}
+                sx={{ 
+                  color: theme.palette.primary.main,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                  }
+                }}
+              >
+                <EditIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Eliminar">
-              <IconButton edge="end" aria-label="delete" onClick={handleDelete} color="error">
-                <DeleteIcon />
+            <Tooltip title="Eliminar" arrow>
+              <IconButton 
+                size="small"
+                aria-label="delete" 
+                onClick={handleDelete}
+                sx={{ 
+                  color: theme.palette.error.main,
+                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.error.main, 0.2),
+                  }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Box>
         }
       >
-        <ListItemButton onClick={handleView}>
-          <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+        <ListItemButton 
+          onClick={handleView}
+          sx={{ 
+            py: 1.5, 
+            px: 2,
+            borderRadius: 1
+          }}
+        >
+          <Avatar 
+            sx={{ 
+              mr: 2, 
+              bgcolor: alpha(getColorByTipo(), 0.1),
+              color: getColorByTipo()
+            }}
+          >
             {bitacora.tipo === TipoBitacora.COMENTARIO ? <CommentIcon /> : <PersonIcon />}
           </Avatar>
           <ListItemText
             primary={
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="subtitle1" component="span">
+              <Box display="flex" alignItems="center" gap={1} flexWrap="wrap" mb={0.5}>
+                <Typography 
+                  variant="subtitle1" 
+                  component="span"
+                  fontWeight="medium"
+                >
                   {format(new Date(bitacora.fecha), 'dd MMM yyyy, HH:mm', { locale: es })}
                 </Typography>
                 <TipoBitacoraChip tipo={bitacora.tipo} />
@@ -101,50 +180,114 @@ export const BitacoraListItem: React.FC<BitacoraListItemProps> = ({
               </Box>
             }
             secondary={
-              // Cambiar el root secundario a "span" para evitar p > div o p > p
               <Box component="span">
-                <Typography variant="body2" component="span" color="text.primary">
-                  Cliente: 
-                </Typography>
-                <Typography variant="body2" component="span">
-                  {' '}{bitacora.comercial || bitacora.razonSocial} (#{bitacora.noCliente})
-                </Typography>
-                <Box component="span" mt={0.5} display="block">
-                  {bitacora.comentario && (
-                    <Typography variant="body2" component="span" color="text.secondary" display="block">
-                      Comentario: {formatComment(bitacora.comentario)}
-                    </Typography>
-                  )}
-                  {bitacora.contestacion && (
-                    <Typography variant="body2" component="span" color="text.secondary" display="block">
-                      Respuesta: {formatComment(bitacora.contestacion)}
-                    </Typography>
-                  )}
-                </Box>
-                <Box component="span" mt={0.5} display="block">
-                  <Typography
-                    variant="body2"
-                    component="span"
-                    color="text.secondary"
-                    sx={{ fontSize: '0.75rem' }}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <BusinessIcon fontSize="small" sx={{ color: alpha(theme.palette.text.primary, 0.6) }} />
+                  <Typography 
+                    variant="body2" 
+                    component="span" 
+                    fontWeight={500}
+                    color="text.primary"
                   >
-                    {bitacora.creadoPor && (
-                      <>Por: {bitacora.creadoPor} | </>
-                    )}
-                    {bitacora.banco && (
-                      <>Banco: {bitacora.banco} | </>
-                    )}
-                    {bitacora.clasificacion && (
-                      <>Clasificación: {bitacora.clasificacion}</>
-                    )}
+                    {bitacora.comercial || bitacora.razonSocial}
                   </Typography>
+                  <Chip 
+                    label={`#${bitacora.noCliente}`}
+                    size="small"
+                    sx={{ 
+                      height: 20, 
+                      fontSize: '0.7rem',
+                      fontWeight: 'bold'
+                    }}
+                  />
+                </Box>
+
+                {bitacora.comentario && (
+                  <Typography 
+                    variant="body2" 
+                    component="span" 
+                    color="text.secondary" 
+                    display="block"
+                    sx={{ mt: 0.5 }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                      Comentario: 
+                    </Box>
+                    {' '}{formatComment(bitacora.comentario)}
+                  </Typography>
+                )}
+
+                {bitacora.contestacion && (
+                  <Typography 
+                    variant="body2" 
+                    component="span" 
+                    color="text.secondary" 
+                    display="block"
+                  >
+                    <Box component="span" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                      Respuesta: 
+                    </Box>
+                    {' '}{formatComment(bitacora.contestacion)}
+                  </Typography>
+                )}
+
+                <Box sx={{ 
+                  mt: 0.5, 
+                  display: 'flex', 
+                  flexWrap: 'wrap',
+                  gap: 1.5,
+                  alignItems: 'center' 
+                }}>
+                  {bitacora.creadoPor && (
+                    <Typography
+                      variant="caption"
+                      component="span"
+                      sx={{ 
+                        color: alpha(theme.palette.text.secondary, 0.8),
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5
+                      }}
+                    >
+                      <PersonIcon fontSize="inherit" />
+                      {bitacora.creadoPor}
+                    </Typography>
+                  )}
+
+                  {bitacora.banco && (
+                    <Typography
+                      variant="caption"
+                      component="span"
+                      sx={{ 
+                        color: alpha(theme.palette.text.secondary, 0.8),
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.5
+                      }}
+                    >
+                      Banco: {bitacora.banco}
+                    </Typography>
+                  )}
+                  
+                  {bitacora.clasificacion && (
+                    <Chip
+                      label={bitacora.clasificacion}
+                      size="small"
+                      variant="outlined"
+                      sx={{ 
+                        height: 20, 
+                        fontSize: '0.7rem',
+                        borderColor: alpha(theme.palette.primary.main, 0.5)
+                      }}
+                    />
+                  )}
                 </Box>
               </Box>
             }
+            secondaryTypographyProps={{ component: 'span' }} 
           />
         </ListItemButton>
       </ListItem>
-      <Divider />
-    </>
+    </Paper>
   );
 };

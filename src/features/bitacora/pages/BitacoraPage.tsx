@@ -59,7 +59,7 @@ const BitacoraPage: React.FC = () => {
   });
 
   // Show filters state
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Load initial data
   useEffect(() => {
@@ -168,7 +168,7 @@ const BitacoraPage: React.FC = () => {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
+        <Typography  component="h1">
           Bitácora de Pagos
         </Typography>
         <Box>

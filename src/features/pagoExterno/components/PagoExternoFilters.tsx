@@ -49,7 +49,7 @@ export const PagoExternoFilters: React.FC<PagoExternoFiltersProps> = ({
   const [filters, setFilters] = useState<Partial<FilterPagoExternoDto>>({
     ...initialFilters
   });
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   // Count active filters
   const activeFilterCount = Object.keys(filters).filter(key => 
@@ -79,57 +79,8 @@ export const PagoExternoFilters: React.FC<PagoExternoFiltersProps> = ({
   };
 
   return (
-    <Card 
-      elevation={3} 
-      sx={{ 
-        mb: 3, 
-        borderRadius: 2,
-        transition: 'box-shadow 0.3s',
-        '&:hover': {
-          boxShadow: 6
-        }
-      }}
-    >
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          mb: 2 
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <FilterAlt 
-              color="primary" 
-              sx={{ mr: 1.5, opacity: 0.8 }} 
-            />
-            <Typography variant="h6" component="div">
-              Filtros
-              {activeFilterCount > 0 && (
-                <Chip 
-                  size="small" 
-                  label={activeFilterCount}
-                  color="primary"
-                  sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
-                />
-              )}
-            </Typography>
-          </Box>
-          <Tooltip title={expanded ? "Ocultar filtros" : "Mostrar filtros"}>
-            <IconButton 
-              onClick={toggleExpand} 
-              size="small"
-              color="primary"
-              sx={{ 
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                '&:hover': {
-                  bgcolor: alpha(theme.palette.primary.main, 0.2)
-                }
-              }}
-            >
-              {expanded ? <ExpandLess /> : <ExpandMore />}
-            </IconButton>
-          </Tooltip>
-        </Box>
+
 
         <Collapse in={expanded}>
           <Box sx={{ mb: 3 }}>
@@ -407,6 +358,6 @@ export const PagoExternoFilters: React.FC<PagoExternoFiltersProps> = ({
           </Button>
         </Box>
       </CardContent>
-    </Card>
+    
   );
 };

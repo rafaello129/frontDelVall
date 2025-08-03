@@ -197,13 +197,11 @@ const Navbar: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <img
-            src="/logo.svg"
+            src="/logo.png"
             alt="Logo Del Valle"
             style={{ height: 32, width: 'auto' }}
           />
-          <Typography variant="h6" color="primary" sx={{ ml: 1, fontWeight: 'bold' }}>
-            Del Valle
-          </Typography>
+     
         </Box>
         {isMobile && (
           <IconButton 
@@ -338,13 +336,11 @@ const Navbar: React.FC = () => {
           
           <RouterLink to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="Logo Del Valle"
               style={{ height: 32, width: 'auto' }}
             />
-            <Typography variant="h6" color="primary" sx={{ ml: 1, fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
-              Del Valle
-            </Typography>
+    
           </RouterLink>
           
           {/* Desktop navigation */}

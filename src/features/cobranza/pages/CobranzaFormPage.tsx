@@ -11,7 +11,11 @@ import {
   Divider,
   Alert,
   CircularProgress,
-  Breadcrumbs
+  Breadcrumbs,
+  Container,
+  useTheme,
+  alpha,
+  Chip
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -19,14 +23,17 @@ import {
   Edit as EditIcon,
   Payment as PaymentIcon,
   NavigateNext as NavigateNextIcon,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Receipt as ReceiptIcon,
+  Save as SaveIcon
 } from '@mui/icons-material';
 import CobranzaForm from '../../../components/cobranza/CobranzaForm';
 
 const CobranzaFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation(); // Añadido para acceder a location.state
+  const location = useLocation();
+  const theme = useTheme();
   
   const { 
     getCobranzaById, 
@@ -78,108 +85,256 @@ const CobranzaFormPage: React.FC = () => {
   
   if (isEditMode && isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="md">
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '70vh' 
+        }}>
+          <CircularProgress size={60} thickness={4} />
+          <Typography variant="h6" sx={{ mt: 2, color: 'text.secondary' }}>
+            Cargando datos del pago...
+          </Typography>
+        </Box>
+      </Container>
     );
   }
   
   if (isEditMode && error) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 2 }}>
-        <Alert severity="error">{error}</Alert>
-        <Button 
-          component={Link} 
-          to="/cobranza" 
-          variant="outlined" 
-          startIcon={<ArrowBackIcon />} 
-          sx={{ mt: 2 }}
-        >
-          Volver a la lista
-        </Button>
-      </Box>
+      <Container maxWidth="md">
+        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 2 }}>
+          <Alert 
+            severity="error"
+            variant="filled" 
+            sx={{ mb: 2 }}
+          >
+            {error}
+          </Alert>
+          <Button 
+            component={Link} 
+            to="/cobranza" 
+            variant="contained" 
+            startIcon={<ArrowBackIcon />}
+          >
+            Volver a la lista
+          </Button>
+        </Box>
+      </Container>
     );
   }
   
   if (isEditMode && !selectedCobranza) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 2 }}>
-        <Alert severity="warning">No se encontró el pago solicitado</Alert>
-        <Button 
-          component={Link} 
-          to="/cobranza" 
-          variant="outlined" 
-          startIcon={<ArrowBackIcon />} 
-          sx={{ mt: 2 }}
-        >
-          Volver a la lista
-        </Button>
-      </Box>
+      <Container maxWidth="md">
+        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 2 }}>
+          <Alert 
+            severity="warning" 
+            variant="filled"
+            sx={{ mb: 2 }}
+          >
+            No se encontró el pago solicitado
+          </Alert>
+          <Button 
+            component={Link} 
+            to="/cobranza" 
+            variant="contained" 
+            startIcon={<ArrowBackIcon />} 
+          >
+            Volver a la lista
+          </Button>
+        </Box>
+      </Container>
     );
   }
   
   return (
-    <Box sx={{ maxWidth: 1000, mx: 'auto', px: 2, py: 4 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs 
-        separator={<NavigateNextIcon fontSize="small" />} 
-        aria-label="breadcrumb"
-        sx={{ mb: 3 }}
-      >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
-          <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-          Inicio
-        </Link>
-        <Link to="/cobranza" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
-          <PaymentIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-          Cobranzas
-        </Link>
-        <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
-          {isEditMode ? 'Editar Pago' : 'Registrar Nuevo Pago'}
-        </Typography>
-      </Breadcrumbs>
-      
-      <Paper 
-        elevation={2} 
-        sx={{ 
-          p: 3, 
-          borderRadius: 2,
-          position: 'relative'
-        }}
-      >
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Container maxWidth="lg">
+      <Box sx={{ py: 4 }}>
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          separator={<NavigateNextIcon fontSize="small" />} 
+          aria-label="breadcrumb"
+          sx={{ mb: 3, px: 1 }}
+        >
+          <Link to="/" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            textDecoration: 'none', 
+            color: theme.palette.primary.main,
+            fontWeight: 500
+          }}>
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="small" />
+            Inicio
+          </Link>
+          <Link to="/cobranza" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            textDecoration: 'none', 
+            color: theme.palette.primary.main,
+            fontWeight: 500
+          }}>
+            <PaymentIcon sx={{ mr: 0.5 }} fontSize="small" />
+            Cobranzas
+          </Link>
+          {isEditMode ? (
+            <Typography color="text.primary" sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              fontWeight: 600 
+            }}>
+              <EditIcon sx={{ mr: 0.5 }} fontSize="small" />
+              Editar Pago #{id}
+            </Typography>
+          ) : (
+            <Typography color="text.primary" sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              fontWeight: 600 
+            }}>
+              <AddIcon sx={{ mr: 0.5 }} fontSize="small" />
+              {initialFacturaId ? 
+                `Registrar Pago para Factura #${initialFacturaId}` : 
+                'Nuevo Pago'}
+            </Typography>
+          )}
+        </Breadcrumbs>
+        
+        {/* Header */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+          px: 1
+        }}>
+          <Typography variant="h4" fontWeight={700} sx={{ 
+            color: theme.palette.text.primary,
+            lineHeight: 1.2
+          }}>
             {isEditMode ? (
-              <>
-                <EditIcon fontSize="large" color="primary" />
-                Editar Pago #{selectedCobranza?.id}
-              </>
+              <>Editar Pago</>
             ) : (
-              <>
-                <AddIcon fontSize="large" color="primary" />
-                {initialFacturaId ? 
-                  `Registrar Pago para Factura #${initialFacturaId}` : 
-                  'Registrar Nuevo Pago'}
-              </>
+              initialFacturaId ? 
+                <>Registrar Pago para Factura</> : 
+                <>Registrar Nuevo Pago</>
             )}
           </Typography>
+          
+          {initialFacturaId && (
+            <Chip 
+              label={`Factura #${initialFacturaId}`}
+              color="primary"
+              icon={<ReceiptIcon />}
+              sx={{ 
+                fontSize: '0.9rem', 
+                fontWeight: 'bold',
+                py: 2.5
+              }}
+            />
+          )}
         </Box>
         
-        <Divider sx={{ mb: 3 }} />
-        
-        <CobranzaForm
-          cobranza={selectedCobranza || undefined}
-          onSubmit={handleSubmit}
-          onCancel={() => initialFacturaId ? 
-            navigate(`/facturasView/${initialFacturaId}`) : 
-            navigate('/cobranza')
-          }
-          isLoading={isLoading}
-          initialFacturaId={initialFacturaId}
-          initialClienteId={initialClienteId}
-        />
-      </Paper>
-    </Box>
+        {/* Form Card */}
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            borderRadius: 3,
+            mb: 4,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}
+        >
+          <Box sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            mb: 2,
+          }}>
+            <Box sx={{ 
+              width: 54, 
+              height: 54, 
+              borderRadius: '50%', 
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {isEditMode ? (
+                <EditIcon 
+                  sx={{ 
+                    fontSize: 28, 
+                    color: theme.palette.primary.main 
+                  }} 
+                />
+              ) : (
+                <PaymentIcon 
+                  sx={{ 
+                    fontSize: 28, 
+                    color: theme.palette.primary.main 
+                  }} 
+                />
+              )}
+            </Box>
+            <Box>
+              <Typography variant="h6" fontWeight="bold" color="text.primary">
+                {isEditMode ? `Modificando pago #${id}` : 'Información del nuevo pago'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {isEditMode ? 
+                  'Actualice los campos necesarios y guarde los cambios' : 
+                  'Complete todos los campos requeridos para registrar el pago'}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Divider sx={{ my: 3, borderColor: alpha(theme.palette.divider, 0.8) }} />
+          
+          {/* Form Component */}
+          <CobranzaForm
+            cobranza={selectedCobranza || undefined}
+            onSubmit={handleSubmit}
+            onCancel={() => initialFacturaId ? 
+              navigate(`/facturasView/${initialFacturaId}`) : 
+              navigate('/cobranza')
+            }
+            isLoading={isLoading}
+            initialFacturaId={initialFacturaId}
+            initialClienteId={initialClienteId}
+          />
+          
+          {/* Información adicional */}
+          <Box sx={{ mt: 4 }}>
+            <Alert 
+              severity="info"
+              variant="outlined"
+              icon={false}
+              sx={{ 
+                borderRadius: 2,
+                backgroundColor: alpha(theme.palette.info.main, 0.05)
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <SaveIcon color="info" sx={{ mt: 0.5 }} />
+                <Box>
+                  <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                    {isEditMode ? 'Sobre la edición de pagos' : 'Sobre el registro de pagos'}
+                  </Typography>
+                  <Typography variant="body2">
+                    {isEditMode 
+                      ? 'Al editar un pago, se actualizarán los registros contables asociados. Asegúrese de que los datos son correctos antes de guardar los cambios.'
+                      : 'El pago se registrará en el sistema y se asociará a la factura correspondiente. Verifique todos los datos antes de enviar el formulario.'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Alert>
+          </Box>
+        </Paper>
+      </Box>
+    </Container>
   );
 };
 
