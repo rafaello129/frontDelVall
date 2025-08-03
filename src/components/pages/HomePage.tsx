@@ -36,7 +36,7 @@ const HomePage = () => {
                         as="link"
                         to="/profile"
                         variant="primary"
-                        size="lg"
+                        size="large"
                       >
                         Ir a mi perfil
                       </Button>
@@ -48,7 +48,7 @@ const HomePage = () => {
                           as="link"
                           to="/register"
                           variant="primary"
-                          size="lg"
+                          size="large"
                         >
                           Comenzar ahora
                         </Button>
@@ -58,7 +58,7 @@ const HomePage = () => {
                           as="link"
                           to="/login"
                           variant="outline"
-                          size="lg"
+                          size="large"
                         >
                           Iniciar sesión
                         </Button>
@@ -179,7 +179,7 @@ const HomePage = () => {
                   as="link"
                   to="/dashboard"
                   variant="primary"
-                  size="lg"
+                  size="large"
                 >
                   {user?.role === 'admin' ? 'Ir al panel admin' : 'Ir a mi dashboard'}
                 </Button>
@@ -191,7 +191,7 @@ const HomePage = () => {
                     as="link"
                     to="/register"
                     variant="primary"
-                    size="lg"
+                    size="large"
                   >
                     Registrarse gratis
                   </Button>
@@ -201,7 +201,7 @@ const HomePage = () => {
                     as="link"
                     to="/login"
                     variant="outline"
-                    size="lg"
+                    size="large"
                   >
                     Iniciar sesión
                   </Button>
