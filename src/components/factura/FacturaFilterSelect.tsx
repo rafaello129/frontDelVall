@@ -96,7 +96,6 @@ useEffect(() => {
 
   // Manejador para selección de factura en el dropdown
   const handleSelectFactura = (factura: Factura) => {
-    console.log("Factura seleccionada:", factura);
     const facturaId = String(factura.noFactura);
     onChange(facturaId);
     setSearchTerm('');

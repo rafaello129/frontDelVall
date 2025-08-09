@@ -21,7 +21,7 @@ const CsvReader: React.FC = () => {
        readString(csvString, {
          worker: true,
          complete: (results) => {
-           console.log(results)}
+          }
          });
      }
     return (

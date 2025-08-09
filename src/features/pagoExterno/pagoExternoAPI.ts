@@ -31,6 +31,10 @@ export const pagoExternoAPI = {
     const response = await privateApi.post(BASE_URL, pagoExternoData);
     return response.data;
   },
+  creatManyPagoExterno: async (pagosExternosData: CreatePagoExternoDto[]): Promise<PagoExterno[]> => {
+    const response = await privateApi.post(`${BASE_URL}/many`, pagosExternosData);
+    return response.data;
+  },
 
   // Actualizar un pago externo por ID
   updatePagoExterno: async (id: number, pagoExternoData: UpdatePagoExternoDto): Promise<PagoExterno> => {

@@ -44,6 +44,16 @@ export const BancoSelector: React.FC<BancoSelectorProps> = ({
   };
 
   return (
+    (bancos.length === 0) ? 
+    <div>
+      {loading ? (
+        <div>Cargando bancos...</div>
+      ) : (
+        <div>No hay bancos disponibles</div>
+      )}
+    </div>
+    
+    :
     <FormControl fullWidth error={error} size={size}>
       <InputLabel>Banco</InputLabel>
       <Select

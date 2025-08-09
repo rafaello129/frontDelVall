@@ -130,7 +130,7 @@ const ProyeccionAnaliticaPage: React.FC = () => {
         console.log('Loading comportamiento cliente data...');
 
         await getComportamientoCliente(selectedCliente);
-            console.log(comportamientoCliente)
+           // console.log(comportamientoCliente)
     } else if (tabValue === 1) {
         await getRiesgoCliente(selectedCliente);
       } else if (tabValue === 3) {

@@ -64,6 +64,19 @@ export const createPagoExterno = createAsyncThunk(
     }
   }
 );
+export const createManyPagoExterno = createAsyncThunk(
+  'pagoExterno/createMany',
+  async (pagosExternosData: CreatePagoExternoDto[], { rejectWithValue }) => {
+    try {
+      const response = await pagoExternoAPI.creatManyPagoExterno(pagosExternosData);
+      toast.success('Pagos externos creados exitosamente');
+      return response;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Error al registrar pagos externos');
+      return rejectWithValue(error.response?.data?.message || 'Error al registrar pagos externos');
+    }
+  }
+);
 
 export const updatePagoExterno = createAsyncThunk(
   'pagoExterno/update',
@@ -189,6 +202,20 @@ const pagoExternoSlice = createSlice({
         state.pagosExternos.unshift(action.payload);
       })
       .addCase(createPagoExterno.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+      //createManyPagoExterno
+    builder
+      .addCase(createManyPagoExterno.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(createManyPagoExterno.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.pagosExternos.unshift(...action.payload);
+      })
+      .addCase(createManyPagoExterno.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

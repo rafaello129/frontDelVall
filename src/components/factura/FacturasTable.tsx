@@ -136,10 +136,7 @@ const FacturasTable: React.FC<FacturasTableProps> = ({
     filters.limit = parseInt(event.target.value, 10);
     setPage(0) // Reset to first page
   };
-useEffect(() => {
-  console.log(facturas);
-}
-, [facturas]);
+
   // Action menu handlers
   const handleOpenActionMenu = (event: React.MouseEvent<HTMLElement>, factura: Factura) => {
     setActionMenuAnchor(event.currentTarget);

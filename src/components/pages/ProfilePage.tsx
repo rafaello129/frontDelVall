@@ -87,7 +87,6 @@ const ProfilePage = () => {
         setImagePreview(user.image);
       }
     }
-    console.log("a")
   }, []);
   
   let inProgress = false;

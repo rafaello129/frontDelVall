@@ -261,7 +261,31 @@ export const PagoExternoListPage = () => {
                 Administre y analice todos los pagos externos del sistema
               </Typography>
             </Box>
-            
+            <Box
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2
+            }}
+            >
+            <Button 
+                component={RouterLink} 
+                to="/pagos-externos/csv" 
+                variant="outlined" 
+                color="secondary" 
+                startIcon={<BarChart />} 
+                sx={{ 
+                  whiteSpace: 'nowrap', 
+                  display: { xs: 'none', sm: 'flex' },
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600
+                }}
+              >
+                Subir CSV
+              </Button>
             <Button
               component={RouterLink}
               to="/pagos-externos/nuevo"
@@ -269,15 +293,16 @@ export const PagoExternoListPage = () => {
               color="primary"
               startIcon={<AddIcon />}
               sx={{ 
+                whiteSpace: 'nowrap', 
+                display: { xs: 'none', sm: 'flex' },
                 borderRadius: 2,
                 textTransform: 'none',
-                fontWeight: 600,
-                px: 3,
-                py: 1.25
+                fontWeight: 600
               }}
             >
-              Nuevo Pago Externo
+              Nuevo Pago
             </Button>
+            </Box>
           </Box>
         </Stack>
         

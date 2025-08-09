@@ -137,11 +137,7 @@ const SubirCsvFacturaPage: React.FC = () => {
     setOpenConfirm(true);
   };
   const handleCloseConfirm = () => {
-    for(const factura of facturas) {
-      if(factura.noFactura=="CANQ-10820")
-      console.log(factura)
-    
-    }
+
     setOpenConfirm(false);
   };
   const handleConfirmUpload = () => {

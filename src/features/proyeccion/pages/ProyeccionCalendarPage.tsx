@@ -325,7 +325,7 @@ const ProyeccionCalendarPage: React.FC = () => {
         </Alert>
       )}
       
-      {isLoading ? (
+      {false ? (
         <Box display="flex" justifyContent="center" my={4}>
           <CircularProgress />
         </Box>

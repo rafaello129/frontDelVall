@@ -212,7 +212,7 @@ export const useExportProyeccionesExcel = () => {
     }
 
       // Encabezado de Total
-      const lastCell = headerRow.getCell(columns.length);
+      const lastCell = headerRow.getCell(columns.length +1);
       lastCell.value = 'TOTAL';
       lastCell.fill = {
         type: 'pattern',
@@ -346,7 +346,7 @@ export const useExportProyeccionesExcel = () => {
         });
         
         // Total del cliente
-        const totalClienteCell = dataRow.getCell(columns.length);
+        const totalClienteCell = dataRow.getCell(columns.length+1);
         totalClienteCell.value = totalesPorCliente[cliente.noCliente] || 0;
         totalClienteCell.numFmt = '"$"#,##0.00';
         totalClienteCell.font = {
@@ -421,26 +421,26 @@ export const useExportProyeccionesExcel = () => {
       });
       
       // Total general
-      totalRow.getCell(columns.length).value = totalGeneral;
-      totalRow.getCell(columns.length).numFmt = '"$"#,##0.00';
-      totalRow.getCell(columns.length).font = {
+      totalRow.getCell(columns.length +1).value = totalGeneral;
+      totalRow.getCell(columns.length+1).numFmt = '"$"#,##0.00';
+      totalRow.getCell(columns.length+1).font = {
         name: 'Arial',
         size: 11,
         bold: true,
         color: { argb: mainColor }
       };
-      totalRow.getCell(columns.length).fill = {
+      totalRow.getCell(columns.length+1).fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: totalColor }
       };
-      totalRow.getCell(columns.length).border = {
+      totalRow.getCell(columns.length+1).border = {
         top: { style: 'medium', color: { argb: mainColor } },
         left: { style: 'thin', color: { argb: borderColor } },
         bottom: { style: 'medium', color: { argb: mainColor } },
         right: { style: 'thin', color: { argb: borderColor } }
       };
-      totalRow.getCell(columns.length).alignment = {
+      totalRow.getCell(columns.length+1).alignment = {
         horizontal: 'right',
         vertical: 'middle'
       };

@@ -113,7 +113,6 @@ const FacturaForm: React.FC<FacturaFormProps> = ({
       }
     }
     
-    console.log('Cliente seleccionado:', value);
   };
 
   // Transforma datos antes de enviar

@@ -5,7 +5,7 @@ import type { Banco } from '../banco/types';
 // Existing Enums
 export enum EstadoProyeccion {
   PENDIENTE = 'PENDIENTE',
-  CUMPLIDA = 'CUMPLIDO',
+  CUMPLIDA = 'PAGADO',
   CANCELADA = 'CANCELADO',
   VENCIDA = 'VENCIDO'
 }

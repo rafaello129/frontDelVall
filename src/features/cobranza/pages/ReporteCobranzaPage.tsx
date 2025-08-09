@@ -50,7 +50,6 @@ const ReporteCobranzaPage: React.FC = () => {
         fechaDesde: new Date(fechaDesde),
         fechaHasta: new Date(fechaHasta)
       });
-      console.log(reporte)
     }
   };
 

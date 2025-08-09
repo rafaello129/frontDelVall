@@ -47,6 +47,7 @@ const CobranzasExcelPage = lazy(() => import('../features/cobranza/pages/Cobranz
 const SubirCsvCobranzaPage = lazy(() => import('../features/cobranza/pages/SubirCsvCobranzaPage'));
 const ReporteCobranzaPage = lazy(() => import('../features/cobranza/pages/ReporteCobranzaPage'));
 const ReporteRegionPage = lazy(() => import('../features/cobranza/pages/ReporteRegionPage'));
+const SubirCsvPagoExternoPage = lazy(() => import('../features/pagoExterno/pages/SubirCsvPagosExternosPage'));
 
 const ProyeccionesPage = lazy(() => import('../features/proyeccion/pages/ProyeccionesPage'));
 const ProyeccionCreatePage = lazy(() => import('../features/proyeccion/pages/ProyeccionCreatePage'));
@@ -229,7 +230,7 @@ const AppRoutes = () => {
               <Route path="/pagos-externos/nuevo" element={<PagoExternoCreatePage />} />
               <Route path="/pagos-externos/editar/:id" element={<PagoExternoEditPage />} />
             {/* Redirección a la página de inicio si no está autenticado */}
-            
+            <Route path="/pagos-externos/csv/" element={<SubirCsvPagoExternoPage />} />         
             {/* Rutas protegidas solo para administradores */}
             <Route path="admin" element={
               <AuthGuard requiredRole="admin">
