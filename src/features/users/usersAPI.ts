@@ -1,4 +1,4 @@
-import { privateApi, publicApi } from '../../services/api';
+import { privateApi } from '../../services/api';
 import type { CreateUserDto, UpdateUserDto, UserProfile } from './types';
 
 const BASE_URL = '/users';

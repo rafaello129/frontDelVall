@@ -22,7 +22,6 @@ import {
   InputLabel
 } from '@mui/material';
 import {
-  Visibility as VisibilityIcon,
   ChevronRight as ChevronRightIcon,
   Edit as EditIcon,
   Check as CheckIcon,
@@ -442,7 +441,7 @@ export const ProyeccionCalendarTable = memo(({
               >
                 Cliente
               </TableCell>
-              {fechas.map((fecha, index) => (
+              {fechas.map((fecha) => (
                 <TableCell 
                   key={`header-${formatDateKey(fecha)}`}
                   align="center" 

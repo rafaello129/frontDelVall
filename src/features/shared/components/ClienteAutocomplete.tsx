@@ -24,6 +24,7 @@ export const ClienteAutocomplete: React.FC<ClienteAutocompleteProps> = ({
   showEmpty = false,
   size = 'medium'
 }) => {
+  showEmpty = showEmpty || false; // Default to false if not provided
   const dispatch = useAppDispatch();
   const clientes = useAppSelector(selectClientesLista);
   const [loading, setLoading] = useState(false);

@@ -19,7 +19,6 @@ import type { PagoExterno } from '../types';
 import { formatCurrency } from '../../../utils/format';
 import { TipoPagoExternoChip } from './TipoPagoExternoChip';
 import {
-  AttachMoney as MoneyIcon,
   AccountBalance as BankIcon,
   LocationOn as LocationIcon,
   Person as PersonIcon,

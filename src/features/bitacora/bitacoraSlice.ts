@@ -3,7 +3,6 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 import { bitacoraAPI } from './bitacoraAPI';
 import type { 
-  BitacoraPago,
   BitacoraState, 
   CreateBitacoraPagoDto, 
   UpdateBitacoraPagoDto,

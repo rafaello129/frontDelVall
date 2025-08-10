@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -14,7 +14,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
-import { ArrowBack, Edit, Delete } from '@mui/icons-material';
+import { ArrowBack, } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import {
   fetchPagoExternoById,
@@ -39,7 +39,7 @@ export const PagoExternoDetailPage = () => {
     if (id) {
       dispatch(fetchPagoExternoById(parseInt(id)))
         .unwrap()
-        .catch(error => {
+        .catch(_error => {
           toast.error('Error al cargar los detalles del pago externo');
           navigate('/pagos-externos');
         });
@@ -70,7 +70,7 @@ export const PagoExternoDetailPage = () => {
           toast.success('Pago externo eliminado exitosamente');
           navigate('/pagos-externos');
         })
-        .catch(error => {
+        .catch(_error => {
           toast.error('Error al eliminar el pago externo');
           setDeleteDialogOpen(false);
         });

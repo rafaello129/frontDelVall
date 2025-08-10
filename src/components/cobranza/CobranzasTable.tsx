@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Cobranza } from '../../features/cobranza/types';
-import Button from '../common/Button';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -10,20 +9,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Typography,
   Chip,
   IconButton,
   Box,
   Tooltip,
   CircularProgress,
-  useTheme
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  AttachMoney as MoneyIcon,
   AccountBalance as BankIcon
 } from '@mui/icons-material';
 

@@ -6,7 +6,7 @@ import type {
   FilterFacturaDto, 
   CambioEstadoDto,
   PaginatedFacturasResponse,
-  FacturasClienteResponse
+  
 } from './types';
 
 const BASE_URL = '/factura';

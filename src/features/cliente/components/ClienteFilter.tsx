@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Paper, Typography, Box, TextField, Autocomplete, MenuItem,
+  Paper, Box, TextField, Autocomplete, MenuItem,
   FormControl, InputLabel, Select, Button, Chip,
-  InputAdornment, Divider, useTheme, alpha, Stack
+  InputAdornment, useTheme, alpha, Stack
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -26,14 +26,14 @@ interface ClienteFilterProps {
 const ClienteFilter: React.FC<ClienteFilterProps> = ({ onFilter, initialFilters = {} }) => {
   const theme = useTheme();
   const [filters, setFilters] = useState<FilterClienteDto>(initialFilters);
-  const [expanded, setExpanded] = useState(true);
+  const expanded = true;
   const [sucursales, setSucursales] = useState<string[]>([]);
   const [clasificaciones, setClasificaciones] = useState<string[]>([]);
   const [enumsLoading, setEnumsLoading] = useState(false);
   const [activeFilterCount, setActiveFilterCount] = useState(0);
 
   // Use the hook to get filter options
-  const { filterOptions, isLoading, reloadFilterOptions } = useClienteFilters();
+  const { filterOptions, isLoading } = useClienteFilters();
 
   // Type-safe access to filter options
   const safeFilterOptions = {

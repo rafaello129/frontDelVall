@@ -34,7 +34,6 @@ import {
   Home as HomeIcon,
   People as PeopleIcon,
   NavigateNext as NavigateNextIcon,
-  Business as BusinessIcon,
   ArrowBack as ArrowBackIcon
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
@@ -45,7 +44,7 @@ const sucursalOptions = Object.values(Sucursal); // Automático desde el enum
 
 const ClienteExcelPage: React.FC = () => {
   const theme = useTheme();
-  const { clientes, getAllClientes, setPagination, isLoading } = useCliente();
+  const { clientes, getAllClientes, setPagination } = useCliente();
   const [filters, setFilters] = useState<FilterClienteDto>({
     limit: 1000,
     skip: 0,

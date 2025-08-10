@@ -90,7 +90,7 @@ const ClienteStats: React.FC = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -126,7 +126,7 @@ const ClienteStats: React.FC = () => {
                   />
                   <Tooltip formatter={(value: number) => formatCurrency(value as number)} />
                   <Bar dataKey="amount" fill="#8884d8">
-                    {barData.map((entry, index) => (
+                    {barData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Bar>

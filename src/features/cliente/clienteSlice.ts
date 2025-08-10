@@ -8,7 +8,6 @@ import type {
   UpdateClienteDto,
   FilterClienteDto,
   AntiguedadSaldosDto,
-  SaldoAntiguedad,
   FacturaPendiente
 } from './types';
 import type { RootState } from '../../app/store';

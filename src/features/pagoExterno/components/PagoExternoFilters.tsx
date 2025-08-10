@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
-  Card,
   CardContent,
   Collapse,
   Divider,
   FormControl,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -15,7 +13,6 @@ import {
   Typography,
   useTheme,
   Paper,
-  Tooltip,
   Chip
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -23,13 +20,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { 
   FilterAlt, 
   Clear, 
-  ExpandMore, 
-  ExpandLess, 
   CalendarMonth, 
   AttachMoney,
   BusinessCenter,
-  Category,
-  AccountBalance
 } from '@mui/icons-material';
 import type { FilterPagoExternoDto } from '../types';
 import { Sucursal, TipoPago, TipoPagoExterno } from '../../shared/enums';
@@ -49,7 +42,7 @@ export const PagoExternoFilters: React.FC<PagoExternoFiltersProps> = ({
   const [filters, setFilters] = useState<Partial<FilterPagoExternoDto>>({
     ...initialFilters
   });
-  const [expanded, setExpanded] = useState(true);
+  const expanded =true;
 
   // Count active filters
   const activeFilterCount = Object.keys(filters).filter(key => 
@@ -74,9 +67,9 @@ export const PagoExternoFilters: React.FC<PagoExternoFiltersProps> = ({
     onFilter({});
   };
 
-  const toggleExpand = () => {
-    setExpanded(!expanded);
-  };
+  // const toggleExpand = () => {
+  //   setExpanded(!expanded);
+  // };
 
   return (
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>

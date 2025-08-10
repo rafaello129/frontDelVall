@@ -73,7 +73,7 @@ export const ProyeccionEstadisticasCard: React.FC<ProyeccionEstadisticasCardProp
   ];
 
   const handleViewChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newView: 'chart' | 'table' | null,
   ) => {
     if (newView !== null) {
@@ -82,7 +82,7 @@ export const ProyeccionEstadisticasCard: React.FC<ProyeccionEstadisticasCardProp
   };
 
   const handleChartTypeChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newType: 'bar' | 'pie' | 'line' | null,
   ) => {
     if (newType !== null) {
@@ -234,7 +234,7 @@ export const ProyeccionEstadisticasCard: React.FC<ProyeccionEstadisticasCardProp
                     );
                   }}
                 >
-                  {sortedData.map((entry, index) => (
+                  {sortedData.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

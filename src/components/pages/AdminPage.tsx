@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../features/auth/authSlice';
 import { useUsers } from '../../features/users/hooks/useUsers';
-import type { UserProfile } from '../../features/users/types';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { toast } from 'react-toastify';
 import UsersTab from './admin/UsersTab';

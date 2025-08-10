@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -12,7 +12,6 @@ import {
   useTheme,
   Alert,
   Stack,
-  Divider,
   Fade
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
@@ -47,7 +46,7 @@ export const PagoExternoEditPage = () => {
     if (id) {
       dispatch(fetchPagoExternoById(parseInt(id)))
         .unwrap()
-        .catch(error => {
+        .catch(_error => {
           toast.error('Error al cargar los datos del pago externo');
           navigate('/pagos-externos');
         });
@@ -68,7 +67,7 @@ export const PagoExternoEditPage = () => {
           toast.success('Pago externo actualizado exitosamente');
           navigate(`/pagos-externos/${id}`);
         })
-        .catch(error => {
+        .catch(_error => {
           toast.error('Error al actualizar el pago externo');
         });
     }

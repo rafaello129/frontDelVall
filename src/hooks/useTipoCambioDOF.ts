@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { getTipoCambioDOF,  } from "../services/dofService";
 import type { TipoCambioDofResponse } from "../services/dofService";
 
-import { format } from "date-fns";
 
 /**
  * Hook para obtener el tipo de cambio DOF de forma reactiva.

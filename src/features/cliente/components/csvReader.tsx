@@ -1,5 +1,5 @@
-import { BarChart, Close } from '@mui/icons-material';
-import { Button, Dialog, DialogTitle, IconButton, Typography } from '@mui/material';
+import { Close } from '@mui/icons-material';
+import { Button, Dialog, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
 import { usePapaParse } from 'react-papaparse';
 
@@ -20,7 +20,7 @@ const CsvReader: React.FC = () => {
      const handleCsv = () => {
        readString(csvString, {
          worker: true,
-         complete: (results) => {
+         complete: (_results) => {
           }
          });
      }

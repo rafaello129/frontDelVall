@@ -1,13 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
 import { cobranzaAPI } from './cobranzaAPI';
 import type { 
-  Cobranza, 
   CobranzaState, 
   CreateCobranzaDto, 
   UpdateCobranzaDto, 
   FilterCobranzaDto,
-  ReporteCobranza
 } from './types';
 import type { RootState } from '../../app/store';
 import { toast } from 'react-toastify';

@@ -5,7 +5,6 @@ import {
   CardContent,
   Typography,
   useTheme,
-  Paper,
   Avatar,
   alpha,
   Chip,
@@ -19,8 +18,7 @@ import {
   CircularProgress,
   FormControlLabel,
   Switch,
-  IconButton,
-  Tooltip,
+
   Collapse
 } from '@mui/material';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
@@ -112,7 +110,6 @@ export const PagoExternoEstadisticas: React.FC<PagoExternoEstadisticasProps> = (
   // Preparar datos para gráficos por tipo
   const tipoLabels = estadisticasPorTipo.map(item => item.categoria.replace(/_/g, ' '));
   const tipoData = estadisticasPorTipo.map(item => item.total);
-  const tipoCantidades = estadisticasPorTipo.map(item => item.cantidad);
   const tipoColores = [
     '#3f51b5', // Indigo
     '#f50057', // Pink

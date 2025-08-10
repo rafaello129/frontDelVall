@@ -17,8 +17,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  IconButton,
-  Tooltip,
+    Tooltip,
   Stack,
   useTheme,
   alpha,
@@ -44,7 +43,6 @@ import {
   Search as SearchIcon,
   Delete as DeleteIcon,
   Warning as WarningIcon,
-  Refresh as RefreshIcon,
   ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -144,6 +142,7 @@ const ProyeccionesPage: React.FC = () => {
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    event=event;
     setPaginationParams(value);
   };
 
@@ -186,7 +185,6 @@ const ProyeccionesPage: React.FC = () => {
   // Count proyecciones by status
   const pendienteCount = proyecciones.filter(p => p.estado === EstadoProyeccion.PENDIENTE).length;
   const procesadoCount = proyecciones.filter(p => p.estado === EstadoProyeccion.CUMPLIDA).length;
-  const canceladoCount = proyecciones.filter(p => p.estado === EstadoProyeccion.CANCELADA).length;
 
   // Active filter count
   const activeFilterCount = Object.values(filters).filter(v => 

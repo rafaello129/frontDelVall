@@ -6,7 +6,6 @@ import {
   Typography,
   Paper,
   Divider,
-  Chip,
   Card,
   CardContent,
   Alert,
@@ -22,8 +21,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   ArrowBack as ArrowBackIcon,
-  Person as PersonIcon,
-  Comment as CommentIcon,
   Event as EventIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';

@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCliente } from '../hooks/useCliente';
 import ClienteDetail from '../components/ClienteDetail';
 import { 
-  Box, Typography, Paper, Breadcrumbs, Link as MuiLink,
+  Box, Typography, Breadcrumbs, Link as MuiLink,
   Button, CircularProgress, Alert, Dialog, DialogActions,
-  DialogContent, DialogContentText, DialogTitle, useTheme,
+  DialogContent, DialogContentText, DialogTitle,
   Fade, Divider
 } from '@mui/material';
 import {
@@ -22,7 +22,6 @@ import { motion } from 'framer-motion';
 const ClienteDetailPage: React.FC = () => {
   const { noCliente } = useParams<{ noCliente: string }>();
   const navigate = useNavigate();
-  const theme = useTheme();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const { 

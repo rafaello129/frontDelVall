@@ -130,6 +130,7 @@ const BitacoraPage: React.FC = () => {
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    event.preventDefault(); // Prevent default anchor behavior
     setPaginationParams(value);
   };
 

@@ -26,7 +26,6 @@ import {
   eachDayOfInterval,
   startOfDay,
   addDays,
-  isWithinInterval,
   isSaturday,
   isSunday
 } from 'date-fns';

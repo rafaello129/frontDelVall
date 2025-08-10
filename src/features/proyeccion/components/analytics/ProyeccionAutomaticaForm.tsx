@@ -67,7 +67,7 @@ export const ProyeccionAutomaticaForm: React.FC<ProyeccionAutomaticaFormProps> =
   };
 
   const handleSliderChange = (name: keyof ProyeccionAutomaticaDto) => (
-    event: Event,
+    _event: Event,
     newValue: number | number[]
   ) => {
     setFormData(prev => ({ ...prev, [name]: newValue as number }));

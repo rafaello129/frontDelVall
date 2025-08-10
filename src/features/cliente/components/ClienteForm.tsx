@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCliente } from '../hooks/useCliente';
 import { useCorreoCliente } from '../../correoCliente/hooks/useCorreoCliente';
-import { useTelefonoCliente } from '../../telefonoCliente/hooks/useTelefonoCliente';
 import type { Cliente, CreateClienteDto, UpdateClienteDto } from '../types';
 import type { CreateCorreoDto } from '../../correoCliente/types';
 import type { CreateTelefonoDto } from '../../telefonoCliente/types';
@@ -9,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Box, Paper, Typography, TextField, Select, MenuItem,
   FormControl, InputLabel, FormHelperText,
-  Button, Chip, Divider, IconButton, InputAdornment,
+  Button, Divider, IconButton, InputAdornment,
   useTheme, alpha, Stack, Card, CardContent, CardHeader,
   CircularProgress
 } from '@mui/material';

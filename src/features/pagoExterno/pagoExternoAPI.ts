@@ -5,8 +5,7 @@ import type {
   UpdatePagoExternoDto, 
   FilterPagoExternoDto, 
   PaginatedPagoExternoResponse,
-  TotalPorTipoResponse,
-  TotalPorSucursalResponse,
+
   EstadisticasOptions,
   EstadisticasResponse
 } from './types';

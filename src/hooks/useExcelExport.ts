@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import FileSaver from 'file-saver';
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // Interfaces actualizadas para incluir los pagos externos
@@ -239,7 +239,7 @@ export const useExcelExport = () => {
       const styles = getExcelStyles();
       
       // Preparar datos de pagos externos y combinar todos los datos por fecha
-      const { valoresDiariosPacifico, valoresDiariosNorte, totalPacificoBanco, totalNorteBanco, datosPorFechaOrdenados } = 
+      const { totalPacificoBanco, totalNorteBanco, datosPorFechaOrdenados } = 
         procesarDatosCobranza(reporteRegion, datosAdicionales?.pagosExternos || [], fechaDesde, fechaHasta, regiones);
       
       // ----- HOJA 1: COBRANZA POR SUCURSAL (Principal) -----
@@ -247,11 +247,8 @@ export const useExcelExport = () => {
         workbook, 
         reporteRegion, 
         regiones, 
-        fechaDesde, 
         fechaHasta, 
         styles,
-        valoresDiariosPacifico,
-        valoresDiariosNorte,
         totalPacificoBanco,
         totalNorteBanco,
         datosPorFechaOrdenados,
@@ -398,11 +395,8 @@ export const useExcelExport = () => {
     workbook: ExcelJS.Workbook,
     reporteRegion: ReporteRegionData,
     regiones: string[],
-    fechaDesde: Date,
     fechaHasta: Date,
     styles: ReturnType<typeof getExcelStyles>,
-    valoresDiariosPacifico: Record<string, number>,
-    valoresDiariosNorte: Record<string, number>,
     totalPacificoBanco: number,
     totalNorteBanco: number,
     datosPorFechaOrdenados: DatosPorFecha[],
@@ -503,7 +497,6 @@ export const useExcelExport = () => {
     // Aplicar AutoFilter a las filas de datos
     const dataEndRow = worksheet.rowCount;
     const numColumns = regiones.length + 2; // +2 por la fecha y el total
-    const lastColLetter = String.fromCharCode(64 + numColumns);
     
     // Aplicar AutoFilter desde la fila de encabezado hasta la última fila de datos
     worksheet.autoFilter = {

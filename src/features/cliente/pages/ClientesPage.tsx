@@ -7,9 +7,9 @@ import type { FilterClienteDto } from '../types';
 import { motion } from 'framer-motion';
 import { 
   Box, Typography, Paper, Button, Divider, Breadcrumbs,
-  Link as MuiLink, useTheme, Collapse, IconButton,
+  Link as MuiLink, useTheme, Collapse,
   Alert, Fab, Tooltip, alpha, Container, Stack,
-  Badge, Card, CardContent, CircularProgress
+   Card, CardContent, CircularProgress
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -17,7 +17,6 @@ import {
   FilterList as FilterListIcon,
   Home as HomeIcon,
   People as PeopleIcon,
-  ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Refresh as RefreshIcon,
   InsertChartOutlinedSharp,
@@ -25,8 +24,6 @@ import {
   Business as BusinessIcon,
   NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
-import {usePapaParse} from 'react-papaparse';
-import CsvReader from '../components/csvReader';
 
 const ClientesPage: React.FC = () => {
   const theme = useTheme();

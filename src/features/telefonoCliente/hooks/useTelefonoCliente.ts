@@ -14,7 +14,7 @@ import {
   selectTelefonoIsLoading,
   selectTelefonoError
 } from '../telefonoClienteSlice';
-import type { CreateTelefonoDto, UpdateTelefonoDto, TelefonoCliente } from '../types';
+import type { CreateTelefonoDto, UpdateTelefonoDto } from '../types';
 
 export const useTelefonoCliente = () => {
   const dispatch = useAppDispatch();

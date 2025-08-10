@@ -13,7 +13,6 @@ import {
   Breadcrumbs,
   Container,
   useTheme,
-  useMediaQuery,
   alpha
 } from '@mui/material';
 import {
@@ -35,7 +34,6 @@ const CobranzaDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { getCobranzaById, selectedCobranza, isLoading, error, removeCobranza } = useCobranzas();
   
   useEffect(() => {

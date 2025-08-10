@@ -2,8 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Cliente } from '../types';
 import {
-  Paper, Typography, Box, Card, CardContent, CardHeader,
-  Chip, Avatar, Divider, IconButton, List,
+   Typography, Box, Card, CardContent, CardHeader,
+  Chip, Avatar, IconButton, List,
   ListItem, ListItemAvatar, ListItemText, ListItemSecondaryAction,
   Tooltip, useTheme
 } from '@mui/material';

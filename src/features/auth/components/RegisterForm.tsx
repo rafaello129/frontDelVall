@@ -7,7 +7,6 @@ import type { RegisterUserDto } from '../types';
 import { registerSchema } from '../../../utils/validationSchemas';
 import Button from '../../../components/common/Button';
 import FormInput from '../../../components/common/FormInput';
-import ErrorMessage from '../../../components/common/ErrorMessage';
 
 const RegisterForm = () => {
   const dispatch = useAppDispatch();

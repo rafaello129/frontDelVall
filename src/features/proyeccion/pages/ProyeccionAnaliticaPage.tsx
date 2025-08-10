@@ -9,7 +9,6 @@ import {
   Tabs,
   Tab,
   Alert,
-  LinearProgress
 } from '@mui/material';
 import { 
   Analytics, 
@@ -90,6 +89,7 @@ const ProyeccionAnaliticaPage: React.FC = () => {
 
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    event= event;
     setTabValue(newValue);
   };
 

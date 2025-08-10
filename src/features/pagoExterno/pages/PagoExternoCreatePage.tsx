@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -9,7 +8,6 @@ import {
   Paper,
   useTheme,
   alpha,
-  Divider,
   Stack
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
@@ -42,7 +40,7 @@ export const PagoExternoCreatePage = () => {
         toast.success('Pago externo creado exitosamente');
         navigate('/pagos-externos');
       })
-      .catch(error => {
+      .catch(_error => {
         toast.error('Error al crear el pago externo');
       });
   };

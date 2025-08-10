@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, LinearProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { usePapaParse } from 'react-papaparse';
-import type { Cliente, CreateClienteDto } from '../types';
+import type { CreateClienteDto } from '../types';
 import { useCliente } from '../hooks/useCliente';
 import  { Sucursal } from '../../shared/enums';
 
@@ -120,7 +120,7 @@ const SubirCsvPage: React.FC = () => {
       clientesRef.current = [];
       return;
     }
-    const datos = csvData.filter((value, index) => index !== 0);
+    const datos = csvData.filter((_value, index) => index !== 0);
     const clientes = datos.slice(headerRowIdx + 1).map(row => {
       let status: 'Activo' | 'Inactivo' = 'Activo';
       if (row[5] && row[5].toLowerCase() === 'inactivo') {

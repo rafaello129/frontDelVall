@@ -14,10 +14,9 @@ import {
   Pagination,
   Tooltip
 } from '@mui/material';
-import { Edit, Delete, Visibility, AttachMoney } from '@mui/icons-material';
+import { Edit, Delete, Visibility } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useNavigate } from 'react-router-dom';
 import type { PagoExterno } from '../types';
 import { formatCurrency } from '../../../utils/format';
 import { TipoPagoChip } from '../../shared/components/TipoPagoChip';
@@ -47,7 +46,6 @@ export const PagoExternoList: React.FC<PagoExternoListProps> = ({
   pageSize = 10,
   isLoading = false
 }) => {
-  const navigate = useNavigate();
   const [page, setPage] = useState(currentPage);
   const totalPages = Math.ceil(totalItems / pageSize);
 

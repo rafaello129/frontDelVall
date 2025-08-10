@@ -1,46 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import type { KeyboardEvent } from 'react';
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
-import { selectIsAuthenticated, selectUser } from '../../features/auth/authSlice';
+import { selectIsAuthenticated } from '../../features/auth/authSlice';
 import AuthStatus from '../../features/auth/components/AuthStatus';
 import {
   AppBar,
   Toolbar,
-  Typography,
   Button,
   IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
   Box,
-  Collapse,
   useTheme,
-  useMediaQuery,
-  Avatar,
-  Tooltip,
-  Badge,
-  ListItemButton
 } from '@mui/material';
 // Import alpha as a separate function
 import { alpha } from '@mui/material/styles';
 import {
   Menu as MenuIcon,
-  Close as CloseIcon,
-  ExpandLess,
-  ExpandMore,
   Home as HomeIcon,
   People as PeopleIcon,
   AccountBalanceOutlined as BankIcon,
   ReceiptOutlined as InvoiceIcon,
   MonetizationOnOutlined as PaymentIcon,
-  BarChartOutlined as ReportIcon,
   PaymentOutlined as ExternalPaymentIcon,
-  AccessTimeOutlined as ExpiredIcon,
   InsertChartOutlinedRounded as StatisticsIcon,
   LocationOnOutlined as RegionIcon,
   EventNoteOutlined as ProyeccionIcon,
@@ -68,10 +49,7 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const theme = useTheme();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const user = useAppSelector(selectUser);
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({});
 
   // Close mobile drawer on location change
   useEffect(() => {
@@ -86,20 +64,20 @@ const Navbar: React.FC = () => {
   };
 
   // Toggle submenu
-  const handleToggleSubmenu = (name: string) => {
-    setOpenSubmenus(prev => ({
-      ...prev,
-      [name]: !prev[name]
-    }));
-  };
+  // const handleToggleSubmenu = (name: string) => {
+  //   setOpenSubmenus(prev => ({
+  //     ...prev,
+  //     [name]: !prev[name]
+  //   }));
+  // };
 
   // Handle keyboard navigation for submenus
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, name: string) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleToggleSubmenu(name);
-    }
-  };
+  // const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, name: string) => {
+  //   if (event.key === 'Enter' || event.key === ' ') {
+  //     event.preventDefault();
+  //     handleToggleSubmenu(name);
+  //   }
+  // };
 
   // Navigation structure with grouping and submenus
   const navigationGroups: NavLinkGroup[] = [
@@ -185,129 +163,129 @@ const Navbar: React.FC = () => {
 
   ];
 
-  const drawer = (
-    <Box role="navigation" aria-label="Navegación principal">
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          p: 2
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            src="/logo.png"
-            alt="Logo Del Valle"
-            style={{ height: 32, width: 'auto' }}
-          />
+  // const drawer = (
+  //   <Box role="navigation" aria-label="Navegación principal">
+  //     <Box 
+  //       sx={{ 
+  //         display: 'flex', 
+  //         alignItems: 'center', 
+  //         justifyContent: 'space-between',
+  //         p: 2
+  //       }}
+  //     >
+  //       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+  //         <img
+  //           src="/logo.png"
+  //           alt="Logo Del Valle"
+  //           style={{ height: 32, width: 'auto' }}
+  //         />
      
-        </Box>
-        {isMobile && (
-          <IconButton 
-            onClick={() => setMobileOpen(false)}
-            aria-label="Cerrar menú"
-            edge="end"
-          >
-            <CloseIcon />
-          </IconButton>
-        )}
-      </Box>
-      <Divider />
+  //       </Box>
+  //       {isMobile && (
+  //         <IconButton 
+  //           onClick={() => setMobileOpen(false)}
+  //           aria-label="Cerrar menú"
+  //           edge="end"
+  //         >
+  //           <CloseIcon />
+  //         </IconButton>
+  //       )}
+  //     </Box>
+  //     <Divider />
       
-      {isAuthenticated && (
-        <Box sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Avatar 
-              alt={user?.name || 'Usuario'} 
-              src={user?.image || ''}
-              sx={{ width: 40, height: 40 }}
-            />
-            <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle1" noWrap>
-                {user?.name || 'Usuario'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {user?.email || ''}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      )}
-      <Divider />
+  //     {isAuthenticated && (
+  //       <Box sx={{ p: 2 }}>
+  //         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+  //           <Avatar 
+  //             alt={user?.name || 'Usuario'} 
+  //             src={user?.image || ''}
+  //             sx={{ width: 40, height: 40 }}
+  //           />
+  //           <Box sx={{ ml: 2 }}>
+  //             <Typography variant="subtitle1" noWrap>
+  //               {user?.name || 'Usuario'}
+  //             </Typography>
+  //             <Typography variant="body2" color="text.secondary" noWrap>
+  //               {user?.email || ''}
+  //             </Typography>
+  //           </Box>
+  //         </Box>
+  //       </Box>
+  //     )}
+  //     <Divider />
       
-      <List component="nav" aria-label="Menú principal">
-        {navigationGroups
-          .filter(group => group.show)
-          .map((group) => (
-            <React.Fragment key={group.path}>
-              {group.children ? (
-                <Box>
-                  <ListItemButton
-                    onClick={() => handleToggleSubmenu(group.name)}
-                    onKeyDown={(e) => handleKeyDown(e, group.name)}
-                    selected={isActive(group.path)}
-                    aria-expanded={openSubmenus[group.name]}
-                    sx={{
-                      borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
-                      backgroundColor: isActive(group.path) ? alpha (theme.palette.primary.main, 0.1) : 'transparent'
-                    }}
-                  >
-                    <ListItemIcon>
-                      {group.icon}
-                    </ListItemIcon>
-                    <ListItemText primary={group.name} />
-                    {openSubmenus[group.name] ? <ExpandLess /> : <ExpandMore />}
-                  </ListItemButton>
-                  <Collapse in={openSubmenus[group.name]} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                      {group.children.filter(child => child.show).map((child) => (
-                        <ListItemButton
-                          key={child.path}
-                          component={RouterLink}
-                          to={child.path}
-                          selected={isActive(child.path)}
-                          sx={{ 
-                            pl: 4,
-                            borderLeft: isActive(child.path) ? `4px solid ${theme.palette.secondary.main}` : '4px solid transparent',
-                            backgroundColor: isActive(child.path) ? alpha(theme.palette.secondary.main, 0.1) : 'transparent'
-                          }}
-                        >
-                          <ListItemIcon>
-                            {child.icon || group.icon}
-                          </ListItemIcon>
-                          <ListItemText primary={child.name} />
-                        </ListItemButton>
-                      ))}
-                    </List>
-                  </Collapse>
-                </Box>
-              ) : (
-                <ListItemButton
-                  component={RouterLink}
-                  to={group.path}
-                  selected={isActive(group.path)}
-                  sx={{
-                    borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
-                    backgroundColor: isActive(group.path) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
-                  }}
-                >
-                  <ListItemIcon>
-                    {group.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={group.name} />
-                </ListItemButton>
-              )}
-            </React.Fragment>
-          ))}
-      </List>
-      {isMobile && (
-        <Box sx={{ p: 2, mt: 'auto' }}>
-          <AuthStatus />
-        </Box>
-      )}
-    </Box>
-  );
+  //     <List component="nav" aria-label="Menú principal">
+  //       {navigationGroups
+  //         .filter(group => group.show)
+  //         .map((group) => (
+  //           <React.Fragment key={group.path}>
+  //             {group.children ? (
+  //               <Box>
+  //                 <ListItemButton
+  //                   onClick={() => handleToggleSubmenu(group.name)}
+  //                   onKeyDown={(e) => handleKeyDown(e, group.name)}
+  //                   selected={isActive(group.path)}
+  //                   aria-expanded={openSubmenus[group.name]}
+  //                   sx={{
+  //                     borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
+  //                     backgroundColor: isActive(group.path) ? alpha (theme.palette.primary.main, 0.1) : 'transparent'
+  //                   }}
+  //                 >
+  //                   <ListItemIcon>
+  //                     {group.icon}
+  //                   </ListItemIcon>
+  //                   <ListItemText primary={group.name} />
+  //                   {openSubmenus[group.name] ? <ExpandLess /> : <ExpandMore />}
+  //                 </ListItemButton>
+  //                 <Collapse in={openSubmenus[group.name]} timeout="auto" unmountOnExit>
+  //                   <List component="div" disablePadding>
+  //                     {group.children.filter(child => child.show).map((child) => (
+  //                       <ListItemButton
+  //                         key={child.path}
+  //                         component={RouterLink}
+  //                         to={child.path}
+  //                         selected={isActive(child.path)}
+  //                         sx={{ 
+  //                           pl: 4,
+  //                           borderLeft: isActive(child.path) ? `4px solid ${theme.palette.secondary.main}` : '4px solid transparent',
+  //                           backgroundColor: isActive(child.path) ? alpha(theme.palette.secondary.main, 0.1) : 'transparent'
+  //                         }}
+  //                       >
+  //                         <ListItemIcon>
+  //                           {child.icon || group.icon}
+  //                         </ListItemIcon>
+  //                         <ListItemText primary={child.name} />
+  //                       </ListItemButton>
+  //                     ))}
+  //                   </List>
+  //                 </Collapse>
+  //               </Box>
+  //             ) : (
+  //               <ListItemButton
+  //                 component={RouterLink}
+  //                 to={group.path}
+  //                 selected={isActive(group.path)}
+  //                 sx={{
+  //                   borderLeft: isActive(group.path) ? `4px solid ${theme.palette.primary.main}` : '4px solid transparent',
+  //                   backgroundColor: isActive(group.path) ? alpha(theme.palette.primary.main, 0.1) : 'transparent'
+  //                 }}
+  //               >
+  //                 <ListItemIcon>
+  //                   {group.icon}
+  //                 </ListItemIcon>
+  //                 <ListItemText primary={group.name} />
+  //               </ListItemButton>
+  //             )}
+  //           </React.Fragment>
+  //         ))}
+  //     </List>
+  //     {isMobile && (
+  //       <Box sx={{ p: 2, mt: 'auto' }}>
+  //         <AuthStatus />
+  //       </Box>
+  //     )}
+  //   </Box>
+  // );
 
   // Import alpha for transparency effects
   

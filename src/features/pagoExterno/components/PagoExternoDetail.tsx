@@ -9,8 +9,6 @@ import {
   Button,
   Avatar,
   Paper,
-  IconButton,
-  Tooltip,
   alpha,
   useTheme
 } from '@mui/material';
@@ -28,7 +26,6 @@ import {
   Subtitles,
   AccountBalanceWallet,
   SwapHoriz,
-  Notes,
   History,
   CreditCard,
   AttachMoney

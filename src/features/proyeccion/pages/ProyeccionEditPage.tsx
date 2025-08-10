@@ -13,7 +13,6 @@ import {
   Fade,
   Divider,
   Button,
-  Stack
 } from '@mui/material';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ProyeccionForm } from '../components/ProyeccionForm';

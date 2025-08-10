@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { CreateUserDto } from '../features/users/types';
 
 // Esquema para validar email
 export const emailSchema = z.string()

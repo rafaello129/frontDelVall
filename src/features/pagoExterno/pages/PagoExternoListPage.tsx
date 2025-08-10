@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -21,11 +21,9 @@ import {
   Alert,
   Stack,
   Fade,
-  Divider,
   Chip,
   Card,
   CardContent,
-  Tooltip
 } from '@mui/material';
 import { 
   Add as AddIcon, 
@@ -104,6 +102,7 @@ export const PagoExternoListPage = () => {
         setTotalItems(response.total);
       })
       .catch(error => {
+        error=error;
         toast.error('Error al cargar los pagos externos');
       });
   }, [dispatch, filters]);
@@ -191,6 +190,7 @@ export const PagoExternoListPage = () => {
           dispatch(fetchPagosExternos(filters));
         })
         .catch(error => {
+          error= error;
           toast.error('Error al eliminar el pago externo');
         })
         .finally(() => {

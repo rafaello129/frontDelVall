@@ -40,9 +40,7 @@ import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import HeightIcon from '@mui/icons-material/Height';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import ExcelJS from 'exceljs';
 import { useExcelExport } from '../../../hooks/useExcelExport';
-import FileSaver from 'file-saver';
 import { 
   fetchEstadisticasPorTipo, 
   fetchPagosExternos,

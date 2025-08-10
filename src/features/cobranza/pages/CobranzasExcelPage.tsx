@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useCobranzas } from '../hooks/useCobranzas';
 import CobranzasFilter from '../components/cobranzasFilters';
 import CobranzasTable from '../../../components/cobranza/CobranzasTable';
-import type { Cobranza, FilterCobranzaDto } from '../types';
+import type { FilterCobranzaDto } from '../types';
 import { useFacturas } from '../../factura/hooks/useFacturas';
 import { 
   Box, 
@@ -41,7 +41,7 @@ const CobranzasExcelPage: React.FC = () => {
   
   const { exportCobranzasExcel } = useExportCobranzasExcel();
   const { clearFactura } = useFacturas();
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const isFormOpen = false;
   const [isExporting, setIsExporting] = useState(false);
   const [filters, setFilters] = useState<FilterCobranzaDto>({
     limit: 1000000,

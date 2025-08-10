@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import FileSaver from "file-saver";
-import { format, differenceInCalendarDays, subDays, addDays, isWithinInterval } from "date-fns";
+import { format, differenceInCalendarDays } from "date-fns";
 import { es } from "date-fns/locale";
 import type { Factura } from "../features/factura/types";
 
@@ -53,7 +53,6 @@ export const useExportFacturasExcel = () => {
 
       // Fecha actual para cálculos
       const today = new Date();
-      const todayStr = format(today, "dd/MM/yyyy");
 
       // Fuentes consistentes
       const fonts = {
@@ -70,7 +69,7 @@ export const useExportFacturasExcel = () => {
       const datosBalance = prepararDatosBalance(facturas, today);
 
       // CREAR HOJA 1: BALANCE GENERAL
-      crearHojaBalance(workbook, datosBalance, facturas, colorPalette, fonts, today);
+      crearHojaBalance(workbook, datosBalance, colorPalette, fonts, today);
 
       // CREAR HOJA 2: DETALLE DE FACTURAS
       crearHojaDetalle(workbook, facturas, colorPalette, fonts, today);
@@ -190,7 +189,6 @@ export const useExportFacturasExcel = () => {
   const crearHojaBalance = (
     workbook: ExcelJS.Workbook, 
     datosBalance: any, 
-    facturas: Factura[], 
     colorPalette: any, 
     fonts: any, 
     today: Date

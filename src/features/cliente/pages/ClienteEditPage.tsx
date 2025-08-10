@@ -10,8 +10,7 @@ import { useTelefonoCliente } from '../../telefonoCliente/hooks/useTelefonoClien
 import { motion } from 'framer-motion';
 import { 
   Box, Typography, Breadcrumbs, Link as MuiLink,
-  Button, CircularProgress, Alert, Paper, Divider,
-  useTheme
+  Button, CircularProgress, Alert, Divider,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -23,7 +22,6 @@ import {
 const ClienteEditPage: React.FC = () => {
   const { noCliente } = useParams<{ noCliente: string }>();
   const navigate = useNavigate();
-  const theme = useTheme();
   const [saving, setSaving] = useState(false);
   
   const { 
@@ -35,8 +33,8 @@ const ClienteEditPage: React.FC = () => {
     clearCliente
   } = useCliente();
   
-  const { getCorreosByCliente, addCorreo, removeCorreo } = useCorreoCliente();
-  const { getTelefonosByCliente, addTelefono, removeTelefono } = useTelefonoCliente();
+  const { addCorreo, removeCorreo } = useCorreoCliente();
+  const {  addTelefono, removeTelefono } = useTelefonoCliente();
 
   useEffect(() => {
     if (noCliente) {

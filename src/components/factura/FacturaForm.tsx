@@ -11,8 +11,6 @@ import { addDays, format } from 'date-fns';
 import { useCliente } from '../../features/cliente/hooks/useCliente';
 import {
   Box,
-  Paper,
-  Typography,
   InputLabel,
   FormControl,
   Select,

@@ -1,4 +1,3 @@
-import { privateApi } from '../../services/api';
 import { Sucursal } from '../shared/enums';
 
 interface ClienteEnums {

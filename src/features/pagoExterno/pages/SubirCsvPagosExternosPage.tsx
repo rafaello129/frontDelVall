@@ -23,9 +23,7 @@ import type { CreatePagoExternoDto } from '..';
 import { Sucursal, TipoPagoExterno, TipoPago } from '../../shared/enums';
 import { BancoSelector } from '../../shared/components/BancoSelector';
 import {
-    createPagoExterno,
     createManyPagoExterno,
-    selectPagosExternosLoading,
   } from '../pagoExternoSlice';
 import { useAppDispatch } from '../../../app/hooks';
 import { toast } from 'react-toastify';
@@ -280,6 +278,7 @@ const SubirCsvPagosExternosPage: React.FC = () => {
       navigate('/pagos-externos');
     })
     .catch(error => {
+      error=error;
       toast.error('Error al crear el pago externo');
     });
     console.log(parsedPayments);

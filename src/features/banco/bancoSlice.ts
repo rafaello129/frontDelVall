@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
 import { bancoAPI } from './bancoAPI';
-import type { Banco, BancoState, CreateBancoDto, UpdateBancoDto, FilterBancoDto } from './types';
+import type { BancoState, CreateBancoDto, UpdateBancoDto, FilterBancoDto } from './types';
 import type { RootState } from '../../app/store';
 import { toast } from 'react-toastify';
 

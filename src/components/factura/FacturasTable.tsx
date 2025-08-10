@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import type { Factura, FilterFacturaDto } from '../../features/factura/types';
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
   Typography, Chip, IconButton, Tooltip, TableSortLabel, Box,
-  alpha, useTheme, TablePagination, Button, MenuItem, Menu
+  alpha, useTheme, TablePagination, MenuItem, Menu
 } from '@mui/material';
 import { 
   Visibility as VisibilityIcon,
@@ -125,7 +125,7 @@ const FacturasTable: React.FC<FacturasTableProps> = ({
   }, [facturas, order, orderBy]);
 
   // Pagination handlers
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
     filters.skip = newPage * rowsPerPage;
     getAllFacturas(filters);

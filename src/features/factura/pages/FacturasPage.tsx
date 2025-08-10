@@ -22,7 +22,6 @@ import {
 import { 
   Add as AddIcon, 
   FilterList as FilterListIcon, 
-  Refresh as RefreshIcon, 
   ExpandLess as ExpandLessIcon, 
   BarChart, 
   InsertChartOutlinedSharp, 

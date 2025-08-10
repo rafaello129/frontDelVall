@@ -10,8 +10,7 @@ import {
   Paper,
   Typography,
   Tooltip,
-  FormControlLabel,
-  Switch
+
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -22,8 +21,6 @@ import {
   startOfMonth, 
   endOfMonth, 
   startOfWeek, 
-  endOfWeek,
-  addBusinessDays,
   isWeekend
 } from 'date-fns';
 import { FilterList as FilterListIcon, Clear as ClearIcon, Info as InfoIcon } from '@mui/icons-material';

@@ -10,7 +10,7 @@ import type { CreateTelefonoDto } from '../../telefonoCliente/types';
 import { motion } from 'framer-motion';
 import { 
   Box, Typography, Breadcrumbs, Link as MuiLink,
-  Button, Alert, Divider, Snackbar, useTheme, CircularProgress
+  Button, Alert, Divider, CircularProgress
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -18,11 +18,9 @@ import {
   People as PeopleIcon,
   PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
-import { toast } from 'react-toastify';
 
 const ClienteCreatePage: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
   const { addCliente } = useCliente();
   const { addCorreo } = useCorreoCliente();
   const { addTelefono } = useTelefonoCliente();

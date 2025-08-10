@@ -18,16 +18,13 @@ import {
   Select,
   MenuItem,
   FormHelperText,
-  Typography,
   Divider,
   TextField,
-  useTheme
 } from '@mui/material';
 import {
   Save as SaveIcon,
   Close as CloseIcon,
   AttachMoney as MoneyIcon,
-  AccountBalance as BankIcon,
   Notes as NotesIcon,
   Event as EventIcon
 } from '@mui/icons-material';
@@ -78,9 +75,8 @@ const CobranzaForm: React.FC<CobranzaFormProps> = ({
   initialFacturaId,
   initialClienteId
 }) => {
-  const theme = useTheme();
   const { bancos, getAllBancos } = useBancos();
-  const { getFacturaById, selectedFactura, clearFactura } = useFacturas();
+  const { getFacturaById, selectedFactura } = useFacturas();
   
   // Usar initialClienteId si está disponible
   const [selectedClienteId, setSelectedClienteId] = useState<number | undefined>(

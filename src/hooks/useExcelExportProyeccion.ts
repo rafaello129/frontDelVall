@@ -59,7 +59,7 @@ export const useExportProyeccionesExcel = () => {
       ];
 
       // Agregar una columna para cada fecha
-      fechas.forEach(fecha => {
+      fechas.forEach(() => {
         columns.push({
         });
       });

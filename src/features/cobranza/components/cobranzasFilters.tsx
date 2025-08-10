@@ -47,11 +47,10 @@ const CobranzasFilter: React.FC<CobranzasFilterProps> = ({
   const { bancos, getAllBancos, isLoading: bancosLoading } = useBancos();
   const {
     control,
-    register,
     handleSubmit,
     reset,
     setValue,
-    watch
+    
   } = useForm<FilterCobranzaDto>({
     defaultValues: {
       ...initialFilters,

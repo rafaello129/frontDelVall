@@ -9,7 +9,6 @@ import Button from '../../components/common/Button';
 import FormInput from '../../components/common/FormInput';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { z } from 'zod';
-import { format } from 'date-fns';
 
 // Esquemas de validación
 const updateProfileSchema = z.object({
@@ -156,14 +155,14 @@ const ProfilePage = () => {
   };
 
   // Formatear fecha
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    try {
-      return format(new Date(dateString), 'dd MMM yyyy, HH:mm');
-    } catch (e) {
-      return 'Fecha inválida';
-    }
-  };
+  // const formatDate = (dateString?: string) => {
+  //   if (!dateString) return 'N/A';
+  //   try {
+  //     return format(new Date(dateString), 'dd MMM yyyy, HH:mm');
+  //   } catch (e) {
+  //     return 'Fecha inválida';
+  //   }
+  // };
 
   // Si no hay usuario (no debería suceder debido a AuthGuard, pero por seguridad)
   if (!user) {

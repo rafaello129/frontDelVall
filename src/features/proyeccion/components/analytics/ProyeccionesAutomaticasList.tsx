@@ -7,10 +7,6 @@ import {
   Typography,
   Box,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
   Chip,
   Button,
   Stack,
@@ -22,7 +18,6 @@ import {
 import {
   AutoAwesome,
   AddCircle,
-  InfoOutlined,
   PriorityHigh,
   AddTask,
   Percent,

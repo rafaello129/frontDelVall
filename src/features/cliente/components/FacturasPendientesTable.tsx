@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { useFacturas } from '../../factura/hooks/useFacturas';
 import type { Cliente, FacturaPendiente } from '../types';
 import { 
-  Box, 
-  Paper, 
+  Box,  
   TableContainer, 
   Table, 
   TableHead, 
@@ -24,21 +23,15 @@ import {
   Skeleton,
   Card,
   CardHeader,
-  Divider,
   LinearProgress,
-  Stack,
-  Badge,
   TablePagination
 } from '@mui/material';
 import { 
   Visibility as VisibilityIcon,
-  Payment as PaymentIcon,
   Warning as WarningIcon,
   FileDownload as FileDownloadIcon,
-  ArrowUpward as ArrowUpwardIcon,
   Receipt as ReceiptIcon,
   DateRange as DateRangeIcon,
-  AttachMoney as AttachMoneyIcon,
   LocalAtm as LocalAtmIcon
 } from '@mui/icons-material';
 import { useExportCarteraClienteExcel } from '../../../hooks/useExcelExportCarteraCliente';
@@ -108,7 +101,7 @@ const FacturasPendientesTable: React.FC<FacturasPendientesTableProps> = ({ noCli
   };
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => {
     setPage(newPage);

@@ -1,14 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
 import { pagoExternoAPI } from './pagoExternoAPI';
 import type { 
-  PagoExterno, 
   PagoExternoState, 
   CreatePagoExternoDto, 
   UpdatePagoExternoDto, 
   FilterPagoExternoDto,
-  TotalPorTipoResponse,
-  TotalPorSucursalResponse,
+
   EstadisticasOptions
 } from './types';
 import type { RootState } from '../../app/store';

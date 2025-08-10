@@ -21,7 +21,6 @@ export const useExportCarteraClienteExcel = () => {
       // PALETA CORPORATIVA
       const mainColor = 'FF23408E';
       const secondaryColor = 'FF1976D2';
-      const accentColor = 'FF64B5F6';
       const headerFontColor = 'FFFFFFFF';
       const borderColor = 'FFB0BEC5';
       const vencidaRowColor = 'FFFFCDD2';
@@ -188,7 +187,7 @@ export const useExportCarteraClienteExcel = () => {
       headerRow.height = 22;
 
       // Agregar facturas
-      facturas.forEach((f, i) => {
+      facturas.forEach((f) => {
         const fechaVenc = new Date(f.fechaVencimiento);
         const diasRestantes = differenceInCalendarDays(fechaVenc, today);
         const isVencida = diasRestantes < 0;

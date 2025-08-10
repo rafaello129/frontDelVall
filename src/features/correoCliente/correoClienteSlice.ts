@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { correoClienteAPI } from './correoClienteAPI';
-import type { CorreoClienteState, CorreoCliente, CreateCorreoDto, UpdateCorreoDto, EmailValidationResult } from './types';
+import type { CorreoClienteState, CorreoCliente, CreateCorreoDto, UpdateCorreoDto } from './types';
 import type { RootState } from '../../app/store';
 import { toast } from 'react-toastify';
 

@@ -26,8 +26,7 @@ import type {
   CreateClienteDto, 
   UpdateClienteDto, 
   FilterClienteDto, 
-  AntiguedadSaldosDto,
-  Cliente 
+  AntiguedadSaldosDto, 
 } from '../types';
 
 export const useCliente = () => {

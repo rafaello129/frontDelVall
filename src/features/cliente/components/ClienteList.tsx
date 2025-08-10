@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCliente } from '../hooks/useCliente';
-import type { Cliente, FilterClienteDto } from '../types';
+import type { FilterClienteDto } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Box, Paper, Typography, Table, TableBody, TableCell, 
@@ -10,7 +10,6 @@ import {
   DialogContentText, DialogTitle, Button, Pagination,
   useTheme, CircularProgress, Alert, TableFooter,
   Fade, alpha, Avatar, LinearProgress, Skeleton,
-  Badge, Divider
 } from '@mui/material';
 import { 
   Edit as EditIcon, 
@@ -45,7 +44,6 @@ const ClienteList: React.FC<ClienteListProps> = ({
     error, 
     getAllClientes, 
     removeCliente, 
-    setPagination 
   } = useCliente();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,7 +68,7 @@ const ClienteList: React.FC<ClienteListProps> = ({
     });
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
   };
 

@@ -5,7 +5,6 @@ import {
   ListItemButton,
   ListItemText,
   Typography,
-  Divider,
   Box,
   IconButton,
   Tooltip,

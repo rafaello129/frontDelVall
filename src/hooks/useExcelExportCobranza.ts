@@ -19,7 +19,6 @@ export const useExportCobranzasExcel = () => {
       // PALETA CORPORATIVA
       const mainColor = 'FF23408E';
       const secondaryColor = 'FF1976D2';
-      const accentColor = 'FF64B5F6';
       const headerFontColor = 'FFFFFFFF';
       const borderColor = 'FFB0BEC5';
       const totalColor = 'FFE3F2FD';
@@ -75,7 +74,7 @@ export const useExportCobranzasExcel = () => {
         'Banco', 'Total Pesos', 'Efectivo', 'Transferencia', 'Cheque', 'Tarjeta', 'Otro', 'Total Dólares'
       ]);
 
-      bancoHeaderRow.eachCell((cell, colNumber) => {
+      bancoHeaderRow.eachCell((cell) => {
         cell.font = { 
           name: 'Segoe UI', 
           size: 11, 

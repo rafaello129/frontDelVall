@@ -16,15 +16,12 @@ import {
   useTheme,
   alpha,
   Chip,
-  Tooltip,
-  Divider,
+
   Stack,
   CircularProgress
 } from '@mui/material';
 import {
   Payment as PaymentIcon,
-  AttachMoney as AttachMoneyIcon,
-  BarChart as BarChartIcon,
   InsertChartOutlinedSharp as InsertChartIcon,
   Add as AddIcon,
   FilterList as FilterListIcon,
@@ -68,7 +65,7 @@ const CobranzasPage: React.FC = () => {
     });
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
     const newSkip = (page - 1) * filters.limit;
     setFilters(prevFilters => ({
       ...prevFilters,

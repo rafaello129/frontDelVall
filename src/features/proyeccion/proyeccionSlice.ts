@@ -3,7 +3,6 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 import { proyeccionPagoAPI } from './proyeccionAPI';
 import type { 
-  ProyeccionPago,
   ProyeccionPagoState, 
   CreateProyeccionPagoDto, 
   UpdateProyeccionPagoDto,

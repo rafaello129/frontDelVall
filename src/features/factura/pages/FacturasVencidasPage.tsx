@@ -1,7 +1,6 @@
-import React, { use, useEffect, useState } from 'react';
+import React, {    useEffect, useState } from 'react';
 import { useFacturas } from '../hooks/useFacturas';
 import { useCliente } from '../../cliente/hooks/useCliente';
-import FacturasTable from '../../../components/factura/FacturasTable';
 import  Button from '../../../components/common/Button';
 import  LoadingSpinner  from '../../../components/common/LoadingSpinner';
 
@@ -35,10 +34,10 @@ const FacturasVencidasPage: React.FC = () => {
     getFacturasVencidas();
   }, [getFacturasVencidas]);
 
-  const handleOpenViewDetails = (factura: Factura) => {
-    setSelectedFactura(factura);
-    setIsViewOpen(true);
-  };
+  // const handleOpenViewDetails = (factura: Factura) => {
+  //   setSelectedFactura(factura);
+  //   setIsViewOpen(true);
+  // };
 
   const handleCloseView = () => {
     setIsViewOpen(false);

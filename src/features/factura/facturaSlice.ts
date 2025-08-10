@@ -1,13 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
 import { facturaAPI } from './facturaAPI';
 import type { 
-  Factura, 
   FacturaState, 
   CreateFacturaDto, 
   UpdateFacturaDto, 
   FilterFacturaDto, 
-  CambioEstadoDto
+  
 } from './types';
 import type { RootState } from '../../app/store';
 import { toast } from 'react-toastify';
