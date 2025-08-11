@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import logo from '/logo.png';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../app/hooks';
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
@@ -314,7 +314,7 @@ const Navbar: React.FC = () => {
           
           <RouterLink to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <img
-              src="/logo.png"
+              src={logo}
               alt="Logo Del Valle"
               style={{ height: 32, width: 'auto' }}
             />
