@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { refreshToken, selectIsAuthenticated } from '../features/auth/authSlice';
